@@ -101,7 +101,7 @@ class _WhereToWidget extends StatelessWidget {
                   child: Chip(
                     avatar: Icon(
                       Icons.watch_later,
-                      color: Colors.black87,
+                      color: Colors.deepOrange,
                       size: 21,
                     ),
                     backgroundColor: Colors.white,
@@ -177,7 +177,7 @@ class _RecommendedTrip extends StatelessWidget {
               child: Icon(
                 Icons.location_on,
                 size: 15,
-                color: Colors.black87,
+                color: Colors.deepOrange,
               ),
             ),
           ),
@@ -191,7 +191,7 @@ class _RecommendedTrip extends StatelessWidget {
             ),
             Text(
               addressLine1,
-              style: TextStyle(fontSize: 14, color: Colors.black54),
+              style: TextStyle(fontSize: 14, color: Colors.deepOrange),
             ),
           ],
         ),

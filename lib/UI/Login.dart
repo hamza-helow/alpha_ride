@@ -1,5 +1,9 @@
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
 
 
@@ -28,7 +32,7 @@ class _LoginState extends State<Login> {
           ),
           Container(
             width: MediaQuery.of(context).size.width,
-            margin: EdgeInsets.only(top: 320),
+            margin: EdgeInsets.only(top: 300),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Colors.white,
@@ -40,38 +44,20 @@ class _LoginState extends State<Login> {
                   Padding(
                     padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
                     child: Container(
+
                       color: Colors.white,
-                      child: TextFormField(
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontFamily: 'SFUIDisplay'
-                        ),
+                      child: IntlPhoneField(
+
                         decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'phone number',
-                            prefixIcon: Icon(Icons.phone),
-                            labelStyle: TextStyle(
-                                fontSize: 15
-                            )
+                          labelText: '${AppLocalizations.of(context).translate("phoneNumber")}',
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(),
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    color: Colors.white,
-                    child: TextFormField(
-                      obscureText: true,
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'SFUIDisplay'
-                      ),
-                      decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Password',
-                          prefixIcon: Icon(Icons.lock_outline),
-                          labelStyle: TextStyle(
-                              fontSize: 15
-                          )
+                        initialCountryCode: 'JO',
+                        onChanged: (phone) {
+                          print(phone.completeNumber);
+                        },
                       ),
                     ),
                   ),
@@ -83,7 +69,7 @@ class _LoginState extends State<Login> {
                         Navigator.push(context, MaterialPageRoute(builder: (context) => Home(),));
 
                       },//since this is only a UI app
-                      child: Text('SIGN IN',
+                      child: Text('${AppLocalizations.of(context).translate("signIn")}',
                         style: TextStyle(
                           fontSize: 15,
                           fontFamily: 'SFUIDisplay',
@@ -101,44 +87,51 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Center(
-                      child: Text('Forgot your password?',
-                        style: TextStyle(
-                            fontFamily: 'SFUIDisplay',
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
                     padding: EdgeInsets.only(top: 30),
                     child: Center(
                       child: RichText(
                         text: TextSpan(
                             children: [
                               TextSpan(
-                                  text: "Don't have an account?",
+                                  text: "${AppLocalizations.of(context).translate("loginWith")}",
                                   style: TextStyle(
                                     fontFamily: 'SFUIDisplay',
                                     color: Colors.black,
                                     fontSize: 15,
                                   )
                               ),
-                              TextSpan(
-                                  text: "sign up",
-                                  style: TextStyle(
-                                    fontFamily: 'SFUIDisplay',
-                                    color: Colors.deepOrange,
-                                    fontSize: 15,
-                                  )
-                              )
+
                             ]
                         ),
                       ),
                     ),
+                  ) ,
+
+                  Padding(
+                    padding: EdgeInsets.only(top: 30),
+
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+
+                       // Icon(FontAwesomeIcons.facebook ,  size: 50, color: Colors.deepOrange,),
+
+                        Image.asset("Assets/facebook.png" , width: 50, height: 50,),
+
+                        SizedBox(width: 22.0,),
+                        
+                        Image.asset("Assets/gmail.png" , width: 50, height: 50,)
+
+
+
+                      ],
+
+                    ),
+
                   )
+
                 ],
               ),
             ),

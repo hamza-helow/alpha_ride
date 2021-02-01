@@ -22,8 +22,17 @@ class _HomeState extends State<Home> {
   );
 
 
+  LatLng _lastMapPosition ;
+  void _onCameraMove(CameraPosition position) {
+    _lastMapPosition = position.target;
+
+    print(_lastMapPosition);
+  }
+
   @override
   Widget build(BuildContext context) {
+
+
 
 
     var userLocation = Provider.of<UserLocation>(context);
@@ -38,62 +47,11 @@ class _HomeState extends State<Home> {
     return Scaffold(
 
       key: _scaffoldKey,
-      drawer: Drawer(
-
-        child: Container(
-
-          color: Colors.white,
-          child: ListView(
-
-            children: <Widget>[
-
-              UserAccountsDrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-
-                accountName: Text("Hamza helow" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold) ),
-                accountEmail: Text("hamzihelow3@gmail.com" , style: TextStyle(color: Colors.black54)),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.deepOrange ,
-                  child: Icon(FontAwesomeIcons.user , color: Colors.white,),
-                ),
-
-              ),
-
-              ListTile(
-                leading: Icon(Icons.time_to_leave_sharp),
-                title: Text("You trips" ,),
-              ),
-
-              ListTile(
-                leading: Icon(Icons.settings),
-                title: Text("Settings" ,),
-              ),
-
-
-              Divider(),
-
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: Text("Log out" ,),
-              ),
-
-            ],
-          ),
-        ),
-      ),
-
-
-
-
+      drawer: buildDrawer(),
 
       body: Stack(
 
         children: [
-
-
-
 
           GoogleMap(
             initialCameraPosition: _kGooglePlex,
@@ -105,6 +63,7 @@ class _HomeState extends State<Home> {
             minMaxZoomPreference: MinMaxZoomPreference(12, 20),
             mapToolbarEnabled: false,
             rotateGesturesEnabled: false,
+            onCameraMove: _onCameraMove,
 
           ),
 
@@ -127,6 +86,17 @@ class _HomeState extends State<Home> {
 
           UberBottomSheet(),
 
+          Positioned(
+            left: 0,
+            top: (MediaQuery.of(context).size.height/2)-50,
+            right: 0,
+            child: Column(
+              children: <Widget>[
+
+                Icon(Icons.location_on_sharp , size: 50, color: Colors.deepOrange,)
+              ],
+            ),
+          ),
 
 
           Positioned(
@@ -144,7 +114,8 @@ class _HomeState extends State<Home> {
                     },
                     child: Icon(
                       Icons.menu,
-                      color: Colors.black,
+                      color: Colors.deepOrange,
+                      size: 30,
                     ),
                   ),
                 ),
@@ -155,14 +126,103 @@ class _HomeState extends State<Home> {
             ),
           ),
 
-
-
-
-
         ],
 
       ),
 
+    );
+  }
+
+  Drawer buildDrawer() {
+    return Drawer(
+
+      child: Container(
+
+        color: Colors.white,
+        child: ListView(
+
+          children: <Widget>[
+
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.white,
+              ),
+
+              accountName: Text("Hamza helow" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold) ),
+              accountEmail: Text("hamzihelow3@gmail.com" , style: TextStyle(color: Colors.black54)),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.deepOrange ,
+                child: Icon(FontAwesomeIcons.user , color: Colors.white,),
+              ),
+
+            ),
+
+            Row(
+
+              children: [
+                Container(
+                  height: 50.5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 14.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Chip(
+                        avatar: Icon(
+                          FontAwesomeIcons.gift,
+                          color: Colors.deepOrange,
+                          size: 21,
+                        ),
+                        backgroundColor: Colors.grey[200],
+                        label: Text("300 point"),
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 50.5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 14.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Chip(
+                        avatar: Icon(
+                          Icons.star,
+                          color: Colors.deepOrange,
+                          size: 21,
+                        ),
+                        backgroundColor: Colors.grey[200],
+                        label: Text("4.8"),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            ListTile(
+              leading: Icon(Icons.time_to_leave_sharp),
+              title: Text("You trips" ,),
+              trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: Colors.deepOrange),),),
+            ),
+
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text("Settings" ,),
+            ),
+
+
+            Divider(),
+
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text("Log out" ,),
+            ),
+
+          ],
+        ),
+      ),
     );
   }
 }
