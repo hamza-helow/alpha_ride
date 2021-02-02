@@ -1,5 +1,6 @@
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
+import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -66,7 +67,7 @@ class _LoginState extends State<Login> {
                     child: MaterialButton(
                       onPressed: (){
 
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => Home(),));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => HomeDriver(),));
 
                       },//since this is only a UI app
                       child: Text('${AppLocalizations.of(context).translate("signIn")}',
@@ -138,6 +139,28 @@ class _LoginState extends State<Login> {
           )
         ],
       ),
+
+      bottomSheet:Container(
+        color: Colors.white,
+
+        child:  Padding(
+          padding: EdgeInsets.only(bottom: 20.0 , top: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+
+            children: [
+
+              Icon(Icons.drive_eta , size: 40, color: Colors.deepOrange,) ,
+
+              SizedBox(width: 10.0,),
+
+              Text("Join as captain" ,style: TextStyle(fontSize: 20.0 , fontWeight: FontWeight.bold),)
+            ],
+          ),
+        ),
+      ),
+
     );
   }
 }
