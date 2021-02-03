@@ -1,6 +1,8 @@
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
+import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -14,6 +16,11 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+
+
+
+  String phoneNumber  ="";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,6 +65,10 @@ class _LoginState extends State<Login> {
                         initialCountryCode: 'JO',
                         onChanged: (phone) {
                           print(phone.completeNumber);
+
+
+                          phoneNumber =phone.completeNumber ;
+
                         },
                       ),
                     ),
@@ -65,9 +76,9 @@ class _LoginState extends State<Login> {
                   Padding(
                     padding: EdgeInsets.only(top: 20),
                     child: MaterialButton(
-                      onPressed: (){
+                      onPressed: () {
 
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => HomeDriver(),));
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneVerification(phoneNumber),));
 
                       },//since this is only a UI app
                       child: Text('${AppLocalizations.of(context).translate("signIn")}',
@@ -163,6 +174,7 @@ class _LoginState extends State<Login> {
 
     );
   }
+
 }
 
 

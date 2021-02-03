@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "867383388531",
+    "project_id": "alpha-ride-d1ba7",
+    "storage_bucket": "alpha-ride-d1ba7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:867383388531:android:28087ab9936cfdc921bd06",
+        "android_client_info": {
+          "package_name": "com.app.alpha_ride"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "867383388531-nfn7u0cqnnkjbrhon20b1i810tmdmcmh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBA0KGXNpwNknAaDTf8VvYTiPN5Fxu0e3A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "867383388531-nfn7u0cqnnkjbrhon20b1i810tmdmcmh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
