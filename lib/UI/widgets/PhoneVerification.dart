@@ -1,4 +1,10 @@
 
+import 'dart:convert';
+
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
+import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/UI/Customers/CompleteCreateAccount.dart';
+import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -19,14 +25,31 @@ class PhoneVerification extends StatefulWidget {
 
 class _PhoneVerificationState extends State<PhoneVerification> {
 
-  String verificationId , smsCode ="" ;
+  String actualCode ="" , smsCode ="" ;
 
+  String appSignature;
+  String otpCode;
+
+
+ void  listenForCode() async{
+
+   await SmsAutoFill().listenForCode;
+  }
 
   @override
   void initState()  {
     // TODO: implement initState
     super.initState();
+
+    listenForCode();
      sendCode();
+
+    SmsAutoFill().getAppSignature.then((signature) {
+      setState(() {
+        appSignature = signature;
+      });
+    });
+
   }
 
 
@@ -137,6 +160,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
   PinFieldAutoFill buildPinFieldAutoFill() {
     return  PinFieldAutoFill(
+
                 autofocus: true,
                 onCodeChanged: (txt)  {
 
@@ -153,13 +177,50 @@ class _PhoneVerificationState extends State<PhoneVerification> {
   void verification (){
 
 
+    print(actualCode );
+
+
     AuthCredential phoneAuthCredential =
-    PhoneAuthProvider.getCredential(verificationId: verificationId, smsCode: smsCode);
+    PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
 
     // Sign the user in (or link) with the credential
-    firebaseAuth.signInWithCredential(phoneAuthCredential);
 
 
+
+    firebaseAuth.signInWithCredential(phoneAuthCredential).then((c) => {
+
+
+      FirebaseHelper().infoUserExit(c.user.uid).then((value) => {
+
+        if(value){
+
+          FirebaseHelper().loadUserInfo(c.user.uid).then((value) => {
+
+            SharedPreferencesHelper().setFullName(value.fullName),
+            SharedPreferencesHelper().setEmail(value.email),
+
+          })
+
+        },
+
+
+        Navigator.push(context, MaterialPageRoute
+          (builder: (context) =>  value ? Home() :CompleteCreateAccount(c),))
+
+      })
+
+
+
+
+    });
+
+
+  }
+
+
+  void onSmsReceived(String message) {
+
+    print(message);
   }
 
   void sendCode() async {
@@ -169,8 +230,13 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       verificationCompleted: (credential) async {
         // ANDROID ONLY!
 
-        PhoneVerificationCompleted c ;
-        print(credential);
+        //verification();
+
+        String t = credential.toString().replaceAll("jsonObject", '"jsonObject"');
+
+        var dt =   json.decode(t);
+
+        print(dt['jsonObject']['zzb']);
         // Sign the user in (or link) with the auto-generated credential
         //await firebaseAuth.signInWithCredential(credential);
 
@@ -178,12 +244,15 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
       codeSent: (verificationId, [forceResendingToken])  {
 
+        actualCode  = verificationId;
+
+
 
       }, codeAutoRetrievalTimeout: (String verificationId) {
 
 
 
-    }, verificationFailed: (AuthException error) {
+    }, verificationFailed: ( error) {
 
     },
 

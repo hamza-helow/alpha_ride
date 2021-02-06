@@ -1,4 +1,7 @@
+import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/UI/Common/Settings.dart';
+import 'package:alpha_ride/UI/Login.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -29,6 +32,33 @@ class _HomeState extends State<Home> {
     print(_lastMapPosition);
   }
 
+  String _fullName ="" , _email ="" ;
+
+  @override
+  void initState() {
+
+
+    SharedPreferencesHelper().getEmail().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          _email= value;
+        });
+
+    });
+
+    SharedPreferencesHelper().getFullName().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          _fullName= value;
+        });
+
+    });
+
+
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -45,6 +75,7 @@ class _HomeState extends State<Home> {
         : null;
 
     return Scaffold(
+
 
       key: _scaffoldKey,
       drawer: buildDrawer(),
@@ -67,24 +98,7 @@ class _HomeState extends State<Home> {
 
           ),
 
-          // Positioned(
-          //   left: 0,
-          //   bottom: 0,
-          //   right: 0,
-          //   child: Column(
-          //     children: <Widget>[
-          //       Container(
-          //
-          //         height: 60,
-          //         color: Color(0xF2FFFFFF),
-          //
-          //       ),
-          //
-          //     ],
-          //   ),
-          // ),
-
-          UberBottomSheet(),
+          // UberBottomSheet(),
 
           Positioned(
             left: 0,
@@ -98,33 +112,68 @@ class _HomeState extends State<Home> {
             ),
           ),
 
-
           Positioned(
-            left: 5,
-            top: 10,
-            right: 0,
-            child: Column(
-              children: <Widget>[
-                AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0.0,
-                  leading: FlatButton(
-                    onPressed: () {
-                      _scaffoldKey.currentState.openDrawer();
-                    },
-                    child: Icon(
-                      Icons.menu,
-                      color: Colors.deepOrange,
-                      size: 30,
-                    ),
-                  ),
+            left: 35,
+            bottom: 20,
+            right: 35,
+            child:  Container(
+
+              color: Colors.deepOrange,
+              height: 60,
+
+              width: 40,
+
+              child: MaterialButton(
+                onPressed: () => {},
+
+                child:Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+
+
+                    Text("GO" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0),),
+                    Icon(Icons.arrow_right_alt ,color: Colors.white,size: 50,),
+                    Icon(Icons.location_on_sharp ,color: Colors.white,size: 25,),
+                  ],
                 ),
-                Padding(
-                  padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                )
-              ],
+              ),
+
             ),
           ),
+
+          // Positioned(
+          //   left: 5,
+          //   top: 10,
+          //   right: 0,
+          //   child: Column(
+          //     children: <Widget>[
+          //       AppBar(
+          //         backgroundColor: Colors.transparent,
+          //         elevation: 0.0,
+          //         leading: FlatButton(
+          //           onPressed: () {
+          //             _scaffoldKey.currentState.openDrawer();
+          //           },
+          //           child: Icon(
+          //             Icons.menu,
+          //             color: Colors.deepOrange,
+          //             size: 30,
+          //           ),
+          //         ),
+          //       ),
+          //       Padding(
+          //         padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+          //       )
+          //     ],
+          //   ),
+          // ),
+
+
+
+          buildAppBar()
+
+
 
         ],
 
@@ -133,8 +182,118 @@ class _HomeState extends State<Home> {
     );
   }
 
+
+  Positioned buildAppBar() {
+    return Positioned(
+      top: 27,
+      left: 0,
+      right: 0,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          margin: EdgeInsets.only(top: 30),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+
+
+
+              SizedBox(width: 15,),
+
+              GestureDetector(
+                onTap: () => {
+                  _scaffoldKey.currentState.openDrawer()
+                },
+                child: Icon(Icons.menu ,size: 30.0, color: Colors.deepOrange,) ,
+              ),
+
+              SizedBox(width: 20,),
+
+
+              Expanded(
+
+                child: Container(
+
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.grey, blurRadius: 11, offset: Offset(3.0, 4.0))
+                      ],
+                      borderRadius: new BorderRadius.all(new Radius.circular(10)),
+                      border: new Border.all(
+                        color: Colors.white,
+                        width: 1.0,
+                      ),
+                    ),
+
+                    width: MediaQuery.of(context).size.width - 100,
+
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          child: Container(
+                            height: 60.5,
+                            color: Colors.grey[200],
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Where to?',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 60.5,
+                            color: Colors.grey[200],
+                            child: Padding(
+                              padding: EdgeInsets.only(right: 14.0),
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Chip(
+                                  avatar: Icon(
+                                    Icons.watch_later,
+                                    color: Colors.deepOrange,
+                                    size: 21,
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  label: TimeSelectorWidget(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                ),
+
+              ),
+
+
+
+              SizedBox(width: 30,),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
+
+
   Drawer buildDrawer() {
     return Drawer(
+
 
       child: Container(
 
@@ -143,18 +302,25 @@ class _HomeState extends State<Home> {
 
           children: <Widget>[
 
-            UserAccountsDrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.white,
-              ),
+            GestureDetector(
 
-              accountName: Text("Hamza helow" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold) ),
-              accountEmail: Text("hamzihelow3@gmail.com" , style: TextStyle(color: Colors.black54)),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.deepOrange ,
-                child: Icon(FontAwesomeIcons.user , color: Colors.white,),
-              ),
+              onTap: () => {
 
+              } ,
+
+              child: UserAccountsDrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                ),
+
+                accountName: Text("$_fullName" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold) ),
+                accountEmail: Text("$_email" , style: TextStyle(color: Colors.black54)),
+                currentAccountPicture: CircleAvatar(
+                  backgroundColor: Colors.deepOrange ,
+                  child: Icon(FontAwesomeIcons.user , color: Colors.white,),
+                ),
+
+              ),
             ),
 
             Row(
@@ -208,6 +374,12 @@ class _HomeState extends State<Home> {
             ),
 
             ListTile(
+              onTap: () {
+
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Settings(),));
+
+
+              },
               leading: Icon(Icons.settings),
               title: Text("Settings" ,),
             ),
@@ -216,6 +388,15 @@ class _HomeState extends State<Home> {
             Divider(),
 
             ListTile(
+              onTap: () {
+
+                auth.signOut() ;
+
+                Navigator.of(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                  Login(),));
+
+              },
               leading: Icon(Icons.logout),
               title: Text("Log out" ,),
             ),

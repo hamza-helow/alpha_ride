@@ -1,3 +1,8 @@
+import 'dart:io';
+
+import 'package:alpha_ride/UI/Customers/Home.dart';
+import 'package:alpha_ride/UI/widgets/SplashScreen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -15,9 +20,82 @@ void main() async{
   AppLanguage appLanguage = AppLanguage();
   await appLanguage.fetchLocale();
 
+  await Firebase.initializeApp();
 
-  runApp(MyApp(appLanguage: appLanguage,));
+
+  runApp(EntryPoint(appLanguage,));
 }
+
+
+ class EntryPoint extends StatefulWidget {
+
+   final AppLanguage appLanguage;
+
+
+   EntryPoint(this.appLanguage);
+
+  @override
+
+   _EntryPointState createState() => _EntryPointState();
+ }
+
+ class _EntryPointState extends State<EntryPoint> {
+
+
+  Widget mainScreen = SplashScreen();
+
+
+  @override
+  void initState() {
+
+    sleep(const Duration(seconds:2));
+
+    this.setState(() {
+
+      if(auth.currentUser != null)
+        mainScreen = Home();
+      else
+      mainScreen = Login();
+    });
+  }
+
+  @override
+   Widget build(BuildContext context) {
+     return StreamProvider<UserLocation>(
+
+       create: (context) => LocationService().locationStream,
+
+       child: ChangeNotifierProvider<AppLanguage>(
+
+         create: (context) =>  widget.appLanguage,
+
+         builder: (context, child) => Consumer<AppLanguage>(
+
+             builder: (context, value, child) =>MaterialApp(
+
+               locale: value.appLocal,
+               supportedLocales: [
+                 Locale('en', 'US'),
+                 Locale('ar', ''),
+               ],
+               localizationsDelegates: [
+                 AppLocalizations.delegate,
+                 GlobalMaterialLocalizations.delegate,
+                 GlobalWidgetsLocalizations.delegate,
+               ],
+
+               debugShowCheckedModeBanner: false,
+               home: mainScreen,
+             )
+
+         ),
+
+       ),
+     );
+   }
+ }
+
+
 
 class MyApp extends StatelessWidget {
 
@@ -51,7 +129,7 @@ class MyApp extends StatelessWidget {
             ],
 
             debugShowCheckedModeBanner: false,
-            home: Login(),
+            home: SplashScreen(),
           )
 
       ),

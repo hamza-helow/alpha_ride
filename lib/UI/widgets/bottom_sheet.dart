@@ -43,7 +43,14 @@ class UberBottomSheet extends StatelessWidget {
                         ],
                       ),
                     ),
-                    _WhereToWidget(),
+
+
+                    MaterialButton(
+                      color: Colors.deepOrange,
+                      onPressed: () => {},
+                      child: Text("GO"),
+                    ),
+
                     _RecommendedTrip(
                         postcode: 'irbid', addressLine1: 'Design District'),
                     Divider(),
@@ -105,7 +112,7 @@ class _WhereToWidget extends StatelessWidget {
                       size: 21,
                     ),
                     backgroundColor: Colors.white,
-                    label: _TimeSelectorWidget(),
+                    label: TimeSelectorWidget(),
                   ),
                 ),
               ),
@@ -117,8 +124,8 @@ class _WhereToWidget extends StatelessWidget {
   }
 }
 
-class _TimeSelectorWidget extends StatelessWidget {
-  const _TimeSelectorWidget({
+class TimeSelectorWidget extends StatelessWidget {
+  const TimeSelectorWidget({
     Key key,
   }) : super(key: key);
 

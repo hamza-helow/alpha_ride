@@ -1,4 +1,6 @@
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
+import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
@@ -9,6 +11,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 
+FirebaseAuth auth = FirebaseAuth.instance;
 
 class Login extends StatefulWidget {
   @override
@@ -20,6 +23,22 @@ class _LoginState extends State<Login> {
 
 
   String phoneNumber  ="";
+
+
+  @override
+  void initState() {
+
+
+    //
+    // auth.createUserWithEmailAndPassword(email: "hamziHelow3@gmail.com", password: "123456789").then((value) => {
+    //
+    //
+    //   print(value.credential)
+    //
+    //
+    // });
+
+  }
 
   @override
   Widget build(BuildContext context) {
