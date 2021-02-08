@@ -12,6 +12,12 @@ class SharedPreferencesHelper {
 
     initSharedPreferences();
   }
+  static final SharedPreferencesHelper _instance = SharedPreferencesHelper._privateConstructor();
+
+  factory SharedPreferencesHelper() {
+    return _instance;
+  }
+
 
   void initSharedPreferences()async{
 
@@ -19,11 +25,6 @@ class SharedPreferencesHelper {
 
   }
 
-  static final SharedPreferencesHelper _instance = SharedPreferencesHelper._privateConstructor();
-
-  factory SharedPreferencesHelper() {
-    return _instance;
-  }
 
 
   void  setFullName(String fullName) async {

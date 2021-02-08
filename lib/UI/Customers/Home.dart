@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart';
@@ -6,6 +8,7 @@ import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
 
@@ -16,26 +19,42 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
+  final int zoomIn = 0  , zoomOut = 1;
+
+  var currentZoomLevel;
+  var _controller ;
+
+  Location  location ;
+  LocationData currentLocation ;
+
+  UserLocation userLocation ;
+
+  LatLng _lastMapPosition ;
+
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
-  //32.5661186,35.8420676
-  static final CameraPosition _kGooglePlex = CameraPosition(
+  Completer<GoogleMapController> _completer = Completer();
+
+  static final CameraPosition defaultPosition = CameraPosition(
     target: LatLng(32.5661186, 35.8420676),
-    zoom: 16.4746,
+    zoom: 17.4746,
   );
 
 
-  LatLng _lastMapPosition ;
   void _onCameraMove(CameraPosition position) {
     _lastMapPosition = position.target;
-
-    print(_lastMapPosition);
   }
 
   String _fullName ="" , _email ="" ;
 
-  @override
+ @override
   void initState() {
+    loadInfoUser();
+    super.initState();
+  }
+
+
+  void loadInfoUser(){
 
 
     SharedPreferencesHelper().getEmail().then((value) {
@@ -55,27 +74,22 @@ class _HomeState extends State<Home> {
         });
 
     });
-
-
   }
+
 
   @override
   Widget build(BuildContext context) {
 
-
-
-
-    var userLocation = Provider.of<UserLocation>(context);
+    userLocation = Provider.of<UserLocation>(context);
 
     var cameraPosition = userLocation != null
         ? CameraPosition(
       target: LatLng(userLocation.latitude, userLocation.longitude),
-      zoom: 14,
+      zoom: 16.4,
     )
         : null;
 
     return Scaffold(
-
 
       key: _scaffoldKey,
       drawer: buildDrawer(),
@@ -85,101 +99,135 @@ class _HomeState extends State<Home> {
         children: [
 
           GoogleMap(
-            initialCameraPosition: _kGooglePlex,
+            initialCameraPosition: cameraPosition??defaultPosition,
             compassEnabled: false,
             myLocationEnabled: true,
-            zoomControlsEnabled: false,
+            zoomControlsEnabled: true,
             buildingsEnabled: true,
-            myLocationButtonEnabled: false,
+            myLocationButtonEnabled: true,
             minMaxZoomPreference: MinMaxZoomPreference(12, 20),
             mapToolbarEnabled: false,
-            rotateGesturesEnabled: false,
+            rotateGesturesEnabled: true,
+            zoomGesturesEnabled: true,
             onCameraMove: _onCameraMove,
+            onMapCreated: onMapCreated,
 
           ),
 
-          // UberBottomSheet(),
+           buttonsZoom(),
 
-          Positioned(
-            left: 0,
-            top: (MediaQuery.of(context).size.height/2)-50,
-            right: 0,
-            child: Column(
-              children: <Widget>[
+          buttonCurrentLocation(),
 
-                Icon(Icons.location_on_sharp , size: 50, color: Colors.deepOrange,)
-              ],
-            ),
-          ),
+          pin(context),
 
-          Positioned(
-            left: 35,
-            bottom: 20,
-            right: 35,
-            child:  Container(
-
-              color: Colors.deepOrange,
-              height: 60,
-
-              width: 40,
-
-              child: MaterialButton(
-                onPressed: () => {},
-
-                child:Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-
-
-                    Text("GO" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0),),
-                    Icon(Icons.arrow_right_alt ,color: Colors.white,size: 50,),
-                    Icon(Icons.location_on_sharp ,color: Colors.white,size: 25,),
-                  ],
-                ),
-              ),
-
-            ),
-          ),
-
-          // Positioned(
-          //   left: 5,
-          //   top: 10,
-          //   right: 0,
-          //   child: Column(
-          //     children: <Widget>[
-          //       AppBar(
-          //         backgroundColor: Colors.transparent,
-          //         elevation: 0.0,
-          //         leading: FlatButton(
-          //           onPressed: () {
-          //             _scaffoldKey.currentState.openDrawer();
-          //           },
-          //           child: Icon(
-          //             Icons.menu,
-          //             color: Colors.deepOrange,
-          //             size: 30,
-          //           ),
-          //         ),
-          //       ),
-          //       Padding(
-          //         padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-          //       )
-          //     ],
-          //   ),
-          // ),
-
-
+          startTrip(),
 
           buildAppBar()
-
-
 
         ],
 
       ),
 
     );
+  }
+
+  Positioned buttonsZoom() {
+    return Positioned(
+      top: 120,
+      left: 10,
+      child: Card(
+        elevation: 2,
+        child: Container(
+          color: Color(0xFFFAFAFA),
+          width: 40,
+          height: 100,
+          child: Column(
+            children: <Widget>[
+              IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: ()  {
+                    changeZoom(typeZoom: zoomIn);
+
+                  }),
+              SizedBox(height: 2),
+              IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: () => changeZoom(typeZoom: zoomOut)),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Positioned buttonCurrentLocation() {
+    return Positioned(
+          top: 220,
+          left: 10,
+          child: Card(
+            elevation: 2,
+            child: Container(
+              color: Color(0xFFFAFAFA),
+              width: 40,
+              height: 40,
+              child:  IconButton(
+                  icon: Icon(Icons.gps_fixed),
+                  onPressed: () {
+
+                    print("XXXXXXXXXXXXx");
+                    animateTo(userLocation.latitude, userLocation.longitude);
+
+                  }),
+            ),
+          ),
+        );
+  }
+
+  Positioned pin(BuildContext context) {
+    return Positioned(
+          left: 0,
+          top: (MediaQuery.of(context).size.height/2)-50,
+          right: 0,
+          child: Column(
+            children: <Widget>[
+
+              Icon(Icons.location_on_sharp , size: 50, color: Colors.deepOrange,)
+            ],
+          ),
+        );
+  }
+
+  Positioned startTrip() {
+    return Positioned(
+          left: 35,
+          bottom: 20,
+          right: 35,
+          child:  Container(
+
+            color: Colors.deepOrange,
+            height: 60,
+
+            width: 40,
+
+            child: MaterialButton(
+              onPressed: () => {},
+
+              child:Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+
+                  Text("GO" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0),),
+                  Icon(Icons.arrow_right_alt ,color: Colors.white,size: 50,),
+                  Icon(Icons.location_on_sharp ,color: Colors.white,size: 25,),
+                ],
+              ),
+            ),
+
+          ),
+        );
   }
 
 
@@ -197,8 +245,6 @@ class _HomeState extends State<Home> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
 
-
-
               SizedBox(width: 15,),
 
               GestureDetector(
@@ -209,7 +255,6 @@ class _HomeState extends State<Home> {
               ),
 
               SizedBox(width: 20,),
-
 
               Expanded(
 
@@ -235,7 +280,7 @@ class _HomeState extends State<Home> {
                         Expanded(
                           child: Container(
                             height: 60.5,
-                            color: Colors.grey[200],
+                            color: Colors.white,
                             child: Padding(
                               padding: const EdgeInsets.all(14),
                               child: Align(
@@ -253,7 +298,7 @@ class _HomeState extends State<Home> {
                         Expanded(
                           child: Container(
                             height: 60.5,
-                            color: Colors.grey[200],
+                            color: Colors.white,
                             child: Padding(
                               padding: EdgeInsets.only(right: 14.0),
                               child: Align(
@@ -264,7 +309,7 @@ class _HomeState extends State<Home> {
                                     color: Colors.deepOrange,
                                     size: 21,
                                   ),
-                                  backgroundColor: Colors.white,
+                                  backgroundColor: Colors.grey[200],
                                   label: TimeSelectorWidget(),
                                 ),
                               ),
@@ -287,9 +332,6 @@ class _HomeState extends State<Home> {
       ),
     );
   }
-
-
-
 
   Drawer buildDrawer() {
     return Drawer(
@@ -406,4 +448,39 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+
+
+  // When map ready
+  onMapCreated( controller) {
+
+    _completer.complete(controller);
+
+    _controller  = controller ;
+
+  }
+
+
+  Future<void> animateTo(double lat, double lng) async {
+    final c = await _completer.future;
+    final p = CameraPosition(target: LatLng(lat, lng), zoom: 17.0);
+    c.animateCamera(CameraUpdate.newCameraPosition(p));
+  }
+
+
+  void changeZoom({int typeZoom = 0 }) async{
+
+     currentZoomLevel = await _controller.getZoomLevel();
+
+    currentZoomLevel = typeZoom == 0 ? currentZoomLevel +  2 : currentZoomLevel -  2;
+    _controller.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(userLocation.latitude ,userLocation.longitude),
+          zoom: currentZoomLevel,
+        ),
+      ),
+    );
+
+  }
+
 }

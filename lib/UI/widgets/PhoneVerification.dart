@@ -62,7 +62,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       body: SafeArea(
 
 
-        child: Stack(
+        child:Stack(
 
           children: [
 
@@ -85,11 +85,22 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
                 children: [
 
+                  if(inProgress)
+                  SizedBox(
+                    height: 35.0,
+                  ),
+
+                  if(inProgress)
+                    LinearProgressIndicator(
+                    backgroundColor: Colors.deepOrange,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber,),
+                  ),
 
 
                   SizedBox(
                     height: 35.0,
                   ),
+
 
                   Text("Enter code Verification" ,
                     style: TextStyle(
@@ -144,6 +155,9 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
                   Timer(),
 
+                  SizedBox(height: 20.0,) ,
+
+
 
                 ],
 
@@ -174,18 +188,16 @@ class _PhoneVerificationState extends State<PhoneVerification> {
   var firebaseAuth =  FirebaseAuth.instance;
 
 
+ bool inProgress = false ;
   void verification (){
 
-
-    print(actualCode );
+    this.setState(() {
+      inProgress = true ;
+    });
 
 
     AuthCredential phoneAuthCredential =
     PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
-
-    // Sign the user in (or link) with the credential
-
-
 
     firebaseAuth.signInWithCredential(phoneAuthCredential).then((c) => {
 
@@ -204,9 +216,13 @@ class _PhoneVerificationState extends State<PhoneVerification> {
         },
 
 
-        Navigator.push(context, MaterialPageRoute
-          (builder: (context) =>  value ? Home() :CompleteCreateAccount(c),))
 
+        Navigator.push(context, MaterialPageRoute
+          (builder: (context) =>  value ? Home() :CompleteCreateAccount(c),)),
+
+        this.setState(() {
+          inProgress = false ;
+        }),
       })
 
 

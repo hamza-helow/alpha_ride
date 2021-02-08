@@ -1,3 +1,7 @@
+import 'package:alpha_ride/Helper/AppLanguage.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
+import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
+import 'package:alpha_ride/UI/widgets/setupLanguage.dart';
 import 'package:flutter/material.dart';
 class Settings extends StatefulWidget {
   @override
@@ -5,6 +9,15 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+
+
+  @override
+  void initState() {
+
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -94,9 +107,12 @@ class _SettingsState extends State<Settings> {
 
             ListTile(
 
+              onTap: () => dialogChangeLanguage(),
               leading: Icon(Icons.language  ),
               title: Text("language" ),
-              subtitle: Text("English" ,style: TextStyle(fontSize: 17.0 ),),
+              subtitle: Text(
+                "${AppLocalizations.of(context).locale.toString() == "en" ?
+                "${AppLocalizations.of(context).translate('english')}" : "${AppLocalizations.of(context).translate('arabic')}"}" ,style: TextStyle(fontSize: 17.0 ),),
 
             ),
 
@@ -112,8 +128,6 @@ class _SettingsState extends State<Settings> {
 
             SizedBox(height: 10.0,),
 
-
-
           ],
 
         ),
@@ -121,6 +135,25 @@ class _SettingsState extends State<Settings> {
 
     );
   }
+
+  dialogChangeLanguage(){
+
+    dialog(Container(
+
+      width: 300,
+      height: 135,
+      child: SetupLanguage(AppLocalizations.of(context).locale.toString()),
+
+    ), context ,title: Text("Change Language") ,
+        padding: EdgeInsets.all(5),
+        
+        widgets: [
+
+      MaterialButton(onPressed: () => Navigator.pop(context), child: Text("Done" , style: TextStyle(fontWeight: FontWeight.bold , color: Colors.deepOrange),),)
+    ]);
+
+  }
+
 }
 
 

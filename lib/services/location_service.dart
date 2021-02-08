@@ -20,7 +20,11 @@ class LocationService {
             _locationController.add(UserLocation(
               longitude: locationData.longitude,
               latitude: locationData.latitude,
+
             ));
+
+            print(" Current location ${locationData.longitude}");
+
           }
         });
       }
