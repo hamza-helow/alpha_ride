@@ -2,6 +2,7 @@
     package="com.app.alpha_ride">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
    <application
         android:label="alpha_ride"
         android:icon="@mipmap/ic_launcher">
@@ -41,6 +42,6 @@
             android:value="2" />
 
        <meta-data android:name="com.google.android.geo.API_KEY"
-           android:value="AIzaSyABd5FPEAh07f_9ZQFwgRtBzbFYIenUFDc"/>
+           android:value="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A"/>
     </application>
 </manifest>

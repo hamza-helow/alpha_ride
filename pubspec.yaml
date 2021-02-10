@@ -33,7 +33,7 @@ dependencies:
   font_awesome_flutter: ^8.11.0
   shared_preferences: ^0.5.12
   google_maps_flutter: ^0.5.28+1
-  location: ^3.0.2
+  location: ^3.2.4
   provider: ^4.1.3
   intl_phone_field: ^1.3.0
   sms_autofill: ^1.3.0
@@ -42,14 +42,16 @@ dependencies:
   cloud_firestore: ^0.16.0
   firebase_auth: ^0.20.0+1
   firebase_core :
+  flutter_compass: ^0.4.2+1
+  geolocator: ^6.2.0
+  flutter_google_places: ^0.2.6
+  geocoder: ^0.2.1
+  geocoding: ^1.0.5
+
 
 
 dependency_overrides:
   intl: ^0.17.0-nullsafety.2
-
-
-
-
 
 
 dev_dependencies:
@@ -77,6 +79,7 @@ flutter:
    - Assets/gmail.png
    - Assets/facebook.png
    - Assets/spalsh.jpg
+   - Assets/car.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -1,10 +1,16 @@
 import 'dart:async';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+
+import '../Login.dart';
 
 class HomeDriver extends StatefulWidget {
   HomeDriver({Key key, this.title}) : super(key: key);
@@ -16,7 +22,22 @@ class HomeDriver extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<HomeDriver> {
+
   _MyHomePageState();
+
+
+
+  final int zoomIn = 0  , zoomOut = 1;
+
+  var currentZoomLevel;
+  var _controller ;
+
+  Position position ;
+
+  Completer<GoogleMapController> _completer = Completer();
+
+
+
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -30,15 +51,42 @@ class _MyHomePageState extends State<HomeDriver> {
   LatLng _lastMapPosition ;
   void _onCameraMove(CameraPosition position) {
     _lastMapPosition = position.target;
-
-    print(_lastMapPosition);
   }
 
+  double _direction;
+  BitmapDescriptor carIcon;
+  Set<Marker> markers = Set();
+
+  @override
+  void initState() {
+    super.initState();
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(platform: TargetPlatform.android), "Assets/car.png")
+        .then((onValue) {
+      carIcon = onValue;
+    });
+    FlutterCompass.events.listen((double direction) {
+      setState(() {
+        _direction = direction;
+      });
+    });
+  }
+
+  UserLocation userLocation ;
   @override
   Widget build(BuildContext context) {
+    userLocation = Provider.of<UserLocation>(context);
 
 
-    var userLocation = Provider.of<UserLocation>(context);
+    if(userLocation != null)
+    markers.addAll([
+      Marker(
+          markerId: MarkerId('value'),
+          position: LatLng(position.latitude, position.longitude),
+          icon: carIcon,
+          rotation: _direction),
+    ]);
+
 
     var cameraPosition = userLocation != null
         ? CameraPosition(
@@ -57,7 +105,9 @@ class _MyHomePageState extends State<HomeDriver> {
         children: [
 
           GoogleMap(
-            initialCameraPosition: _kGooglePlex,
+            onMapCreated: onMapCreated,
+             markers: markers,
+            initialCameraPosition: cameraPosition??_kGooglePlex,
             compassEnabled: false,
             myLocationEnabled: true,
             zoomControlsEnabled: false,
@@ -73,24 +123,37 @@ class _MyHomePageState extends State<HomeDriver> {
           DriverBottomSheet(),
 
 
-          Positioned(
-            left: 0,
-            top: (MediaQuery.of(context).size.height/2)-50,
-            right: 0,
-            child: Column(
-              children: <Widget>[
-
-                Icon(Icons.location_on_sharp , size: 50, color: Colors.deepOrange,)
-              ],
-            ),
-          ),
-
           buildAppBar(),
+
+          buttonsZoom(currentZoomLevel , _controller , userLocation  ),
+          buttonCurrentLocation( )
 
         ],
 
       ),
 
+    );
+  }
+
+
+  Positioned buttonCurrentLocation( ) {
+    return Positioned(
+      top: 220,
+      left: 10,
+      child: Card(
+        elevation: 2,
+        child: Container(
+          color: Color(0xFFFAFAFA),
+          width: 40,
+          height: 40,
+          child:  IconButton(
+              icon: Icon(Icons.gps_fixed),
+              onPressed: () {
+                animateTo( _completer,userLocation.latitude , userLocation.longitude);
+
+              }),
+        ),
+      ),
     );
   }
 
@@ -241,6 +304,11 @@ class _MyHomePageState extends State<HomeDriver> {
             Divider(),
 
             ListTile(
+              onTap: () {
+
+                auth.signOut();
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Login(),));
+              },
               leading: Icon(Icons.logout),
               title: Text("Log out" ,),
             ),
@@ -249,6 +317,33 @@ class _MyHomePageState extends State<HomeDriver> {
         ),
       ),
     );
+  }
+
+
+  onMapCreated( controller) {
+
+    _completer.complete(controller);
+
+    _controller  = controller ;
+
+    var options = LocationOptions(accuracy: LocationAccuracy.low, distanceFilter: 10);
+
+    Geolocator.getPositionStream(desiredAccuracy: options.accuracy  , distanceFilter: options.distanceFilter).listen((position) {
+      var speedInMps = position.speed; // this is your speed
+
+      this.setState(() {
+        this.position = position;
+      });
+
+      print(position);
+
+      animateTo(_completer, position.latitude, position.longitude);
+    });
+
+
+
+
+
   }
 
 }

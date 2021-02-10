@@ -1,10 +1,12 @@
 
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesHelper {
 
   static const  String _Full_Name_Key = "FullName";
   static const  String _Email_Key = "Email";
+  static const  String _TypeAccount = "TypeAccount";
 
   SharedPreferences prefs ;
 
@@ -22,6 +24,24 @@ class SharedPreferencesHelper {
   void initSharedPreferences()async{
 
      prefs = await SharedPreferences.getInstance();
+
+  }
+
+
+  void  setSetTypeAccount(TypeAccount typeAccount) async {
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_TypeAccount, typeAccount.toString());
+  }
+
+  Future<TypeAccount > getTypeAccount() async{
+    prefs = await SharedPreferences.getInstance();
+
+    return  await () async{
+      if(prefs.get(_TypeAccount) == TypeAccount.customer.toString())
+        return TypeAccount.customer;
+      else
+        return TypeAccount.driver;
+    }();
 
   }
 

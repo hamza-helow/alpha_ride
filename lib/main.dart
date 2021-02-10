@@ -1,6 +1,9 @@
 import 'dart:io';
 
+import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
+import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/UI/widgets/SplashScreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +15,7 @@ import 'Helper/AppLocalizations.dart';
 import 'Models/user_location.dart';
 import 'UI/Login.dart';
 import 'services/location_service.dart';
+
 
 void main() async{
 
@@ -48,16 +52,37 @@ void main() async{
   @override
   void initState() {
 
+
+
     sleep(const Duration(seconds:2));
 
     this.setState(() {
 
       if(auth.currentUser != null)
-        mainScreen = Home();
+        SharedPreferencesHelper().getTypeAccount().then((typeAccount)  {
+
+          print("TTTTTT${typeAccount}");
+
+          this.setState(() {
+            if(typeAccount == TypeAccount.customer)
+              mainScreen = Home();
+            else
+              mainScreen = HomeDriver();
+          });
+
+        });
+
       else
       mainScreen = Login();
+
     });
+
+
   }
+
+
+
+
 
   @override
    Widget build(BuildContext context) {

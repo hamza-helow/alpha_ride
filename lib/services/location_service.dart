@@ -13,8 +13,27 @@ class LocationService {
       StreamController<UserLocation>.broadcast();
 
   LocationService() {
+
+
+
+    location.changeSettings(accuracy: LocationAccuracy.powerSave , distanceFilter: 10 );
+
+
     location.requestPermission().then((granted) {
       if (granted == PermissionStatus.granted) {
+
+        // location.getLocation().then((locationData) => {
+        //   print(" Current location ${locationData.longitude}"),
+        //
+        //   _locationController.add(UserLocation(
+        // longitude: locationData.longitude,
+        // latitude: locationData.latitude,
+        //
+        // ))
+        //
+        // });
+
+
         location.onLocationChanged.listen((locationData) {
           if (locationData != null) {
             _locationController.add(UserLocation(

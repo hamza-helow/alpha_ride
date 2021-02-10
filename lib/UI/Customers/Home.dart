@@ -5,12 +5,19 @@ import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart';
 import 'package:alpha_ride/UI/Login.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
+// key password : hh0788051422**@@
 
 class Home extends StatefulWidget {
   @override
@@ -24,7 +31,10 @@ class _HomeState extends State<Home> {
   var currentZoomLevel;
   var _controller ;
 
-  Location  location ;
+  String kGoogleApiKey = "AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
+
+  GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: "AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A");
+
   LocationData currentLocation ;
 
   UserLocation userLocation ;
@@ -43,6 +53,8 @@ class _HomeState extends State<Home> {
 
   void _onCameraMove(CameraPosition position) {
     _lastMapPosition = position.target;
+
+
   }
 
   String _fullName ="" , _email ="" ;
@@ -101,8 +113,8 @@ class _HomeState extends State<Home> {
           GoogleMap(
             initialCameraPosition: cameraPosition??defaultPosition,
             compassEnabled: false,
-            myLocationEnabled: true,
-            zoomControlsEnabled: true,
+            myLocationEnabled: false,
+            zoomControlsEnabled: false,
             buildingsEnabled: true,
             myLocationButtonEnabled: true,
             minMaxZoomPreference: MinMaxZoomPreference(12, 20),
@@ -133,7 +145,7 @@ class _HomeState extends State<Home> {
 
   Positioned buttonsZoom() {
     return Positioned(
-      top: 120,
+      top: 90,
       left: 10,
       child: Card(
         elevation: 2,
@@ -163,7 +175,7 @@ class _HomeState extends State<Home> {
 
   Positioned buttonCurrentLocation() {
     return Positioned(
-          top: 220,
+          top: 200,
           left: 10,
           child: Card(
             elevation: 2,
@@ -230,7 +242,6 @@ class _HomeState extends State<Home> {
         );
   }
 
-
   Positioned buildAppBar() {
     return Positioned(
       top: 27,
@@ -241,8 +252,8 @@ class _HomeState extends State<Home> {
         child: Container(
           margin: EdgeInsets.only(top: 30),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
 
               SizedBox(width: 15,),
@@ -274,48 +285,101 @@ class _HomeState extends State<Home> {
 
                     width: MediaQuery.of(context).size.width - 100,
 
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Expanded(
-                          child: Container(
-                            height: 60.5,
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.all(14),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'Where to?',
-                                  style: TextStyle(
-                                    fontSize: 22,
+                    child:Column(
+
+                      children: [
+
+                        GestureDetector(
+
+                          onTap: () async {
+                            // show input autocomplete with selected mode
+                            // then get the Prediction selected
+                            Prediction p = await PlacesAutocomplete.show(
+                                context: context, apiKey: kGoogleApiKey,
+                                logo: Text("")
+
+
+                            );
+                            displayPrediction(p);
+                          },
+
+                          child:  Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Expanded(
+                                child: Container(
+                                  height: 60.5,
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Where to?',
+                                        style: TextStyle(
+                                          fontSize: 22,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                              Expanded(
+                                child: Container(
+                                  height: 60.5,
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 14.0),
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Chip(
+                                        avatar: Icon(
+                                          Icons.watch_later,
+                                          color: Colors.deepOrange,
+                                          size: 21,
+                                        ),
+                                        backgroundColor: Colors.grey[200],
+                                        label: TimeSelectorWidget(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
                           ),
                         ),
-                        Expanded(
-                          child: Container(
-                            height: 60.5,
+
+                        if(_currentAddress.isNotEmpty)
+                          Container(
                             color: Colors.white,
-                            child: Padding(
-                              padding: EdgeInsets.only(right: 14.0),
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Chip(
-                                  avatar: Icon(
-                                    Icons.watch_later,
-                                    color: Colors.deepOrange,
-                                    size: 21,
-                                  ),
-                                  backgroundColor: Colors.grey[200],
-                                  label: TimeSelectorWidget(),
-                                ),
-                              ),
+
+                            child: ListTile(
+
+                              title: Text("$_currentAddress"),
+                              leading: Icon(Icons.location_pin),
                             ),
-                          ),
-                        )
+                          ) ,
+
+                        if(addressTo.isNotEmpty)
+                          Container(
+                            color: Colors.white,
+
+                            child: ListTile(
+
+                              trailing: GestureDetector(
+                                onTap: () {
+                                  this.setState(() {
+                                    addressTo ="";
+                                  });
+
+                                },
+                                child: Icon(Icons.clear),
+                              ),
+                              title: Text("$addressTo"),
+                              leading: Icon(Icons.location_searching_rounded),
+                            ),
+                          )
+
                       ],
                     )
                 ),
@@ -450,12 +514,34 @@ class _HomeState extends State<Home> {
   }
 
 
+   String addressTo ="";
   // When map ready
   onMapCreated( controller) {
+
+
 
     _completer.complete(controller);
 
     _controller  = controller ;
+
+
+    Geolocator.getCurrentPosition().then((value) => {
+
+      this.setState(() {
+
+        userLocation = UserLocation(latitude: value.latitude , longitude: value.longitude);
+
+        _getAddressFromLatLng(userLocation.latitude ,userLocation.longitude).then((address) => {
+
+          this.setState(() {
+            _currentAddress = address;
+          })
+        });
+
+      })
+
+
+    });
 
   }
 
@@ -481,6 +567,58 @@ class _HomeState extends State<Home> {
       ),
     );
 
+  }
+
+
+  Future<Null> displayPrediction(Prediction  p) async {
+    if (p != null) {
+      PlacesDetailsResponse detail =
+      await _places.getDetailsByPlaceId(p.placeId);
+
+      var placeId = p.placeId;
+      double lat = detail.result.geometry.location.lat;
+      double lng = detail.result.geometry.location.lng;
+
+      _getAddressFromLatLng(lat, lng).then((value) => {
+        this.setState(() {
+      addressTo = value;
+        })
+      });
+
+   //   var address = await Geocoder.local.findAddressesFromQuery(p.description);
+
+
+    }
+  }
+
+  String _currentAddress ="" ;
+
+  Future<String> _getAddressFromLatLng(double lat , double lng) async {
+
+    String address ="";
+
+    try {
+
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+
+      Placemark place = placemarks[0];
+
+      address =  "${place.locality}, ${place.name}, ${place.country}";
+
+      // setState(() {
+      //   _currentAddress =
+      //   "${place.locality}, ${place.name}, ${place.country}";
+      //
+      //   print("ADDRESS $_currentAddress");
+      //
+      // });
+
+
+    } catch (e) {
+      print("EEEEE $e");
+    }
+
+    return address;
   }
 
 }

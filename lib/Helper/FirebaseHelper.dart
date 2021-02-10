@@ -1,5 +1,6 @@
 
 
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -23,7 +24,7 @@ class FirebaseHelper {
 
       'fullName' : user.fullName ,
       'email': user.email ,
-      'typeUser' : user.typeUser ,
+      'typeUser' : user.typeAccount.toString() ,
        'countRating'  : 1 ,
        'rating' :0.0  ,
        'countTrips' : 0
@@ -49,9 +50,11 @@ class FirebaseHelper {
 
    return _fireStore.collection("Users").doc(idUser).get().then((value) async {
 
+     print("${value.data()['typeUser']} TTTYYY");
+
       User user = User(
-        idUser: "" ,
-        typeUser: "",
+        idUser: value.id ,
+        typeAccount: value.data()['typeUser'] == TypeAccount.customer.toString() ? TypeAccount.customer : TypeAccount.driver,
         fullName: value.data()['fullName'] ,
         email: value.data()['email']
       ) ;

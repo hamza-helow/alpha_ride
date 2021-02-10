@@ -1,10 +1,12 @@
 
 import 'dart:convert';
 
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/UI/Customers/CompleteCreateAccount.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
+import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -175,6 +177,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
   PinFieldAutoFill buildPinFieldAutoFill() {
     return  PinFieldAutoFill(
 
+
                 autofocus: true,
                 onCodeChanged: (txt)  {
 
@@ -195,9 +198,14 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       inProgress = true ;
     });
 
-
     AuthCredential phoneAuthCredential =
-    PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
+        PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
+
+
+    if(phoneAuthCredential == null)
+      return;
+
+
 
     firebaseAuth.signInWithCredential(phoneAuthCredential).then((c) => {
 
@@ -206,27 +214,36 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
         if(value){
 
-          FirebaseHelper().loadUserInfo(c.user.uid).then((value) => {
+          FirebaseHelper().loadUserInfo(c.user.uid).then((user) => {
 
-            SharedPreferencesHelper().setFullName(value.fullName),
-            SharedPreferencesHelper().setEmail(value.email),
+            SharedPreferencesHelper().setFullName(user.fullName),
+            SharedPreferencesHelper().setEmail(user.email),
+            SharedPreferencesHelper().setSetTypeAccount(user.typeAccount),
 
+            Navigator.push(context, MaterialPageRoute
+              (builder: (context) => user.typeAccount == TypeAccount.customer ? Home()  : HomeDriver() ,)),
           })
 
-        },
+        }
+        else
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CompleteCreateAccount(c))),
+
+
+      }),
+
+      this.setState(() {
+        inProgress = false ;
+      }),
 
 
 
-        Navigator.push(context, MaterialPageRoute
-          (builder: (context) =>  value ? Home() :CompleteCreateAccount(c),)),
-
-        this.setState(() {
-          inProgress = false ;
-        }),
-      })
 
 
+    }).catchError((err){
 
+      this.setState(() {
+        inProgress = false ;
+      });
 
     });
 

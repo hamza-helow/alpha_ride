@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/User.dart';
@@ -167,20 +168,16 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
     });
     
-    
-
-    
-
-
 
     SharedPreferencesHelper().setEmail(email.text);
     SharedPreferencesHelper().setFullName(fullName.text);
+    SharedPreferencesHelper().setSetTypeAccount(TypeAccount.customer);
 
     FirebaseHelper().insertInformationUser(model.User(
 
       email: email.text ,
       fullName: fullName.text,
-      typeUser: "customer",
+      typeAccount: TypeAccount.customer,
       idUser: widget.credential.user.uid
 
     )).then((value) => {

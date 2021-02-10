@@ -1,7 +1,11 @@
 
+import 'package:alpha_ride/Enum/TypeAccount.dart';
+
 class User {
 
-  String fullName , email , idUser , typeUser;
+  String fullName , email , idUser ;
 
-  User({this.fullName, this.email, this.idUser, this.typeUser});
+  TypeAccount typeAccount ;
+
+  User({this.fullName, this.email, this.idUser, this.typeAccount});
 }
