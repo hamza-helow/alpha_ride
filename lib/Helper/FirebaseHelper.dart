@@ -1,6 +1,7 @@
 
 
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -43,6 +44,31 @@ class FirebaseHelper {
     });
 
   }
+
+  Future<bool> checkLocationExit(String idUser){
+
+    return _fireStore.collection(FirebaseConstant().locations).doc(idUser).get().then((value) async{
+      return  value.exists ;
+    });
+
+  }
+
+
+  Future<void> updateLocationUser(String idUser ,Map<String,dynamic> fields ) async{
+
+   await _fireStore
+        .collection(FirebaseConstant().locations)
+        .doc(idUser).update(fields);
+  }
+
+
+  Future<void> insertLocationUser(String idUser ,Map<String,dynamic> fields ) async{
+
+    await _fireStore
+        .collection(FirebaseConstant().locations)
+        .doc(idUser).set(fields);
+  }
+
 
 
   Future<User> loadUserInfo(String idUser){

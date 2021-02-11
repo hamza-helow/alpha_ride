@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -25,7 +29,15 @@ class _MyHomePageState extends State<HomeDriver> {
 
   _MyHomePageState();
 
+  double _direction;
+  BitmapDescriptor carIcon;
+  Set<Marker> markers = Set();
 
+  UserLocation userLocation ;
+
+  final geo = Geoflutterfire();
+  GeoFirePoint geoMyLocation ;
+  final _firestore = FirebaseFirestore.instance;
 
   final int zoomIn = 0  , zoomOut = 1;
 
@@ -35,9 +47,6 @@ class _MyHomePageState extends State<HomeDriver> {
   Position position ;
 
   Completer<GoogleMapController> _completer = Completer();
-
-
-
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -53,9 +62,6 @@ class _MyHomePageState extends State<HomeDriver> {
     _lastMapPosition = position.target;
   }
 
-  double _direction;
-  BitmapDescriptor carIcon;
-  Set<Marker> markers = Set();
 
   @override
   void initState() {
@@ -72,7 +78,6 @@ class _MyHomePageState extends State<HomeDriver> {
     });
   }
 
-  UserLocation userLocation ;
   @override
   Widget build(BuildContext context) {
     userLocation = Provider.of<UserLocation>(context);
@@ -320,7 +325,9 @@ class _MyHomePageState extends State<HomeDriver> {
   }
 
 
+
   onMapCreated( controller) {
+
 
     _completer.complete(controller);
 
@@ -329,19 +336,32 @@ class _MyHomePageState extends State<HomeDriver> {
     var options = LocationOptions(accuracy: LocationAccuracy.low, distanceFilter: 10);
 
     Geolocator.getPositionStream(desiredAccuracy: options.accuracy  , distanceFilter: options.distanceFilter).listen((position) {
-      var speedInMps = position.speed; // this is your speed
 
       this.setState(() {
         this.position = position;
       });
 
+      geoMyLocation = geo.point(latitude: position.latitude, longitude:position.longitude);
+
+
+      FirebaseHelper()
+          .checkLocationExit(auth.currentUser.uid)
+           .then((isExit) => {
+
+             if(isExit)
+               FirebaseHelper()
+                   .updateLocationUser(auth.currentUser.uid, { 'name': 'random name', 'position': geoMyLocation.data})
+              else
+                FirebaseHelper()
+                    .insertLocationUser(auth.currentUser.uid, { 'idUser':'${auth.currentUser.uid}','name': 'random name', 'position': geoMyLocation.data})
+
+            });
+
+
       print(position);
 
       animateTo(_completer, position.latitude, position.longitude);
     });
-
-
-
 
 
   }
@@ -516,50 +536,3 @@ class _PriceWidgetState extends State<PriceWidget> {
   }
 }
 
-class GoButton extends StatefulWidget {
-  final String title;
-  final Function() onPressed;
-
-  const GoButton({Key key, this.title, this.onPressed}) : super(key: key);
-
-  @override
-  _GoButtonState createState() => _GoButtonState();
-}
-
-class _GoButtonState extends State<GoButton> {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        Container(
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.blue, width: 10),
-              shape: BoxShape.circle),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white, width: 2),
-              shape: BoxShape.circle,
-            ),
-            child: RawMaterialButton(
-              onPressed: widget.onPressed,
-              splashColor: Colors.black,
-              fillColor: Colors.blue,
-              elevation: 15.0,
-              shape: CircleBorder(),
-              child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text(widget.title,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 28))),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

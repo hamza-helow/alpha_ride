@@ -1,16 +1,19 @@
 import 'dart:async';
 
+import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
-import 'package:alpha_ride/UI/Common/Settings.dart';
+import 'package:alpha_ride/UI/Common/Settings.dart' as w;
 import 'package:alpha_ride/UI/Login.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -132,9 +135,21 @@ class _HomeState extends State<Home> {
 
           pin(context),
 
+          if(!confirmPickup)
           startTrip(),
 
-          buildAppBar()
+          buildAppBar() ,
+
+         if(confirmPickup)
+         CustomerBottomSheet(
+           callBack: (){
+
+             this.setState(() {
+               confirmPickup = false ;
+             });
+
+           },
+         )
 
         ],
 
@@ -210,34 +225,58 @@ class _HomeState extends State<Home> {
         );
   }
 
+
+  final geo = Geoflutterfire();
+  final _firestore = FirebaseFirestore.instance;
+
+
+
+  bool confirmPickup = false ;
   Positioned startTrip() {
     return Positioned(
           left: 35,
           bottom: 20,
           right: 35,
-          child:  Container(
-
+          child:  MaterialButton(
+            height: 60.0,
             color: Colors.deepOrange,
-            height: 60,
 
-            width: 40,
-
-            child: MaterialButton(
-              onPressed: () => {},
-
-              child:Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-
-
-                  Text("GO" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0),),
-                  Icon(Icons.arrow_right_alt ,color: Colors.white,size: 50,),
-                  Icon(Icons.location_on_sharp ,color: Colors.white,size: 25,),
-                ],
-              ),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25.0),
+                side: BorderSide(color: Colors.red)
             ),
+            onPressed: ()  {
+              // // Create a geoFirePoint
+              // GeoFirePoint center = geo.point(latitude: userLocation.latitude, longitude: userLocation.longitude);
+              //
+              //  // get the collection reference or query
+              //   var collectionReference =
+              //   _firestore.collection('locations').where(FirebaseConstant().available , isEqualTo: true);
+              //
+              // double radius = 100;
+              // String field = 'position';
+              //
+              // Stream<List<DocumentSnapshot>> stream = geo.collection(collectionRef: collectionReference)
+              // .within(center: center, radius: radius, field: field);
+              //
+              //        stream.listen((event) {
+              //
+              //
+              //          event.forEach((element) {
+              //
+              //            print(element.data());
+              //
+              //          });
+              //
+              //     });
 
+              this.setState(() {
+                confirmPickup = true;
+              });
+
+            },
+
+            child: Text("Confirm pickup" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0),),
           ),
         );
   }
@@ -482,7 +521,7 @@ class _HomeState extends State<Home> {
             ListTile(
               onTap: () {
 
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Settings(),));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => w.Settings(),));
 
 
               },

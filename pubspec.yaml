@@ -39,8 +39,10 @@ dependencies:
   sms_autofill: ^1.3.0
   intl: ^0.16.1
 
-  cloud_firestore: ^0.16.0
-  firebase_auth: ^0.20.0+1
+
+  geoflutterfire: ^2.2.1
+  cloud_firestore:
+  firebase_auth:
   firebase_core :
   flutter_compass: ^0.4.2+1
   geolocator: ^6.2.0
@@ -80,6 +82,7 @@ flutter:
    - Assets/facebook.png
    - Assets/spalsh.jpg
    - Assets/car.png
+   - Assets/enconomy.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

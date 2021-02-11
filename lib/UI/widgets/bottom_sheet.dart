@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 
-class UberBottomSheet extends StatelessWidget {
-  const UberBottomSheet({
+class CustomerBottomSheet extends StatelessWidget {
+
+  final Function callBack;
+
+  const CustomerBottomSheet({
     Key key,
+    this.callBack,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       expand: true,
-        initialChildSize: 0.379,
+        initialChildSize: 0.37,
         minChildSize: 0.2,
-        maxChildSize: 0.379,
+        maxChildSize: 0.37,
         builder: (context, scrollController) {
           return NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (overscroll) {
@@ -25,11 +29,14 @@ class UberBottomSheet extends StatelessWidget {
                 color: Color(0xF2FFFFFF),
                 child: Column(
                   children: <Widget>[
+
                     Padding(
                       padding: const EdgeInsets.all(10.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
+
+
                           Center(
                             child: Container(
                               decoration: BoxDecoration(
@@ -45,19 +52,110 @@ class UberBottomSheet extends StatelessWidget {
                     ),
 
 
-                    MaterialButton(
-                      color: Colors.deepOrange,
-                      onPressed: () => {},
-                      child: Text("GO"),
+                    Padding(
+                      padding: EdgeInsets.all(10.0),
+
+                      child:  ListTile(
+
+                        leading: Image.asset("Assets/enconomy.png"),
+                        title: Text("Enconomy"),
+                        trailing: Text("1 min"),
+
+                      ),
+
                     ),
 
-                    _RecommendedTrip(
-                        postcode: 'irbid', addressLine1: 'Design District'),
                     Divider(),
-                    _RecommendedTrip(
-                        postcode: 'YF82 2LO', addressLine1: 'Flutter Avenue'),
 
-                    SizedBox(height: 20.0,)
+
+                    Padding(
+                      padding: EdgeInsets.all(10.0),
+
+                      child:  ListTile(
+
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.deepOrange,
+                          child: Text("%" , style: TextStyle(color: Colors.white),),
+                        ),
+                        title: Text("Discount"),
+                        trailing: Text("Add promo code"),
+
+                      ),
+
+                    ),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+
+
+                      children: [
+
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: 10 ,
+                            bottom: 10.0
+                          ),
+
+                          child: SizedBox(
+                            width: 100.0,
+
+                            child:  MaterialButton(
+                              color: Colors.deepOrange,
+
+                              shape: RoundedRectangleBorder(
+
+                                  borderRadius: BorderRadius.circular(25.0),
+                                  side: BorderSide(color: Colors.red)
+                              ),
+
+                              onPressed: () {
+
+                                callBack();
+                              },
+                              height: 60.0,
+                              child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
+
+                            ),
+                          ),
+
+                        ),
+
+                        Padding(
+                          padding: EdgeInsets.only(
+                              top: 10 ,
+                              bottom: 10.0 ,
+                            left: 7.0
+                          ),
+
+                          child: SizedBox(
+                            width: 250.0,
+
+                            child:  MaterialButton(
+                              color: Colors.deepOrange,
+
+                              shape: RoundedRectangleBorder(
+
+                                  borderRadius: BorderRadius.circular(25.0),
+                                  side: BorderSide(color: Colors.red)
+                              ),
+
+                              onPressed: () {},
+                              height: 60.0,
+                              child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
+
+                            ),
+                          ),
+
+                        ),
+
+
+                      ],
+
+                    ),
+
+
+                    SizedBox(height: 20.0, )
                   ],
                 ),
               ),
@@ -67,8 +165,8 @@ class UberBottomSheet extends StatelessWidget {
   }
 }
 
-class _WhereToWidget extends StatelessWidget {
-  const _WhereToWidget({
+class _ConfirmTrip extends StatelessWidget {
+  const _ConfirmTrip({
     Key key,
   }) : super(key: key);
 

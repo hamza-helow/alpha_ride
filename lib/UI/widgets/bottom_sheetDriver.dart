@@ -1,3 +1,6 @@
+import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/UI/Login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DriverBottomSheet extends StatelessWidget {
@@ -88,6 +91,8 @@ class StateDriver extends StatefulWidget {
 class _StateDriverState extends State<StateDriver> {
 
   bool isOnline = false ;
+  final _firestore = FirebaseFirestore.instance;
+
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +130,13 @@ class _StateDriverState extends State<StateDriver> {
                 width: 80.0,
                 child: Switch(value: isOnline,
                   onChanged: (value) {
+
+                  _firestore.collection(FirebaseConstant().locations)
+                      .doc(auth.currentUser.uid)
+                       .update({
+                        FirebaseConstant().available : value
+                        });
+
                     this.setState(() {
                       isOnline = value ;
                     });
