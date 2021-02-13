@@ -1,17 +1,61 @@
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/UI/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class DriverBottomSheet extends StatelessWidget {
-  const DriverBottomSheet({
-    Key key,
-  }) : super(key: key);
+
+class DriverBottomSheet extends StatefulWidget {
+  @override
+  _DriverBottomSheetState createState() => _DriverBottomSheetState();
+}
+
+class _DriverBottomSheetState extends State<DriverBottomSheet> {
+
+   bool exitTrip = false ;
+
+   final _firestore = FirebaseFirestore.instance;
+
+   Trip currentTrip ;
+
+   @override
+  void initState() {
+
+
+    _firestore
+         .collection(FirebaseConstant().driverRequests)
+         .snapshots().listen((event) {
+
+      print(event.docs.length);
+
+      if(event.docs.length> 0)
+        this.setState(() {
+
+          currentTrip = new Trip(
+            idCustomer: event.docs.first.get("idCustomer"),
+            phoneCustomer: event.docs.first.get("phoneCustomer"),
+            nameCustomer: event.docs.first.get("nameCustomer"),
+            lng: event.docs.first.get("lng"),
+             lat: event.docs.first.get("lat"),
+          );
+
+          exitTrip = true ;
+        });
+      else
+        this.setState(() {
+          exitTrip = false ;
+        });
+
+
+    });
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      expand: true,
+        expand: true,
         initialChildSize: 0.19,
         minChildSize: 0.19,
         maxChildSize: 0.27,
@@ -52,17 +96,66 @@ class DriverBottomSheet extends StatelessWidget {
 
                     Center(
 
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: (){
 
-                        children: [
-                          Icon(Icons.info_outline , size: 30, color: Colors.deepOrange,),
-                          SizedBox(width: 10,),
+                        if(!exitTrip)
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
 
-                          Text("There is no request"  , style: TextStyle(fontSize: 20.0),),
+                            children: [
+                              Icon(Icons.info_outline , size: 30, color: Colors.deepOrange,),
+                              SizedBox(width: 10,),
 
-                        ],
-                      ),
+                              Text("There is no request"  , style: TextStyle(fontSize: 20.0),),
+
+                            ],
+                          );
+                         else
+                           return Column(
+                             children: [
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.red,
+                                    child: Icon(Icons.clear ,color: Colors.white, ),
+                                  ),
+                                  SizedBox(width: 10.0,),
+                                  CircleAvatar(
+                                    child: Icon(Icons.done),
+                                  ),
+
+                                  SizedBox(
+                                    width: 200,
+
+                                    child: ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor: Colors.deepOrange,
+                                        child: Icon(Icons.person_outline_rounded , color: Colors.white,),
+                                      ),
+                                      title: Text(currentTrip.nameCustomer),
+                                      subtitle: Text(currentTrip.phoneCustomer),
+                                    ),
+                                  ) ,
+
+                                  CircleAvatar(
+                                    backgroundColor: Colors.deepOrange,
+                                    child: Icon(Icons.phone , color: Colors.white,),
+                                  ),
+
+                                ],
+                              )
+
+
+                             ],
+                           );
+
+
+
+                      } (),
                     ),
 
 
@@ -83,6 +176,8 @@ class DriverBottomSheet extends StatelessWidget {
 }
 
 
+
+
 class StateDriver extends StatefulWidget {
   @override
   _StateDriverState createState() => _StateDriverState();
@@ -92,7 +187,6 @@ class _StateDriverState extends State<StateDriver> {
 
   bool isOnline = false ;
   final _firestore = FirebaseFirestore.instance;
-
 
   @override
   Widget build(BuildContext context) {
@@ -108,12 +202,12 @@ class _StateDriverState extends State<StateDriver> {
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: Alignment.center,
                   child: Text(
                    isOnline ? "You're online"  : "You're offline",
                     style: TextStyle(
-                      color: isOnline ? Colors.green : Colors.grey.shade700,
-                      fontSize: 22,
+                      color: isOnline ? Colors.green.shade700 : Colors.grey.shade700,
+                      fontSize: 24,
                     ),
                   ),
                 ),
@@ -123,7 +217,7 @@ class _StateDriverState extends State<StateDriver> {
           Container(
             height: 60.5,
             width: 120,
-            color: Colors.grey[200],
+            color: Colors.deepOrange[80],
             child: Padding(
               padding: EdgeInsets.only(right: 14.0),
               child: SizedBox(
@@ -156,58 +250,3 @@ class _StateDriverState extends State<StateDriver> {
 
 
 
-class _RecommendedTrip extends StatelessWidget {
-  final String postcode;
-  final String addressLine1;
-  const _RecommendedTrip({
-    Key key,
-    String postcode,
-    String addressLine1,
-  })  : this.postcode = postcode,
-        this.addressLine1 = addressLine1,
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: ListTile(
-        leading: Material(
-          color: Colors.transparent,
-          child: Ink(
-            decoration: ShapeDecoration(
-              color: Colors.grey[200],
-              shape: CircleBorder(),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                Icons.location_on,
-                size: 15,
-                color: Colors.deepOrange,
-              ),
-            ),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              postcode,
-              style: TextStyle(fontWeight: FontWeight.w400),
-            ),
-            Text(
-              addressLine1,
-              style: TextStyle(fontSize: 14, color: Colors.deepOrange),
-            ),
-          ],
-        ),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          size: 17,
-          color: Colors.grey[400],
-        ),
-      ),
-    );
-  }
-}

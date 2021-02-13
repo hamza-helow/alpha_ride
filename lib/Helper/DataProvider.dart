@@ -1,4 +1,6 @@
 
+import 'package:alpha_ride/Models/user_location.dart';
+
 class DataProvider{
 
   DataProvider prefs ;
@@ -10,6 +12,9 @@ class DataProvider{
   factory DataProvider() {
     return _instance;
   }
+
+
+  UserLocation userLocation;
 
 
    String currentLanguage = "en" ;

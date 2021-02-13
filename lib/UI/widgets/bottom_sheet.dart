@@ -1,18 +1,40 @@
+import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/UI/Login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 
-class CustomerBottomSheet extends StatelessWidget {
 
+class CustomerBottomSheet extends StatefulWidget {
   final Function callBack;
 
-  const CustomerBottomSheet({
-    Key key,
-    this.callBack,
-  }) : super(key: key);
+  CustomerBottomSheet({this.callBack});
+
+  @override
+  _CustomerBottomSheetState createState() => _CustomerBottomSheetState();
+}
+
+class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
+
+  List<String > rejected ;
+
+  final geo = Geoflutterfire();
+  final _firestore = FirebaseFirestore.instance;
+
+  bool findDriver = false;
+
+  @override
+  void initState() {
+    rejected = List();
+   // rejected.add("NNIjAVmI4qaio7ila09rBXVDtTb2");
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      expand: true,
+        expand: true,
         initialChildSize: 0.37,
         minChildSize: 0.2,
         maxChildSize: 0.37,
@@ -28,6 +50,8 @@ class CustomerBottomSheet extends StatelessWidget {
               child: Container(
                 color: Color(0xF2FFFFFF),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
 
                     Padding(
@@ -51,109 +75,63 @@ class CustomerBottomSheet extends StatelessWidget {
                       ),
                     ),
 
+                    if(!findDriver)
+                    confirmationTripWidget(),
 
-                    Padding(
-                      padding: EdgeInsets.all(10.0),
+                    if(findDriver)
+                      SizedBox(
+                        height: 230,
+                        child: Center(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("Finding driver.." , style: TextStyle(fontSize: 20.0),) ,
+                              SizedBox(height: 15.0,),
+                              CircularProgressIndicator() ,
 
-                      child:  ListTile(
+                              SizedBox(height: 15.0,),
 
-                        leading: Image.asset("Assets/enconomy.png"),
-                        title: Text("Enconomy"),
-                        trailing: Text("1 min"),
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: 10 ,
+                                    bottom: 10.0
+                                ),
 
-                      ),
+                                child: SizedBox(
+                                  width: 100.0,
 
-                    ),
+                                  child:  MaterialButton(
+                                    color: Colors.deepOrange,
 
-                    Divider(),
+                                    shape: RoundedRectangleBorder(
 
+                                        borderRadius: BorderRadius.circular(25.0),
+                                        side: BorderSide(color: Colors.red)
+                                    ),
 
-                    Padding(
-                      padding: EdgeInsets.all(10.0),
+                                    onPressed: () {
 
-                      child:  ListTile(
+                                      this.setState(() {
+                                        findDriver = false ;
+                                        if(idDriver.isNotEmpty)
+                                        _firestore
+                                            .collection(FirebaseConstant().driverRequests)
+                                             .doc(idDriver)
+                                             .delete();
+                                      });
+                                    },
+                                    height: 60.0,
+                                    child: Icon(Icons.clear ,color: Colors.white,),
 
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.deepOrange,
-                          child: Text("%" , style: TextStyle(color: Colors.white),),
-                        ),
-                        title: Text("Discount"),
-                        trailing: Text("Add promo code"),
+                                  ),
+                                ),
 
-                      ),
-
-                    ),
-
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-
-
-                      children: [
-
-                        Padding(
-                          padding: EdgeInsets.only(
-                            top: 10 ,
-                            bottom: 10.0
-                          ),
-
-                          child: SizedBox(
-                            width: 100.0,
-
-                            child:  MaterialButton(
-                              color: Colors.deepOrange,
-
-                              shape: RoundedRectangleBorder(
-
-                                  borderRadius: BorderRadius.circular(25.0),
-                                  side: BorderSide(color: Colors.red)
                               ),
-
-                              onPressed: () {
-
-                                callBack();
-                              },
-                              height: 60.0,
-                              child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
-
-                            ),
+                            ],
                           ),
-
                         ),
-
-                        Padding(
-                          padding: EdgeInsets.only(
-                              top: 10 ,
-                              bottom: 10.0 ,
-                            left: 7.0
-                          ),
-
-                          child: SizedBox(
-                            width: 250.0,
-
-                            child:  MaterialButton(
-                              color: Colors.deepOrange,
-
-                              shape: RoundedRectangleBorder(
-
-                                  borderRadius: BorderRadius.circular(25.0),
-                                  side: BorderSide(color: Colors.red)
-                              ),
-
-                              onPressed: () {},
-                              height: 60.0,
-                              child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
-
-                            ),
-                          ),
-
-                        ),
-
-
-                      ],
-
-                    ),
-
+                      ),
 
                     SizedBox(height: 20.0, )
                   ],
@@ -163,7 +141,197 @@ class CustomerBottomSheet extends StatelessWidget {
           );
         });
   }
+
+
+  Widget confirmationTripWidget(){
+
+    return Column(
+
+      children: [
+        Padding(
+          padding: EdgeInsets.all(10.0),
+
+          child:  ListTile(
+
+            leading: Image.asset("Assets/enconomy.png"),
+            title: Text("Enconomy"),
+            trailing: Text("1 min"),
+
+          ),
+
+        ),
+
+        Divider(),
+
+
+        Padding(
+          padding: EdgeInsets.all(10.0),
+
+          child:  ListTile(
+
+            leading: CircleAvatar(
+              backgroundColor: Colors.deepOrange,
+              child: Text("%" , style: TextStyle(color: Colors.white),),
+            ),
+            title: Text("Discount"),
+            trailing: Text("Add promo code"),
+
+          ),
+
+        ),
+
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+
+
+          children: [
+
+            Padding(
+              padding: EdgeInsets.only(
+                  top: 10 ,
+                  bottom: 10.0
+              ),
+
+              child: SizedBox(
+                width: 100.0,
+
+                child:  MaterialButton(
+                  color: Colors.deepOrange,
+
+                  shape: RoundedRectangleBorder(
+
+                      borderRadius: BorderRadius.circular(25.0),
+                      side: BorderSide(color: Colors.red)
+                  ),
+
+                  onPressed: () {
+
+                    widget.callBack();
+                  },
+                  height: 60.0,
+                  child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
+
+                ),
+              ),
+
+            ),
+
+            Padding(
+              padding: EdgeInsets.only(
+                  top: 10 ,
+                  bottom: 10.0 ,
+                  left: 7.0
+              ),
+
+              child: SizedBox(
+                width: 250.0,
+
+                child:  MaterialButton(
+                  color: Colors.deepOrange,
+
+                  shape: RoundedRectangleBorder(
+
+                      borderRadius: BorderRadius.circular(25.0),
+                      side: BorderSide(color: Colors.red)
+                  ),
+
+                  onPressed: () {
+
+                    getDriver();
+
+                  },
+                  height: 60.0,
+                  child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
+
+                ),
+              ),
+
+            ),
+
+
+          ],
+
+        ),
+
+      ],
+    );
+
+  }
+
+
+  String idDriver ="";
+  double radius = 1;
+
+
+
+  void getDriver() {
+
+    this.setState(() {
+      findDriver =true;
+    });
+
+    // Create a geoFirePoint
+    GeoFirePoint center = geo.point(latitude: DataProvider().userLocation.latitude, longitude: DataProvider().userLocation.longitude);
+
+     // get the collection reference or query
+      var collectionReference =
+      _firestore.collection('locations')
+          .where(FirebaseConstant().available , isEqualTo: true)
+          .orderBy("idUser" ,descending: false)
+          .where(FirebaseConstant().available , isNotEqualTo: "0");
+
+
+    String field = 'position';
+
+    Stream<List<DocumentSnapshot>> stream = geo.collection(collectionRef: collectionReference)
+    .within(center: center, radius: radius, field: field);
+
+           stream.listen((event) {
+
+              if(findDriver)
+             if(event.isEmpty)
+              {
+                print("$radius");
+                radius ++ ;
+                getDriver() ;
+
+              }
+             else{
+
+            //   event.where((element) => element.)
+
+               sendRequestToDriver(event[0].data());
+             }
+
+
+        });
+
+
+  }
+
+
+  void sendRequestToDriver(Map<String, dynamic> dataDriver){
+
+    idDriver  = dataDriver['idUser'] ;
+
+    if(findDriver)
+    _firestore
+        .collection(FirebaseConstant().driverRequests)
+        .doc(dataDriver['idUser'])
+        .set({
+         'idCustomer' : auth.currentUser.uid,
+          'nameCustomer' : "hamza helow" ,
+          'phoneCustomer' : "0788051422" ,
+            'lat' : DataProvider().userLocation.latitude,
+           'lng' : DataProvider().userLocation.longitude
+         });
+
+
+  }
+
 }
+
 
 class _ConfirmTrip extends StatelessWidget {
   const _ConfirmTrip({

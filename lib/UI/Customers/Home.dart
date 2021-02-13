@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
@@ -246,30 +247,6 @@ class _HomeState extends State<Home> {
                 side: BorderSide(color: Colors.red)
             ),
             onPressed: ()  {
-              // // Create a geoFirePoint
-              // GeoFirePoint center = geo.point(latitude: userLocation.latitude, longitude: userLocation.longitude);
-              //
-              //  // get the collection reference or query
-              //   var collectionReference =
-              //   _firestore.collection('locations').where(FirebaseConstant().available , isEqualTo: true);
-              //
-              // double radius = 100;
-              // String field = 'position';
-              //
-              // Stream<List<DocumentSnapshot>> stream = geo.collection(collectionRef: collectionReference)
-              // .within(center: center, radius: radius, field: field);
-              //
-              //        stream.listen((event) {
-              //
-              //
-              //          event.forEach((element) {
-              //
-              //            print(element.data());
-              //
-              //          });
-              //
-              //     });
-
               this.setState(() {
                 confirmPickup = true;
               });
@@ -569,6 +546,8 @@ class _HomeState extends State<Home> {
       this.setState(() {
 
         userLocation = UserLocation(latitude: value.latitude , longitude: value.longitude);
+
+        DataProvider().userLocation = userLocation;
 
         _getAddressFromLatLng(userLocation.latitude ,userLocation.longitude).then((address) => {
 
