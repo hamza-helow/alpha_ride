@@ -180,79 +180,83 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
         ),
 
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
+       Padding(
+         padding: EdgeInsets.all(10.0),
+         
+         child:  Row(
+           crossAxisAlignment: CrossAxisAlignment.center,
+           mainAxisAlignment: MainAxisAlignment.center,
 
 
-          children: [
+           children: [
 
-            Padding(
-              padding: EdgeInsets.only(
-                  top: 10 ,
-                  bottom: 10.0
-              ),
+             Padding(
+               padding: EdgeInsets.only(
+                   top: 10 ,
+                   bottom: 10.0
+               ),
 
-              child: SizedBox(
-                width: 100.0,
+               child: SizedBox(
+                 width: MediaQuery.of(context).size.width * 0.20,
 
-                child:  MaterialButton(
-                  color: Colors.deepOrange,
+                 child:  MaterialButton(
+                   color: Colors.deepOrange,
 
-                  shape: RoundedRectangleBorder(
+                   shape: RoundedRectangleBorder(
 
-                      borderRadius: BorderRadius.circular(25.0),
-                      side: BorderSide(color: Colors.red)
-                  ),
+                       borderRadius: BorderRadius.circular(25.0),
+                       side: BorderSide(color: Colors.red)
+                   ),
 
-                  onPressed: () {
+                   onPressed: () {
 
-                    widget.callBack();
-                  },
-                  height: 60.0,
-                  child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
+                     widget.callBack();
+                   },
+                   height: 60.0,
+                   child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
 
-                ),
-              ),
+                 ),
+               ),
 
-            ),
+             ),
 
-            Padding(
-              padding: EdgeInsets.only(
-                  top: 10 ,
-                  bottom: 10.0 ,
-                  left: 7.0
-              ),
+             Padding(
+               padding: EdgeInsets.only(
+                   top: 10 ,
+                   bottom: 10.0 ,
+                   left: 7.0
+               ),
 
-              child: SizedBox(
-                width: 250.0,
+               child: SizedBox(
+                 width: MediaQuery.of(context).size.width * 0.60,
 
-                child:  MaterialButton(
-                  color: Colors.deepOrange,
+                 child:  MaterialButton(
+                   color: Colors.deepOrange,
 
-                  shape: RoundedRectangleBorder(
+                   shape: RoundedRectangleBorder(
 
-                      borderRadius: BorderRadius.circular(25.0),
-                      side: BorderSide(color: Colors.red)
-                  ),
+                       borderRadius: BorderRadius.circular(25.0),
+                       side: BorderSide(color: Colors.red)
+                   ),
 
-                  onPressed: () {
+                   onPressed: () {
 
-                    getDriver();
+                     getDriver();
 
-                  },
-                  height: 60.0,
-                  child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
+                   },
+                   height: 60.0,
+                   child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
 
-                ),
-              ),
+                 ),
+               ),
 
-            ),
+             ),
 
 
-          ],
+           ],
 
-        ),
+         ),
+       ),
 
       ],
     );
@@ -277,9 +281,9 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
      // get the collection reference or query
       var collectionReference =
       _firestore.collection('locations')
-          .where(FirebaseConstant().available , isEqualTo: true)
-          .orderBy("idUser" ,descending: false)
-          .where(FirebaseConstant().available , isNotEqualTo: "0");
+          .where(FirebaseConstant().available , isEqualTo: true);
+          //.orderBy("idUser" ,descending: false)
+          //.where(FirebaseConstant().available , isNotEqualTo: "0");
 
 
     String field = 'position';
@@ -301,6 +305,11 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
             //   event.where((element) => element.)
 
+              // List<DocumentSnapshot> currentDriver =   event.where((element) => !rejected.contains(element.data()['idUser']));
+
+               //print("${event[0].exists}  EXIT DRIVER");
+
+               if(event.isNotEmpty)
                sendRequestToDriver(event[0].data());
              }
 

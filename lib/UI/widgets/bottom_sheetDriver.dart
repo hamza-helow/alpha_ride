@@ -84,15 +84,13 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
                                 color: Colors.grey[300],
                               ),
                               height: 5,
-                              width: 40,
+                              width: 30,
                             ),
                           ),
                         ],
                       ),
                     ),
                     StateDriver(),
-
-                    SizedBox(height: 20.0,),
 
                     Center(
 

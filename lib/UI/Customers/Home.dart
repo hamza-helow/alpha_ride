@@ -117,10 +117,10 @@ class _HomeState extends State<Home> {
           GoogleMap(
             initialCameraPosition: cameraPosition??defaultPosition,
             compassEnabled: false,
-            myLocationEnabled: false,
+            myLocationEnabled: true,
             zoomControlsEnabled: false,
             buildingsEnabled: true,
-            myLocationButtonEnabled: true,
+            myLocationButtonEnabled: false,
             minMaxZoomPreference: MinMaxZoomPreference(12, 20),
             mapToolbarEnabled: false,
             rotateGesturesEnabled: true,

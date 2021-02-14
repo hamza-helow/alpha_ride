@@ -83,7 +83,7 @@ class _MyHomePageState extends State<HomeDriver> {
     userLocation = Provider.of<UserLocation>(context);
 
 
-    if(userLocation != null)
+    if(position != null)
     markers.addAll([
       Marker(
           markerId: MarkerId('value'),
