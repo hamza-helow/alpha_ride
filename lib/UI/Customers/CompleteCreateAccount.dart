@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
@@ -178,7 +179,8 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
       email: email.text ,
       fullName: fullName.text,
       typeAccount: TypeAccount.customer,
-      idUser: widget.credential.user.uid
+      idUser: widget.credential.user.uid ,
+      stateAccount: StateAccount.active
 
     )).then((value) => {
 

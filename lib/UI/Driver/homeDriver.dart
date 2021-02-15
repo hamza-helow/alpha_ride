@@ -328,6 +328,15 @@ class _MyHomePageState extends State<HomeDriver> {
 
   onMapCreated( controller) {
 
+    // if(position != null)
+    // markers.addAll([
+    //   Marker(
+    //       markerId: MarkerId('value'),
+    //       position: LatLng(position.latitude, position.longitude),
+    //       icon: carIcon,
+    //       rotation: _direction),
+    // ]);
+
 
     _completer.complete(controller);
 
@@ -342,6 +351,15 @@ class _MyHomePageState extends State<HomeDriver> {
       });
 
       geoMyLocation = geo.point(latitude: position.latitude, longitude:position.longitude);
+
+
+      markers.addAll([
+        Marker(
+            markerId: MarkerId('value'),
+            position: LatLng(position.latitude, position.longitude),
+            icon: carIcon,
+            rotation: _direction),
+      ]);
 
 
       FirebaseHelper()

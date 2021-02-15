@@ -2,11 +2,14 @@
 import 'dart:convert';
 
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/UI/Customers/CompleteCreateAccount.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
+import 'package:alpha_ride/UI/Login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -16,10 +19,11 @@ import 'autoFill_sms.dart';
 
 class PhoneVerification extends StatefulWidget {
 
-  String phoneNumber ;
+  String phoneNumber  ;
 
+  TypeAccount typeAccount ;
 
-  PhoneVerification(this.phoneNumber);
+  PhoneVerification(this.phoneNumber , {this.typeAccount = TypeAccount.customer});
 
   @override
   _PhoneVerificationState createState() => _PhoneVerificationState();
@@ -226,7 +230,15 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
         }
         else
-        Navigator.push(context, MaterialPageRoute(builder: (context) => CompleteCreateAccount(c))),
+       {
+
+         if(widget.typeAccount == TypeAccount.customer)
+           Navigator.push(context, MaterialPageRoute(builder: (context) => CompleteCreateAccount(c)))
+         else
+           requestNewAccountDriver(c.user.uid)
+
+
+       },
 
 
       }),
@@ -300,6 +312,31 @@ class _PhoneVerificationState extends State<PhoneVerification> {
     this.setState(() {
       smsCode = newSmsCode;
     });
+
+  }
+
+  requestNewAccountDriver(String idUser) {
+    auth.signOut() ;
+
+    FirebaseFirestore.instance
+        .collection("DriverRequestsAccount")
+        .doc(idUser)
+        .set({
+
+      'yourPhoto' : DataProvider().driverRequest.yourPhoto ,
+      'drivingLicense' : DataProvider().driverRequest.drivingLicense ,
+      'driverLicense' :DataProvider().driverRequest. driverLicense ,
+      'frontCar' : DataProvider().driverRequest.frontCar ,
+      'endCar' : DataProvider().driverRequest.endCar ,
+      'insideCar' : DataProvider().driverRequest.insideCar ,
+      'fullName' : DataProvider().driverRequest.fullName ,
+      'typeCar' : DataProvider().driverRequest.typeCar ,
+      'modelCar' : DataProvider().driverRequest.modelCar ,
+      'colorCar' :DataProvider().driverRequest.colorCar ,
+      'phoneNumber' : '+962788051422' ,
+      'idUser' : idUser
+
+        });
 
   }
 

@@ -1,5 +1,10 @@
+import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
+import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/Models/Trip.dart';
+import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/UI/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -17,17 +22,24 @@ class CustomerBottomSheet extends StatefulWidget {
 
 class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
-  List<String > rejected ;
-
   final geo = Geoflutterfire();
   final _firestore = FirebaseFirestore.instance;
 
-  bool findDriver = false;
+  String idDriver ="";
+  double radius = 1;
+
+  List<String > rejected ;
+
+  bool findDriver = false , tripActive = false;
+
+  Trip currentTrip ;
 
   @override
   void initState() {
     rejected = List();
-   // rejected.add("NNIjAVmI4qaio7ila09rBXVDtTb2");
+    listenCurrentTrip();
+
+
     super.initState();
   }
 
@@ -75,65 +87,15 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                       ),
                     ),
 
-                    // if(!findDriver)
-                    // confirmationTripWidget(),
 
+                     if(!findDriver && !tripActive )
+                     confirmationTripWidget(),
+
+                    if(tripActive)
                     driverInfo(),
 
                     if(findDriver)
-                      SizedBox(
-                        height: 230,
-                        child: Center(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("Finding driver.." , style: TextStyle(fontSize: 20.0),) ,
-                              SizedBox(height: 15.0,),
-                              CircularProgressIndicator() ,
-
-                              SizedBox(height: 15.0,),
-
-                              Padding(
-                                padding: EdgeInsets.only(
-                                    top: 10 ,
-                                    bottom: 10.0
-                                ),
-
-                                child: SizedBox(
-                                  width: 100.0,
-
-                                  child:  MaterialButton(
-                                    color: Colors.deepOrange,
-
-                                    shape: RoundedRectangleBorder(
-
-                                        borderRadius: BorderRadius.circular(25.0),
-                                        side: BorderSide(color: Colors.red)
-                                    ),
-
-                                    onPressed: () {
-
-                                      this.setState(() {
-                                        findDriver = false ;
-                                        if(idDriver.isNotEmpty)
-                                        _firestore
-                                            .collection(FirebaseConstant().driverRequests)
-                                             .doc(idDriver)
-                                             .delete();
-                                      });
-                                    },
-                                    height: 60.0,
-                                    child: Icon(Icons.clear ,color: Colors.white,),
-
-                                  ),
-                                ),
-
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      searchDriverWidget(),
 
                     SizedBox(height: 20.0, )
                   ],
@@ -144,11 +106,67 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
         });
   }
 
+  SizedBox searchDriverWidget() {
+    return SizedBox(
+                      height: 230,
+                      child: Center(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Finding driver.." , style: TextStyle(fontSize: 20.0),) ,
+                            SizedBox(height: 15.0,),
+                            CircularProgressIndicator() ,
+
+                            SizedBox(height: 15.0,),
+
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  top: 10 ,
+                                  bottom: 10.0
+                              ),
+
+                              child: SizedBox(
+                                width: 100.0,
+
+                                child:  MaterialButton(
+                                  color: Colors.deepOrange,
+
+                                  shape: RoundedRectangleBorder(
+
+                                      borderRadius: BorderRadius.circular(25.0),
+                                      side: BorderSide(color: Colors.red)
+                                  ),
+
+                                  onPressed: () {
+
+                                    this.setState(() {
+                                      findDriver = false ;
+                                      SharedPreferencesHelper().setDriverSelected("");
+
+                                      if(idDriver.isNotEmpty)
+                                      _firestore
+                                          .collection(FirebaseConstant().driverRequests)
+                                           .doc(idDriver)
+                                           .delete();
+                                    });
+                                  },
+                                  height: 60.0,
+                                  child: Icon(Icons.clear ,color: Colors.white,),
+
+                                ),
+                              ),
+
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+  }
 
   Widget confirmationTripWidget(){
 
     return Column(
-
       children: [
         Padding(
           padding: EdgeInsets.all(10.0),
@@ -279,7 +297,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
               backgroundColor: Colors.deepOrange,
               child: Icon(Icons.person  , color: Colors.white,),
             ),
-            title: Text("Hamza Alhelow"),
+            title: Text(currentTrip.nameDriver),
             subtitle: Row(
 
               children: [
@@ -317,8 +335,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
           child:  Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
-
-
             children: [
 
               Padding(
@@ -342,7 +358,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
                     onPressed: () {
 
-                      getDriver();
+                    //  getDriver();
 
                     },
                     height: 50.0,
@@ -363,11 +379,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
     );
 
   }
-
-
-  String idDriver ="";
-  double radius = 1;
-
 
 
   void getDriver() {
@@ -407,7 +418,24 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
               }
              else{
-               sendRequestToDriver(currentDriver.data());
+
+               FirebaseHelper().checkDriverHasActiveTrip(currentDriver.data()['idUser'])
+                   .then((exit) {
+
+                     if(!exit)
+                       sendRequestToDriver(currentDriver.data());
+                     else
+                       {
+                         if(findDriver){
+                           radius ++ ;
+                           getDriver() ;
+                         }
+
+                       }
+               });
+
+
+
              }
 
 
@@ -416,10 +444,11 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   }
 
-
   void sendRequestToDriver(Map<String, dynamic> dataDriver){
 
     idDriver  = dataDriver['idUser'] ;
+
+    SharedPreferencesHelper().setDriverSelected(idDriver);
 
     if(findDriver)
     _firestore
@@ -432,21 +461,10 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
             'lat' : DataProvider().userLocation.latitude,
            'lng' : DataProvider().userLocation.longitude ,
            'stateRequest' : "pending"
-         }).then((value) {
-
-          _firestore.collection(FirebaseConstant().locations)
-          .doc(idDriver)
-          .update({
-           FirebaseConstant().available : false
-           });
-
-           });
-
-
+         });
     listenRequestDriver(idDriver);
 
   }
-
 
   void listenRequestDriver (String idDriver){
 
@@ -464,70 +482,67 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                getDriver();
 
              }
+            else
+              {
+                listenCurrentTrip();
+
+              }
 
         });
 
   }
 
-}
+  void listenCurrentTrip (){
+
+    _firestore
+        .collection("Trips")
+         .where("state" , isEqualTo: StateTrip.active.toString())
+         .where("idCustomer" , isEqualTo: auth.currentUser.uid)
+        .snapshots().listen((event) {
+           this.setState(() {
+
+             if(event.size > 0 ){
+               tripActive = true ;
+               FirebaseHelper().loadUserInfo(currentTrip.idDriver).then((value)  {
+                 this.setState(() {
+                   currentTrip = Trip(
+                       idCustomer: "" ,
+                       idDriver: event.docs.first.get("idDriver") ,
+                        nameDriver: value.fullName
+                   );
+                 });
+
+               });
+             }
+             else
+               this.setState(() {
+
+                 SharedPreferencesHelper().getDriverSelected().then((value) {
+                   this.setState(() {
+                     idDriver = value;
+
+                     if(idDriver.isNotEmpty??"")
+                      {
+                        findDriver = true ;
+                        getDriver();
+                      }
+                     else
+                     tripActive = false ;
+
+                   });
+                 });
 
 
-class _ConfirmTrip extends StatelessWidget {
-  const _ConfirmTrip({
-    Key key,
-  }) : super(key: key);
+               });
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(18.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: Container(
-              height: 60.5,
-              color: Colors.grey[200],
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Where to?',
-                    style: TextStyle(
-                      fontSize: 22,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              height: 60.5,
-              color: Colors.grey[200],
-              child: Padding(
-                padding: EdgeInsets.only(right: 14.0),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Chip(
-                    avatar: Icon(
-                      Icons.watch_later,
-                      color: Colors.deepOrange,
-                      size: 21,
-                    ),
-                    backgroundColor: Colors.white,
-                    label: TimeSelectorWidget(),
-                  ),
-                ),
-              ),
-            ),
-          )
-        ],
-      ),
-    );
+           });
+
+         });
+
   }
+
 }
+
 
 class TimeSelectorWidget extends StatelessWidget {
   const TimeSelectorWidget({
@@ -561,58 +576,3 @@ class TimeSelectorWidget extends StatelessWidget {
   }
 }
 
-class _RecommendedTrip extends StatelessWidget {
-  final String postcode;
-  final String addressLine1;
-  const _RecommendedTrip({
-    Key key,
-    String postcode,
-    String addressLine1,
-  })  : this.postcode = postcode,
-        this.addressLine1 = addressLine1,
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: ListTile(
-        leading: Material(
-          color: Colors.transparent,
-          child: Ink(
-            decoration: ShapeDecoration(
-              color: Colors.grey[200],
-              shape: CircleBorder(),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                Icons.location_on,
-                size: 15,
-                color: Colors.deepOrange,
-              ),
-            ),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              postcode,
-              style: TextStyle(fontWeight: FontWeight.w400),
-            ),
-            Text(
-              addressLine1,
-              style: TextStyle(fontSize: 14, color: Colors.deepOrange),
-            ),
-          ],
-        ),
-        trailing: Icon(
-          Icons.arrow_forward_ios,
-          size: 17,
-          color: Colors.grey[400],
-        ),
-      ),
-    );
-  }
-}

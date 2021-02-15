@@ -35,6 +35,8 @@ class _HomeState extends State<Home> {
   var currentZoomLevel;
   var _controller ;
 
+  String addressTo =""  , _currentAddress = "";
+
   String kGoogleApiKey = "AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
 
   GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: "AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A");
@@ -43,7 +45,7 @@ class _HomeState extends State<Home> {
 
   UserLocation userLocation ;
 
-  LatLng _lastMapPosition ;
+  bool confirmPickup = false ;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -54,14 +56,11 @@ class _HomeState extends State<Home> {
     zoom: 17.4746,
   );
 
-
   void _onCameraMove(CameraPosition position) {
-    _lastMapPosition = position.target;
-
-
+    DataProvider().userLocation = UserLocation( latitude: position.target.latitude ,longitude: position.target.longitude);
   }
 
-  String _fullName ="" , _email ="" ;
+  String _fullName ="" , _email =""  , selectedDriver ="";
 
  @override
   void initState() {
@@ -90,8 +89,17 @@ class _HomeState extends State<Home> {
         });
 
     });
-  }
 
+    SharedPreferencesHelper().getDriverSelected().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          selectedDriver= value??"";
+        });
+
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +149,7 @@ class _HomeState extends State<Home> {
 
           buildAppBar() ,
 
-         if(confirmPickup)
+         if(confirmPickup || selectedDriver.isNotEmpty)
          CustomerBottomSheet(
            callBack: (){
 
@@ -202,8 +210,6 @@ class _HomeState extends State<Home> {
               child:  IconButton(
                   icon: Icon(Icons.gps_fixed),
                   onPressed: () {
-
-                    print("XXXXXXXXXXXXx");
                     animateTo(userLocation.latitude, userLocation.longitude);
 
                   }),
@@ -219,20 +225,12 @@ class _HomeState extends State<Home> {
           right: 0,
           child: Column(
             children: <Widget>[
-
               Icon(Icons.location_on_sharp , size: 50, color: Colors.deepOrange,)
             ],
           ),
         );
   }
 
-
-  final geo = Geoflutterfire();
-  final _firestore = FirebaseFirestore.instance;
-
-
-
-  bool confirmPickup = false ;
   Positioned startTrip() {
     return Positioned(
           left: 35,
@@ -529,18 +527,16 @@ class _HomeState extends State<Home> {
     );
   }
 
-
-   String addressTo ="";
-  // When map ready
   onMapCreated( controller) {
 
-
-
     _completer.complete(controller);
-
     _controller  = controller ;
+    getCurrentLocation();
+
+  }
 
 
+  void getCurrentLocation(){
     Geolocator.getCurrentPosition().then((value) => {
 
       this.setState(() {
@@ -557,7 +553,6 @@ class _HomeState extends State<Home> {
         });
 
       })
-
 
     });
 
@@ -592,7 +587,6 @@ class _HomeState extends State<Home> {
     if (p != null) {
       PlacesDetailsResponse detail =
       await _places.getDetailsByPlaceId(p.placeId);
-
       var placeId = p.placeId;
       double lat = detail.result.geometry.location.lat;
       double lng = detail.result.geometry.location.lng;
@@ -602,14 +596,9 @@ class _HomeState extends State<Home> {
       addressTo = value;
         })
       });
-
-   //   var address = await Geocoder.local.findAddressesFromQuery(p.description);
-
-
     }
   }
 
-  String _currentAddress ="" ;
 
   Future<String> _getAddressFromLatLng(double lat , double lng) async {
 

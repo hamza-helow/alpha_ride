@@ -1,4 +1,5 @@
 
+import 'package:alpha_ride/Models/DriverRequest.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 
 class DataProvider{
@@ -12,6 +13,9 @@ class DataProvider{
   factory DataProvider() {
     return _instance;
   }
+
+
+  DriverRequest driverRequest ;
 
 
   UserLocation userLocation;

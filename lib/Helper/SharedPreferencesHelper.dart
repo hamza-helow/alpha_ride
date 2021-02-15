@@ -8,6 +8,8 @@ class SharedPreferencesHelper {
   static const  String _Email_Key = "Email";
   static const  String _TypeAccount = "TypeAccount";
 
+  static const  String idDriverSelected = "IdDriverSelected";
+
   SharedPreferences prefs ;
 
   SharedPreferencesHelper._privateConstructor(){
@@ -24,8 +26,22 @@ class SharedPreferencesHelper {
   void initSharedPreferences()async{
 
      prefs = await SharedPreferences.getInstance();
+  }
+
+
+  void  setDriverSelected(String id) async {
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setString(idDriverSelected,id);
+  }
+
+  Future<String > getDriverSelected() async{
+    prefs = await SharedPreferences.getInstance();
+
+    return prefs.get(idDriverSelected) ;
+
 
   }
+
 
 
   void  setSetTypeAccount(TypeAccount typeAccount) async {

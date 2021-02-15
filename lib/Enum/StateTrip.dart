@@ -1,0 +1,9 @@
+
+
+enum StateTrip {
+
+
+  active ,
+  rejected
+
+}

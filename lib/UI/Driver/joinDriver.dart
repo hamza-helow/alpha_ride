@@ -1,9 +1,15 @@
 import 'dart:io';
 
+import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
+import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/Models/DriverRequest.dart';
+import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
 
 class JoinDriver extends StatefulWidget {
@@ -23,6 +29,10 @@ class _JoinDriverState extends State<JoinDriver> {
   final typeCar = TextEditingController();
   final colorCar = TextEditingController();
 
+  String phoneNumber ="";
+
+  bool inProgress = false ;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -40,7 +50,27 @@ class _JoinDriverState extends State<JoinDriver> {
 
               children: [
 
-                SizedBox(height: 20.0,),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                  child: Container(
+                    child: IntlPhoneField(
+
+                      decoration: InputDecoration(
+                        labelText: '${AppLocalizations.of(context).translate("phoneNumber")}',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(),
+                        ),
+                      ),
+                      initialCountryCode: 'JO',
+                      onChanged: (phone) {
+                        print(phone.completeNumber);
+                        phoneNumber =phone.completeNumber ;
+
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(height: 15.0,),
 
                 buildThemeTextField(
                   fullName,
@@ -80,8 +110,6 @@ class _JoinDriverState extends State<JoinDriver> {
 
                 SizedBox(height: 15.0,),
 
-
-
                 ListTile(
                   onTap: () {
 
@@ -92,8 +120,6 @@ class _JoinDriverState extends State<JoinDriver> {
                         yourPhoto = value;
 
                       });
-
-
 
                     });
 
@@ -195,8 +221,6 @@ class _JoinDriverState extends State<JoinDriver> {
                 ),
 
 
-                SizedBox(height: 20.0,),
-
 
                 Padding(
                   padding: EdgeInsets.only(top: 20),
@@ -206,7 +230,23 @@ class _JoinDriverState extends State<JoinDriver> {
 
                       sendInfoDriver();
                     },//since this is only a UI app
-                    child: Text('CONFIRM',
+                    child:inProgress ? Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      alignment: WrapAlignment.center,
+                      runAlignment: WrapAlignment.center,
+                      spacing: 10.0,
+
+                      children: [
+
+
+                        Text("Loading.. ") ,
+                        CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                        )
+
+                      ],
+
+                    )    :  Text('send',
                       style: TextStyle(
                         fontSize: 15,
                         fontFamily: 'SFUIDisplay',
@@ -216,10 +256,10 @@ class _JoinDriverState extends State<JoinDriver> {
                     color: Colors.deepOrange,
                     elevation: 0,
                     minWidth: 400,
-                    height: 50,
+                    height: 60,
                     textColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)
+                        borderRadius: BorderRadius.circular(20)
                     ),
                   ),
                 ),
@@ -275,6 +315,11 @@ class _JoinDriverState extends State<JoinDriver> {
 
   void sendInfoDriver(){
 
+    this.setState(() {
+      inProgress = true ;
+    });
+
+
     String idRequest  =FirebaseFirestore.instance.collection("a").doc().id;
 
     uploadImage(yourPhoto , idRequest , "DriverImage").then((yourPhoto) {
@@ -290,23 +335,28 @@ class _JoinDriverState extends State<JoinDriver> {
               uploadImage(insideCar , idRequest , "insideCar").then((insideCar) {
 
 
-                FirebaseFirestore.instance
-                    .collection("DriverRequestsAccount")
-                    .doc(idRequest)
-                    .set({
+                DataProvider().driverRequest = DriverRequest(
 
-                  'yourPhoto' : yourPhoto ,
-                  'drivingLicense' : drivingLicense ,
-                  'driverLicense' : driverLicense ,
-                  'frontCar' : frontCar ,
-                  'endCar' : endCar ,
-                  'insideCar' : insideCar ,
-                  'fullName' :fullName.text ,
-                  'typeCar' : typeCar.text ,
-                  'modelCar' :modelCar.text ,
-                  'colorCar' :colorCar.text
+                  fullName: fullName.text ,
+                  email: email.text ,
+                  colorCar: colorCar.text ,
+                  driverLicense: driverLicense ,
+                  drivingLicense: drivingLicense ,
+                  endCar: endCar ,
+                  frontCar: frontCar ,
+                  insideCar: insideCar ,
+                  modelCar: modelCar.text ,
+                  typeCar: typeCar.text ,
+                  yourPhoto: yourPhoto
+                );
 
-                    });
+                this.setState(() {
+                  inProgress = false ;
+                });
+
+
+                Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                    PhoneVerification(phoneNumber , typeAccount: TypeAccount.driver,),));
 
 
               });

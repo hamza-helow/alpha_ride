@@ -1,7 +1,9 @@
 
 
+import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -28,18 +30,62 @@ class FirebaseHelper {
       'typeUser' : user.typeAccount.toString() ,
        'countRating'  : 1 ,
        'rating' :0.0  ,
-       'countTrips' : 0
-
+       'countTrips' : 0 ,
+       'stateAccount' : user.stateAccount.toString() ,
 
     });
 
   }
+
+
+
+  Future<void> insertTrip(Trip trip) async{
+
+    return _fireStore.collection("Trips").doc().set({
+
+      'idCustomer' : trip.idCustomer ,
+      'idDriver': trip.idDriver ,
+      'dateStart' : '',
+      'dateAcceptRequest' : FieldValue.serverTimestamp(),
+      'state' :StateTrip.active.toString() ,
+       'locationCustomer' :{
+        'lat' : trip.locationCustomer.latitude,
+         'lng' :trip.locationCustomer.longitude
+       },
+      'locationDriver' :{
+        'lat' : trip.locationDriver.latitude,
+        'lng' :trip.locationDriver.longitude
+      }
+    });
+
+  }
+
 
   Future<bool> infoUserExit(String idUser){
 
     return _fireStore.collection("Users").doc(idUser).get().then((value) async{
 
      return  value.exists ;
+
+    });
+
+  }
+
+
+
+  Future<bool> checkDriverHasActiveTrip(String idDriver){
+
+   return  _fireStore.collection(FirebaseConstant().driverRequests).doc(idDriver).get().then((value) async{
+
+      if(value.exists)
+        {
+          if(value.get(FirebaseConstant().stateRequest) == "rejected")
+            return false ;
+          else
+            return true ;
+        }
+      else
+        return false ;
 
     });
 
@@ -87,8 +133,6 @@ class FirebaseHelper {
 
 
    return _fireStore.collection("Users").doc(idUser).get().then((value) async {
-
-     print("${value.data()['typeUser']} TTTYYY");
 
       User user = User(
         idUser: value.id ,
