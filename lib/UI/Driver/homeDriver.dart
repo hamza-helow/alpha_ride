@@ -83,14 +83,14 @@ class _MyHomePageState extends State<HomeDriver> {
     userLocation = Provider.of<UserLocation>(context);
 
 
-    if(position != null)
-    markers.addAll([
-      Marker(
-          markerId: MarkerId('value'),
-          position: LatLng(position.latitude, position.longitude),
-          icon: carIcon,
-          rotation: _direction),
-    ]);
+    // if(position != null)
+    // markers.addAll([
+    //   Marker(
+    //       markerId: MarkerId('value'),
+    //       position: LatLng(position.latitude, position.longitude),
+    //       icon: carIcon,
+    //       rotation: _direction),
+    // ]);
 
 
     var cameraPosition = userLocation != null

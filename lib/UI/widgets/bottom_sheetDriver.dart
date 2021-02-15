@@ -1,4 +1,5 @@
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/UI/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -37,9 +38,15 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
             nameCustomer: event.docs.first.get("nameCustomer"),
             lng: event.docs.first.get("lng"),
              lat: event.docs.first.get("lat"),
+            stateRequest: event.docs.first.get(FirebaseConstant().stateRequest)
           );
 
+
+          if(currentTrip.stateRequest == FirebaseConstant().pending)
           exitTrip = true ;
+          else
+            exitTrip = false ;
+
         });
       else
         this.setState(() {
@@ -90,6 +97,8 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
                         ],
                       ),
                     ),
+
+
                     StateDriver(),
 
                     Center(
@@ -117,9 +126,29 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
 
                                 children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.red,
-                                    child: Icon(Icons.clear ,color: Colors.white, ),
+
+
+                                  InkWell(
+                                     onTap: () {
+
+                                       FirebaseHelper().cancelTripFromDriver(auth.currentUser.uid).then((value) {
+
+
+                                         _firestore.collection(FirebaseConstant().locations)
+                                             .doc(auth.currentUser.uid)
+                                             .update({
+                                           FirebaseConstant().available : true
+                                         });
+
+
+                                       });
+
+                                     },
+
+                                    child: CircleAvatar(
+                                      backgroundColor: Colors.red,
+                                      child: Icon(Icons.clear ,color: Colors.white, ),
+                                    ),
                                   ),
                                   SizedBox(width: 10.0,),
                                   CircleAvatar(

@@ -13,6 +13,10 @@ class FirebaseConstant {
   final String available = "available";
   final String locations ="locations";
   final String driverRequests = "driverRequests";
+  final String stateRequest ="stateRequest";
+
+  final String pending = "pending";
+  final String  rejected = "rejected";
 
 
 

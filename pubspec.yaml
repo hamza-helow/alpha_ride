@@ -49,6 +49,8 @@ dependencies:
   flutter_google_places: ^0.2.6
   geocoder: ^0.2.1
   geocoding: ^1.0.5
+  image_picker: ^0.6.7+22
+  firebase_storage:
 
 
 

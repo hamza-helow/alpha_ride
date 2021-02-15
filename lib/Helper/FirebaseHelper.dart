@@ -70,6 +70,18 @@ class FirebaseHelper {
   }
 
 
+  Future<void> cancelTripFromDriver(String idUser) async{
+
+    await _fireStore
+        .collection(FirebaseConstant().driverRequests)
+        .doc(idUser).update({
+
+          FirebaseConstant().stateRequest : FirebaseConstant().rejected
+
+        });
+  }
+
+
 
   Future<User> loadUserInfo(String idUser){
 

@@ -3,6 +3,7 @@ import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
+import 'package:alpha_ride/UI/Driver/joinDriver.dart';
 import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -173,23 +174,32 @@ class _LoginState extends State<Login> {
         ],
       ),
 
-      bottomSheet:Container(
-        color: Colors.white,
+      bottomSheet:GestureDetector(
 
-        child:  Padding(
-          padding: EdgeInsets.only(bottom: 20.0 , top: 20.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+        onTap: () {
 
-            children: [
+          Navigator.push(context, MaterialPageRoute(builder: (context) => JoinDriver(),));
 
-              Icon(Icons.drive_eta , size: 40, color: Colors.deepOrange,) ,
+        } ,
 
-              SizedBox(width: 10.0,),
+        child: Container(
+          color: Colors.white,
 
-              Text("Join as captain" ,style: TextStyle(fontSize: 20.0 , fontWeight: FontWeight.bold),)
-            ],
+          child:  Padding(
+            padding: EdgeInsets.only(bottom: 20.0 , top: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+
+              children: [
+
+                Icon(Icons.drive_eta , size: 40, color: Colors.deepOrange,) ,
+
+                SizedBox(width: 10.0,),
+
+                Text("Join as captain" ,style: TextStyle(fontSize: 20.0 , fontWeight: FontWeight.bold),)
+              ],
+            ),
           ),
         ),
       ),

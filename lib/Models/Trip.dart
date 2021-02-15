@@ -2,8 +2,8 @@
 
 class Trip {
 
-  String  idCustomer , nameCustomer , phoneCustomer ;
-  double lat , lng ;
+  String  idCustomer , nameCustomer , phoneCustomer , stateRequest ;
+  double lat , lng  ;
 
-  Trip({this.idCustomer, this.nameCustomer, this.phoneCustomer, this.lat, this.lng});
+  Trip({this.idCustomer, this.nameCustomer, this.phoneCustomer, this.lat, this.lng , this.stateRequest});
 }

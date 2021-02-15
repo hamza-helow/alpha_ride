@@ -37,7 +37,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
         expand: true,
         initialChildSize: 0.37,
         minChildSize: 0.2,
-        maxChildSize: 0.37,
+        maxChildSize: 0.38,
         builder: (context, scrollController) {
           return NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (overscroll) {
@@ -75,8 +75,10 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                       ),
                     ),
 
-                    if(!findDriver)
-                    confirmationTripWidget(),
+                    // if(!findDriver)
+                    // confirmationTripWidget(),
+
+                    driverInfo(),
 
                     if(findDriver)
                       SizedBox(
@@ -182,7 +184,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
        Padding(
          padding: EdgeInsets.all(10.0),
-         
+
          child:  Row(
            crossAxisAlignment: CrossAxisAlignment.center,
            mainAxisAlignment: MainAxisAlignment.center,
@@ -212,7 +214,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
                      widget.callBack();
                    },
-                   height: 60.0,
+                   height: 50.0,
                    child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
 
                  ),
@@ -244,7 +246,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                      getDriver();
 
                    },
-                   height: 60.0,
+                   height: 50.0,
                    child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
 
                  ),
@@ -257,6 +259,105 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
          ),
        ),
+
+      ],
+    );
+
+  }
+
+  Widget driverInfo(){
+
+    return Column(
+
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 10.0 ,right: 10.0),
+
+          child:  ListTile(
+
+            leading: CircleAvatar(
+              backgroundColor: Colors.deepOrange,
+              child: Icon(Icons.person  , color: Colors.white,),
+            ),
+            title: Text("Hamza Alhelow"),
+            subtitle: Row(
+
+              children: [
+                Icon(Icons.star  ,color: Colors.deepOrange,) , Text("4.5"),
+              ],
+
+            ),
+
+            trailing: Text("1 min"),
+
+          ),
+
+        ),
+
+        Divider(),
+
+
+        Padding(
+          padding: EdgeInsets.only(left: 10.0 ,right: 10.0),
+
+          child:  ListTile(
+
+           leading: Image.asset("Assets/enconomy.png"),
+            title: Text("ford fusion"),
+            trailing: Text("Red color"),
+            subtitle: Text("15687988"),
+
+          ),
+
+        ),
+
+        Padding(
+          padding: EdgeInsets.all(1.0),
+
+          child:  Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+
+
+            children: [
+
+              Padding(
+                padding: EdgeInsets.only(
+                    top: 10 ,
+                    bottom: 10.0 ,
+                    left: 7.0
+                ),
+
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.60,
+
+                  child:  MaterialButton(
+                    color: Colors.red,
+
+                    shape: RoundedRectangleBorder(
+
+                        borderRadius: BorderRadius.circular(25.0),
+                        side: BorderSide(color: Colors.red)
+                    ),
+
+                    onPressed: () {
+
+                      getDriver();
+
+                    },
+                    height: 50.0,
+                    child: Text("Cancel", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
+
+                  ),
+                ),
+
+              ),
+
+
+            ],
+
+          ),
+        ),
 
       ],
     );
@@ -293,8 +394,12 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
            stream.listen((event) {
 
-              if(findDriver)
-             if(event.isEmpty)
+             DocumentSnapshot currentDriver =   event.firstWhere((element) => !rejected.contains(element.data()['idUser']) , orElse: () => null,);
+
+            // print(currentDriver.data());
+
+             if(findDriver)
+             if(currentDriver == null)
               {
                 print("$radius");
                 radius ++ ;
@@ -302,15 +407,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
               }
              else{
-
-            //   event.where((element) => element.)
-
-              // List<DocumentSnapshot> currentDriver =   event.where((element) => !rejected.contains(element.data()['idUser']));
-
-               //print("${event[0].exists}  EXIT DRIVER");
-
-               if(event.isNotEmpty)
-               sendRequestToDriver(event[0].data());
+               sendRequestToDriver(currentDriver.data());
              }
 
 
@@ -333,9 +430,42 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
           'nameCustomer' : "hamza helow" ,
           'phoneCustomer' : "0788051422" ,
             'lat' : DataProvider().userLocation.latitude,
-           'lng' : DataProvider().userLocation.longitude
-         });
+           'lng' : DataProvider().userLocation.longitude ,
+           'stateRequest' : "pending"
+         }).then((value) {
 
+          _firestore.collection(FirebaseConstant().locations)
+          .doc(idDriver)
+          .update({
+           FirebaseConstant().available : false
+           });
+
+           });
+
+
+    listenRequestDriver(idDriver);
+
+  }
+
+
+  void listenRequestDriver (String idDriver){
+
+    _firestore
+        .collection(FirebaseConstant().driverRequests)
+        .doc(idDriver)
+        .snapshots()
+        .listen((event) {
+
+            if(event.exists)
+           if(event.data()['stateRequest'] == "rejected")
+             {
+               radius =  1 ;
+               rejected.add(idDriver);
+               getDriver();
+
+             }
+
+        });
 
   }
 
