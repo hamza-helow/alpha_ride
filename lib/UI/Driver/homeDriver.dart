@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
@@ -74,6 +75,9 @@ class _MyHomePageState extends State<HomeDriver> {
     FlutterCompass.events.listen((double direction) {
       setState(() {
         _direction = direction;
+
+        DataProvider().rotateCar = direction;
+
       });
     });
   }
@@ -328,16 +332,6 @@ class _MyHomePageState extends State<HomeDriver> {
 
   onMapCreated( controller) {
 
-    // if(position != null)
-    // markers.addAll([
-    //   Marker(
-    //       markerId: MarkerId('value'),
-    //       position: LatLng(position.latitude, position.longitude),
-    //       icon: carIcon,
-    //       rotation: _direction),
-    // ]);
-
-
     _completer.complete(controller);
 
     _controller  = controller ;
@@ -351,6 +345,8 @@ class _MyHomePageState extends State<HomeDriver> {
       });
 
       geoMyLocation = geo.point(latitude: position.latitude, longitude:position.longitude);
+
+      DataProvider().userLocation = UserLocation(latitude: position.latitude , longitude:position.longitude  );
 
 
       markers.addAll([

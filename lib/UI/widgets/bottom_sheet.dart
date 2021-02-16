@@ -1,4 +1,5 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
@@ -7,14 +8,18 @@ import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/UI/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 class CustomerBottomSheet extends StatefulWidget {
   final Function callBack;
 
-  CustomerBottomSheet({this.callBack});
+  final Function( double ,double , double customerLat , double customerLng , double rotateDriver)  whenDriverComing;
+
+  CustomerBottomSheet({this.callBack , this.whenDriverComing});
 
   @override
   _CustomerBottomSheetState createState() => _CustomerBottomSheetState();
@@ -36,6 +41,10 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   @override
   void initState() {
+
+
+    currentTrip = Trip();
+
     rejected = List();
     listenCurrentTrip();
 
@@ -297,16 +306,16 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
               backgroundColor: Colors.deepOrange,
               child: Icon(Icons.person  , color: Colors.white,),
             ),
-            title: Text(currentTrip.nameDriver),
+            title: Text(currentTrip.nameDriver??""),
             subtitle: Row(
 
               children: [
-                Icon(Icons.star  ,color: Colors.deepOrange,) , Text("4.5"),
+                Icon(Icons.star  ,color: Colors.deepOrange,) , Text("${currentTrip.ratingDriver??"-"}"),
               ],
 
             ),
 
-            trailing: Text("1 min"),
+            trailing: Text("${currentTrip.arriveTime??"-"}"),
 
           ),
 
@@ -321,7 +330,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
           child:  ListTile(
 
            leading: Image.asset("Assets/enconomy.png"),
-            title: Text("ford fusion"),
+            title: Text("${currentTrip.carType} ${currentTrip.carModel}"),
             trailing: Text("Red color"),
             subtitle: Text("15687988"),
 
@@ -503,13 +512,35 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
              if(event.size > 0 ){
                tripActive = true ;
-               FirebaseHelper().loadUserInfo(currentTrip.idDriver).then((value)  {
+               FirebaseHelper().loadUserInfo(event.docs.first.get("idDriver") , typeAccount: TypeAccount.driver).then((value)  {
+
+                 print("CCCCC ");
                  this.setState(() {
                    currentTrip = Trip(
                        idCustomer: "" ,
                        idDriver: event.docs.first.get("idDriver") ,
-                        nameDriver: value.fullName
+                        nameDriver: value.fullName ,
+                        ratingDriver: value.rating/value.countRating ,
+                     locationCustomer: LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng")) ,
+                     locationDriver: LatLng(event.docs.first.get("locationDriver.lat") , event.docs.first.get("locationDriver.lng")) ,
+                     carType: value.carType,
+                     carModel: value.carModel
+
                    );
+
+                   widget.whenDriverComing(currentTrip.locationDriver.latitude , currentTrip.locationDriver.longitude , currentTrip.locationCustomer.latitude , currentTrip.locationCustomer.longitude ,event.docs.first.get("locationDriver.rotateDriver")  );
+
+
+                   getArriveTime(currentTrip.locationCustomer , currentTrip.locationDriver).then((arriveTime) {
+
+                    this.setState(() {
+                      currentTrip.arriveTime = arriveTime;
+                    });
+
+
+                   });
+
+
                  });
 
                });
@@ -538,6 +569,19 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
            });
 
          });
+
+  }
+
+  Future<String> getArriveTime(LatLng from , LatLng to)async{
+
+    Dio dio = new Dio();
+    Response response=await dio.get("https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${from.latitude},${from.longitude}&destinations=${to.latitude},${to.longitude}&key=${DataProvider().mapKey}");
+    print("RESULT :  ${response.data}");
+
+
+    return response.data['rows'][0]['elements'][0]['duration']['text'] ;
+
+  //  print("RESULT :  ${response.data['rows'][0]['elements'][0]['duration']['text']}");
 
   }
 
@@ -574,5 +618,9 @@ class TimeSelectorWidget extends StatelessWidget {
       ),
     );
   }
+
+
+
+
 }
 

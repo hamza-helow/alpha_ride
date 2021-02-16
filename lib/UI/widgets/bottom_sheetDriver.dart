@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/Trip.dart';
@@ -195,7 +196,8 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
          idDriver: auth.currentUser.uid ,
          idCustomer: currentTrip.idCustomer ,
          locationCustomer: LatLng(currentTrip.lat , currentTrip.lng),
-          locationDriver: LatLng(currentTrip.lat , currentTrip.lng)
+          locationDriver: LatLng(DataProvider().userLocation.latitude , DataProvider().userLocation.longitude ),
+          rotateDriver: DataProvider().rotateCar
         ))
         .then((value) {
       _firestore

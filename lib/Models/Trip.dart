@@ -5,10 +5,25 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Trip {
 
-  String idCustomer , idDriver , state  , nameDriver ;
+  String idCustomer ,
+      idDriver , state  , nameDriver , arriveTime , carType , carModel ;
 
   LatLng locationDriver , locationCustomer ;
 
-  Trip({this.idCustomer, this.idDriver, this.state , this.locationCustomer , this.locationDriver , this.nameDriver});
+  double ratingDriver  , rotateDriver;
+
+
+  Trip({
+    this.idCustomer,
+    this.idDriver,
+    this.state ,
+    this.locationCustomer ,
+    this.locationDriver ,
+    this.nameDriver ,
+    this.ratingDriver,
+    this.carModel ,
+    this.carType ,
+    this.rotateDriver
+  });
 
 }

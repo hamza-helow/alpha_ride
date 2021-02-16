@@ -54,7 +54,8 @@ class FirebaseHelper {
        },
       'locationDriver' :{
         'lat' : trip.locationDriver.latitude,
-        'lng' :trip.locationDriver.longitude
+        'lng' :trip.locationDriver.longitude ,
+         'rotateDriver' : trip.rotateDriver
       }
     });
 
@@ -129,7 +130,7 @@ class FirebaseHelper {
 
 
 
-  Future<User> loadUserInfo(String idUser){
+  Future<User> loadUserInfo(String idUser , {TypeAccount typeAccount =TypeAccount.customer }){
 
 
    return _fireStore.collection("Users").doc(idUser).get().then((value) async {
@@ -138,8 +139,16 @@ class FirebaseHelper {
         idUser: value.id ,
         typeAccount: value.data()['typeUser'] == TypeAccount.customer.toString() ? TypeAccount.customer : TypeAccount.driver,
         fullName: value.data()['fullName'] ,
-        email: value.data()['email']
+        email: value.data()['email'] ,
+        countRating: value.data()['countRating'] == 0 ? 1 : value.data()['countRating'] ,
+        rating: value.data()['rating']==0.0 ?5.0 :value.data()['rating'] ,
+
+        carModel: typeAccount == TypeAccount.driver ? value.data()['carModel']  :"",
+        carType: typeAccount == TypeAccount.driver ? value.data()['carType']  :"",
+
       ) ;
+
+      print("RATING : ${user.rating}");
 
       return user;
     }) ;

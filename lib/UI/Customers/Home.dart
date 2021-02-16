@@ -11,6 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:geocoding/geocoding.dart';
@@ -30,6 +31,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
+  Set<Marker> markers = Set();
+  Map<PolylineId, Polyline> polylines = {};
+
+  List<LatLng> polylineCoordinates = [];
+
+  poly.PolylinePoints polylinePoints = poly.PolylinePoints();
+
   final int zoomIn = 0  , zoomOut = 1;
 
   var currentZoomLevel;
@@ -45,7 +53,7 @@ class _HomeState extends State<Home> {
 
   UserLocation userLocation ;
 
-  bool confirmPickup = false ;
+  bool confirmPickup = false , usePin = true  ;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -57,14 +65,25 @@ class _HomeState extends State<Home> {
   );
 
   void _onCameraMove(CameraPosition position) {
+    if(usePin)
     DataProvider().userLocation = UserLocation( latitude: position.target.latitude ,longitude: position.target.longitude);
   }
 
   String _fullName ="" , _email =""  , selectedDriver ="";
 
- @override
+  BitmapDescriptor carIcon;
+
+  @override
   void initState() {
     loadInfoUser();
+
+
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(platform: TargetPlatform.android), "Assets/car.png")
+        .then((onValue) {
+      carIcon = onValue;
+    });
+
     super.initState();
   }
 
@@ -125,6 +144,7 @@ class _HomeState extends State<Home> {
           GoogleMap(
             initialCameraPosition: cameraPosition??defaultPosition,
             compassEnabled: false,
+            markers: markers,
             myLocationEnabled: true,
             zoomControlsEnabled: false,
             buildingsEnabled: true,
@@ -135,13 +155,14 @@ class _HomeState extends State<Home> {
             zoomGesturesEnabled: true,
             onCameraMove: _onCameraMove,
             onMapCreated: onMapCreated,
-
+            polylines: Set<Polyline>.of(polylines.values),
           ),
 
            buttonsZoom(),
 
           buttonCurrentLocation(),
 
+          if(usePin)
           pin(context),
 
           if(!confirmPickup)
@@ -158,6 +179,8 @@ class _HomeState extends State<Home> {
              });
 
            },
+
+           whenDriverComing: (lat, lng , latCustomer , lngCustomer , rotateDriver) =>whenDriverComing(lat, lng , latCustomer ,  lngCustomer , rotateDriver),
          )
 
         ],
@@ -281,6 +304,7 @@ class _HomeState extends State<Home> {
 
               SizedBox(width: 20,),
 
+              if(usePin)
               Expanded(
 
                 child: Container(
@@ -549,6 +573,10 @@ class _HomeState extends State<Home> {
 
           this.setState(() {
             _currentAddress = address;
+
+            animateTo(value.latitude, value.longitude);
+
+            //showMarkerDriver(value.latitude , value.longitude);
           })
         });
 
@@ -558,10 +586,36 @@ class _HomeState extends State<Home> {
 
   }
 
+  PolylineId id = PolylineId("poly");
+  _addPolyLine() {
+
+
+    Polyline polyline = Polyline(
+        polylineId: id, color: Colors.deepOrange, points: polylineCoordinates);
+
+    polylines[id] = polyline;
+    setState(() {});
+  }
+
+  _getPolyline(LatLng origin ,LatLng dest ) async {
+    poly.PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+        DataProvider().mapKey,
+        poly.PointLatLng(origin.latitude, origin.longitude),
+        poly.PointLatLng(dest.latitude, dest.longitude),
+        travelMode: poly.TravelMode.driving,
+    );
+    if (result.points.isNotEmpty) {
+      result.points.forEach((poly.PointLatLng point) {
+        polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+      });
+    }
+    _addPolyLine();
+  }
+
 
   Future<void> animateTo(double lat, double lng) async {
     final c = await _completer.future;
-    final p = CameraPosition(target: LatLng(lat, lng), zoom: 17.0);
+    final p = CameraPosition(target: LatLng(lat, lng), zoom: currentZoomLevel??17.0);
     c.animateCamera(CameraUpdate.newCameraPosition(p));
   }
 
@@ -570,7 +624,7 @@ class _HomeState extends State<Home> {
 
      currentZoomLevel = await _controller.getZoomLevel();
 
-    currentZoomLevel = typeZoom == 0 ? currentZoomLevel +  2 : currentZoomLevel -  2;
+    currentZoomLevel = typeZoom == 0 ? currentZoomLevel +  1 : currentZoomLevel -  1;
     _controller.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
@@ -612,13 +666,6 @@ class _HomeState extends State<Home> {
 
       address =  "${place.locality}, ${place.name}, ${place.country}";
 
-      // setState(() {
-      //   _currentAddress =
-      //   "${place.locality}, ${place.name}, ${place.country}";
-      //
-      //   print("ADDRESS $_currentAddress");
-      //
-      // });
 
 
     } catch (e) {
@@ -626,6 +673,35 @@ class _HomeState extends State<Home> {
     }
 
     return address;
+  }
+
+  whenDriverComing(double lat, double lng ,double latCustomer, double lngCustomer  , double rotateDriver) {
+
+    this.setState(() {
+      usePin  = false ;
+    });
+
+   print("whenDriverComing , $lat , $lng");
+
+   if(polylines.isEmpty)
+   _getPolyline(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
+
+   showMarkerDriver(lat , lng , rotateDriver);
+
+  }
+
+
+  void showMarkerDriver(double lat , double lng , double rotateDriver){
+   this.setState(() {
+     markers.addAll([
+       Marker(
+           markerId: MarkerId('value'),
+           position: LatLng(lat, lng),
+           icon: carIcon,
+           rotation: rotateDriver),
+     ]);
+
+   });
   }
 
 }

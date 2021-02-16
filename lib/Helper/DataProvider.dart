@@ -15,6 +15,8 @@ class DataProvider{
   }
 
 
+  double rotateCar = 0.0;
+
   DriverRequest driverRequest ;
 
 
@@ -22,6 +24,8 @@ class DataProvider{
 
 
    String currentLanguage = "en" ;
+
+   String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
 
 
 
