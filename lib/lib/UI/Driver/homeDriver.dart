@@ -65,7 +65,7 @@ class _MyHomePageState extends State<HomeDriver> {
   bool exitTrip = false ;
 
 
-  Trip currentTrip ;
+    Trip currentTrip ;
 
   //32.5661186,35.8420676
   static final CameraPosition _kGooglePlex = CameraPosition(
@@ -103,9 +103,6 @@ class _MyHomePageState extends State<HomeDriver> {
     //
     //   });
     // });
-
-
-    listenCurrentTrip();
   }
 
   void listenCurrentTrip(){
@@ -116,50 +113,50 @@ class _MyHomePageState extends State<HomeDriver> {
         .where("idDriver" , isEqualTo: auth.currentUser.uid)
         .snapshots().listen((event) {
 
-      if(event.docs.length > 0) {
+          if(event.docs.length > 0) {
 
-        this.setState(() {
-          exitTrip = true ;
+            this.setState(() {
+              exitTrip = true ;
+            });
+
+
+            FirebaseHelper().loadUserInfo(event.docs.first.get("idCustomer")).then((value) {
+
+            this.setState(() {
+
+              currentTrip.nameCustomer = value.fullName;
+              currentTrip.ratingCustomer = value.rating;
+              currentTrip.idTrip = event.docs.first.id;
+              currentTrip.locationCustomer = LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng"));
+             currentTrip.locationDriver = LatLng(event.docs.first.get("locationDriver.lat")??0.0 , event.docs.first.get("locationDriver.lng")??0.0) ;
+
+              if(polylineCoordinates.isEmpty){
+                _getPolyline(currentTrip.locationCustomer,  currentTrip.locationDriver);
+
+                zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
+
+                addMarker(currentTrip.locationCustomer);
+
+              }
+
+
+            });
+
+
+            });
+
+
+
+          }// trip exit
+          print("Exit trip ${event.size}");
+
         });
-
-
-        FirebaseHelper().loadUserInfo(event.docs.first.get("idCustomer")).then((value) {
-
-          this.setState(() {
-
-            currentTrip.nameCustomer = value.fullName;
-            currentTrip.ratingCustomer = value.rating;
-            currentTrip.idTrip = event.docs.first.id;
-            currentTrip.locationCustomer = LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng"));
-            currentTrip.locationDriver = LatLng(event.docs.first.get("locationDriver.lat")??0.0 , event.docs.first.get("locationDriver.lng")??0.0) ;
-
-            if(polylineCoordinates.isEmpty){
-              _getPolyline(currentTrip.locationCustomer,  currentTrip.locationDriver);
-
-              zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
-
-              addMarker(currentTrip.locationCustomer);
-
-            }
-
-
-          });
-
-
-        });
-
-
-
-      }// trip exit
-      print("Exit trip ${event.size}");
-
-    });
 
   }
 
   double distanceBetweenTwoLocation(LatLng customer , LatLng driver){
 
-    return   Geolocator.distanceBetween(customer.latitude, customer.longitude, driver.latitude, driver.longitude);
+   return   Geolocator.distanceBetween(customer.latitude, customer.longitude, driver.latitude, driver.longitude);
 
   }
 
@@ -186,7 +183,7 @@ class _MyHomePageState extends State<HomeDriver> {
 
           GoogleMap(
             onMapCreated: onMapCreated,
-            markers: markers,
+             markers: markers,
             initialCameraPosition: cameraPosition??_kGooglePlex,
             compassEnabled: false,
             myLocationEnabled: true,
@@ -202,7 +199,7 @@ class _MyHomePageState extends State<HomeDriver> {
           ),
 
           if(!exitTrip)
-            DriverBottomSheet(),
+          DriverBottomSheet(),
           buildAppBar(),
 
         ],
@@ -281,61 +278,59 @@ class _MyHomePageState extends State<HomeDriver> {
 
   Positioned buildAppBar() {
     return Positioned(
-      top: 20,
-      left: 0,
-      right: 0,
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-          margin: EdgeInsets.only(top: 30),
-          child: Row(
+          top: 20,
+          left: 0,
+          right: 0,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              margin: EdgeInsets.only(top: 30),
+              child: Row(
 
-            crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
 
-            children: <Widget>[
+                  Column(
+                    children: [
+                      buttonMenu(),
+                      buttonsZoom( ),
+                      buttonCurrentLocation( ) ,
 
-              Column(
-                children: [
-                  buttonMenu(),
-                  buttonsZoom( ),
-                  buttonCurrentLocation( ) ,
+                    ],
+                  ),
+
+
+                  SizedBox(width: 10.0,),
+
+                  if(!exitTrip)
+                  PriceWidget(
+                    price: "0.00",
+                    onPressed: () {},
+                  ),
+
+                  if(!exitTrip)
+                  SizedBox(width: 10.0,),
+
+                  if(!exitTrip)
+                  ProfileWidget(),
+                  if(!exitTrip)
+                  SizedBox(width: 10.0,),
+                  if(!exitTrip)
+                  NotificationWidget() ,
+
+                  if(exitTrip)
+                  controlTrip()
+
 
                 ],
               ),
-
-
-              SizedBox(width: 10.0,),
-
-              if(!exitTrip)
-                PriceWidget(
-                  price: "0.00",
-                  onPressed: () {},
-                ),
-
-              if(!exitTrip)
-                SizedBox(width: 10.0,),
-
-              if(!exitTrip)
-                ProfileWidget(),
-              if(!exitTrip)
-                SizedBox(width: 10.0,),
-              if(!exitTrip)
-                NotificationWidget() ,
-
-              if(exitTrip)
-                controlTrip()
-
-
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        );
   }
 
   Padding controlTrip() {
     return Padding(
-      padding: EdgeInsets.only(top: 30.0) ,
+        padding: EdgeInsets.only(top: 30.0) ,
 
       child: Container(
         decoration: BoxDecoration(
@@ -434,27 +429,27 @@ class _MyHomePageState extends State<HomeDriver> {
             ),
 
             if(distanceBetweenTwoLocation(currentTrip.locationCustomer , currentTrip.locationDriver) <= 10)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      height: 60.5,
-                      color: Colors.white,
-                      child: Padding(
-                          padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
-                          child: MaterialButton(
-                            color: Colors.deepOrange,
-                            child: Text("Start trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) , onPressed: () {
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Expanded(
+                  child: Container(
+                    height: 60.5,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
+                      child: MaterialButton(
+                        color: Colors.deepOrange,
+                        child: Text("Start trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) , onPressed: () {
 
-                          },)
-                      ),
+                      },)
                     ),
                   ),
+                ),
 
-                ],
-              ),
+              ],
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -615,20 +610,20 @@ class _MyHomePageState extends State<HomeDriver> {
 
       FirebaseHelper()
           .checkLocationExit(auth.currentUser.uid)
-          .then((isExit) => {
+           .then((isExit) => {
 
-        if(isExit)
-          FirebaseHelper()
-              .updateLocationUser(auth.currentUser.uid, { 'name': 'random name', 'position': geoMyLocation.data})
-        else
-          FirebaseHelper()
-              .insertLocationUser(auth.currentUser.uid, { 'idUser':'${auth.currentUser.uid}','name': 'random name', 'position': geoMyLocation.data})
+             if(isExit)
+               FirebaseHelper()
+                   .updateLocationUser(auth.currentUser.uid, { 'name': 'random name', 'position': geoMyLocation.data})
+              else
+                FirebaseHelper()
+                    .insertLocationUser(auth.currentUser.uid, { 'idUser':'${auth.currentUser.uid}','name': 'random name', 'position': geoMyLocation.data})
 
-      });
+            });
 
       animateTo(_completer, position.latitude, position.longitude);
 
-   //   listenCurrentTrip();
+      listenCurrentTrip();
 
 
       if(exitTrip)
@@ -644,19 +639,19 @@ class _MyHomePageState extends State<HomeDriver> {
   void updateLocationDriverInTrip() {
 
     if(currentTrip.idTrip != null)
-      _firestore
-          .collection("Trips")
-          .doc(currentTrip.idTrip)
-          .update({
-        'locationDriver' :{
+    _firestore
+        .collection("Trips")
+        .doc(currentTrip.idTrip)
+        .update({
+          'locationDriver' :{
 
-          'lat': position.latitude ,
-          'lng' : position.longitude ,
-          'rotateDriver' : _direction
+            'lat': position.latitude ,
+             'lng' : position.longitude ,
+             'rotateDriver' : _direction
 
-        }
+          }
 
-      });
+        });
 
   }
 
@@ -803,29 +798,29 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: widget.onPressed,
-      child: Container(
+          child: Container(
 
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-                color: Colors.grey, blurRadius: 11, offset: Offset(3.0, 4.0))
-          ],
-          borderRadius: new BorderRadius.all(new Radius.circular(30)),
-          border: new Border.all(
-            color: Colors.white,
-            width: 2.0,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.grey, blurRadius: 11, offset: Offset(3.0, 4.0))
+              ],
+              borderRadius: new BorderRadius.all(new Radius.circular(30)),
+              border: new Border.all(
+                color: Colors.white,
+                width: 2.0,
+              ),
+            ),
+
+            child: CircleAvatar(
+              radius: 30.0,
+              backgroundColor: Colors.deepOrange,
+
+              child: Icon(FontAwesomeIcons.user  ,size: 25.0, color: Colors.white,),
+
+            ),
+
           ),
-        ),
-
-        child: CircleAvatar(
-          radius: 30.0,
-          backgroundColor: Colors.deepOrange,
-
-          child: Icon(FontAwesomeIcons.user  ,size: 25.0, color: Colors.white,),
-
-        ),
-
-      ),
     );
   }
 }

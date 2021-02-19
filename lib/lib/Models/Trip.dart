@@ -5,9 +5,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Trip {
 
+
   String idCustomer ,
-      idDriver , state  , nameDriver
-  , arriveTime , carType , carModel , idTrip , nameCustomer;
+      idDriver , state  , nameDriver ,
+      arriveTime , carType , carModel
+      ,nameCustomer , idTrip;
 
   LatLng locationDriver , locationCustomer ;
 
@@ -24,9 +26,10 @@ class Trip {
     this.ratingDriver,
     this.carModel ,
     this.carType ,
-    this.rotateDriver,
-    this.idTrip,
-    this.ratingCustomer
+    this.rotateDriver ,
+    this.nameCustomer,
+    this.ratingCustomer ,
+    this.idTrip
   });
 
 }
