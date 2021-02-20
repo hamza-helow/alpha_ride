@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Helper/MapHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart' as w;
@@ -119,6 +120,7 @@ class _HomeState extends State<Home> {
     });
 
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -408,6 +410,8 @@ class _HomeState extends State<Home> {
                                 onTap: () {
                                   this.setState(() {
                                     addressTo ="";
+
+                                    DataProvider().accessPointLatLng = null ;
                                   });
 
                                 },
@@ -569,7 +573,10 @@ class _HomeState extends State<Home> {
 
         DataProvider().userLocation = userLocation;
 
-        _getAddressFromLatLng(userLocation.latitude ,userLocation.longitude).then((address) => {
+
+      //  _getAddressFromLatLng(userLocation.latitude , userLocation.longitude);
+
+        MapHelper().getAddressLine(LatLng(userLocation.latitude, userLocation.longitude)).then((address) {
 
           this.setState(() {
             _currentAddress = address;
@@ -577,7 +584,8 @@ class _HomeState extends State<Home> {
             animateTo(value.latitude, value.longitude);
 
             //showMarkerDriver(value.latitude , value.longitude);
-          })
+          });
+
         });
 
       })
@@ -648,6 +656,10 @@ class _HomeState extends State<Home> {
       _getAddressFromLatLng(lat, lng).then((value) => {
         this.setState(() {
       addressTo = value;
+
+        DataProvider().accessPointAddress = addressTo ;
+        DataProvider().accessPointLatLng = LatLng(lat, lng);
+
         })
       });
     }
@@ -665,6 +677,8 @@ class _HomeState extends State<Home> {
       Placemark place = placemarks[0];
 
       address =  "${place.locality}, ${place.name}, ${place.country}";
+
+      print("${place.street} STREET");
 
 
 

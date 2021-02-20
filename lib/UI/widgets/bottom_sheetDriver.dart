@@ -184,9 +184,12 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
             exitTrip = false;
         });
       else
-        this.setState(() {
-          exitTrip = false;
-        });
+        {
+          if(this.mounted)
+            this.setState(() {
+              exitTrip = false;
+            });
+        }
     });
   }
 
@@ -206,6 +209,8 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           .delete();
     });
   }
+
+
 
   void cancelTrip() {
 

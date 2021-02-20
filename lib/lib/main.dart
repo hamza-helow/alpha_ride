@@ -9,10 +9,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-
+import '../Models/user_location.dart';
 import 'Helper/AppLanguage.dart';
 import 'Helper/AppLocalizations.dart';
-import 'Models/user_location.dart';
 import 'UI/Login.dart';
 import 'services/location_service.dart';
 

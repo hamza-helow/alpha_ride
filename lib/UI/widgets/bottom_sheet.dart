@@ -469,7 +469,14 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
           'phoneCustomer' : "0788051422" ,
             'lat' : DataProvider().userLocation.latitude,
            'lng' : DataProvider().userLocation.longitude ,
-           'stateRequest' : "pending"
+           'stateRequest' : "pending" ,
+
+           if(DataProvider().accessPointLatLng != null)
+           "accessPoint" : {
+            'lat' : DataProvider().accessPointLatLng.latitude,
+             'lng' : DataProvider().accessPointLatLng.longitude,
+             'addressName' : DataProvider().accessPointAddress
+           }
          });
     listenRequestDriver(idDriver);
 
@@ -552,7 +559,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                    this.setState(() {
                      idDriver = value;
 
-                     if(idDriver.isNotEmpty??"")
+                     if( idDriver != null && idDriver.isNotEmpty)
                       {
                         findDriver = true ;
                         getDriver();

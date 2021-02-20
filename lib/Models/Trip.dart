@@ -1,6 +1,7 @@
 
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/User.dart';
+import 'package:alpha_ride/lib/Enum/StateTrip.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class Trip {
@@ -12,6 +13,15 @@ class Trip {
   LatLng locationDriver , locationCustomer ;
 
   double ratingDriver  , rotateDriver , ratingCustomer;
+
+  StateTrip stateTrip ;
+
+  String hourTrip ;
+  int minTrip ;
+
+  DateTime startDate ;
+
+  double km = 0.0;
 
 
   Trip({
@@ -26,7 +36,12 @@ class Trip {
     this.carType ,
     this.rotateDriver,
     this.idTrip,
-    this.ratingCustomer
+    this.ratingCustomer,
+    this.stateTrip ,
+    this.hourTrip ,
+    this.minTrip = 0 ,
+    this.startDate,
+    this.km = 0.0
   });
 
 }

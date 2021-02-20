@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
@@ -7,10 +6,12 @@ import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
+import 'package:alpha_ride/lib/Enum/StateTrip.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geocoder/geocoder.dart' as coder;
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -91,19 +92,6 @@ class _MyHomePageState extends State<HomeDriver> {
         .then((onValue) {
       carIcon = onValue;
     });
-    // FlutterCompass.events.listen((double direction) {
-    //   setState(() {
-    //  //   _direction = direction;
-    //
-    //     print("update rotate");
-    //
-    //    // DataProvider().rotateCar = direction;
-    //     //updateRotateDriverInTrip();
-    //
-    //
-    //   });
-    // });
-
 
     listenCurrentTrip();
   }
@@ -112,7 +100,7 @@ class _MyHomePageState extends State<HomeDriver> {
 
     _firestore
         .collection("Trips")
-        .where("state" , isEqualTo: StateTrip.active.toString())
+        .where("state" , isNotEqualTo: StateTrip.done.toString())
         .where("idDriver" , isEqualTo: auth.currentUser.uid)
         .snapshots().listen((event) {
 
@@ -133,12 +121,44 @@ class _MyHomePageState extends State<HomeDriver> {
             currentTrip.locationCustomer = LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng"));
             currentTrip.locationDriver = LatLng(event.docs.first.get("locationDriver.lat")??0.0 , event.docs.first.get("locationDriver.lng")??0.0) ;
 
-            if(polylineCoordinates.isEmpty){
+
+            currentTrip.stateTrip = (){
+
+              var state = event.docs.first.get("state");
+
+              if(state == StateTrip.active.toString())
+                return StateTrip.active ;
+              else if(state == StateTrip.rejected.toString())
+                return StateTrip.rejected ;
+              else
+                return StateTrip.started ;
+
+            }();
+
+            if(currentTrip.stateTrip == StateTrip.started){
+
+              currentTrip.startDate =  DateTime.parse(event.docs.first.get("dateStart").toDate().toString());
+
+              currentTrip.minTrip = DateTime.now().difference(currentTrip.startDate ).inMinutes;
+
+              currentTrip.hourTrip = DateTime.now().difference(currentTrip.startDate ).inHours.toString();
+
+              currentTrip.km =  event.docs.first.get("km");
+
+            }
+
+
+
+
+            if(polylineCoordinates.isEmpty && currentTrip.stateTrip == StateTrip.active){
               _getPolyline(currentTrip.locationCustomer,  currentTrip.locationDriver);
 
               zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
 
               addMarker(currentTrip.locationCustomer);
+
+              print("DIS : ${ distanceBetweenTwoLocation(currentTrip.locationCustomer , currentTrip.locationDriver)}");
+
 
             }
 
@@ -158,6 +178,8 @@ class _MyHomePageState extends State<HomeDriver> {
   }
 
   double distanceBetweenTwoLocation(LatLng customer , LatLng driver){
+    if(customer == null || driver == null )
+      return 0.0 ;
 
     return   Geolocator.distanceBetween(customer.latitude, customer.longitude, driver.latitude, driver.longitude);
 
@@ -212,6 +234,22 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
+
+  void updateKm(double meter){
+
+    if(meter == 0.0)
+      return;
+
+    _firestore
+        .collection("Trips")
+        .doc(currentTrip.idTrip)
+        .update({
+
+        'km' :  FieldValue.increment(meter / 1000)
+
+    });
+
+  }
 
   Card buttonMenu( ) {
     return Card(
@@ -359,103 +397,118 @@ class _MyHomePageState extends State<HomeDriver> {
 
           children: [
 
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    height: 60.5,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.deepOrange,
-                            child: Icon(Icons.person ,color: Colors.white,),),
-                          title: Text("${currentTrip.nameCustomer??"-"}"),
+            infoCustomer(),
 
-                          trailing: Wrap(
-                            spacing: 5.0,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
+            timeAndDistanceWidget(),
 
-                              Icon(Icons.star , color: Colors.deepOrange,),
-                              Text("${currentTrip.ratingCustomer??"-"}")
-                            ],
-                          ),
+            if(
+            distanceBetweenTwoLocation(currentTrip.locationCustomer , currentTrip.locationDriver) <= 100
+            && currentTrip.stateTrip == StateTrip.active
+            )
+              buttonStartTrip(),
 
+            if(currentTrip.stateTrip == StateTrip.started)
+            buttonFinishTrip(),
+
+
+            if(currentTrip.stateTrip == StateTrip.active)
+            rejectTrip(),
+
+            Container(height: 10, color: Colors.white,)
+          ],
+        ),
+
+      ),
+
+
+    );
+  }
+
+  Row infoCustomer() {
+    return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  height: 60.5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.deepOrange,
+                          child: Icon(Icons.person ,color: Colors.white,),),
+                        title: Text("${currentTrip.nameCustomer??"-"}"),
+
+                        trailing: Wrap(
+                          spacing: 5.0,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+
+                            Icon(Icons.star , color: Colors.deepOrange,),
+                            Text("${currentTrip.ratingCustomer??"-"}")
+                          ],
                         ),
+
                       ),
                     ),
                   ),
                 ),
-
-              ],
-            ),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    height: 60.5,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 25.0 , right: 15.0 , left: 15.0) ,
-                      child: Text("KM : 30"),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    height: 60.5,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 25.0 , right: 15.0 , left: 15.0) ,
-                      child: Text("min : 15"),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    height: 60.5,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 25.0 , right: 15.0 , left: 15.0) ,
-                      child: Text("Hour : 1"),
-                    ),
-                  ),
-                ),
-
-              ],
-            ),
-
-            if(distanceBetweenTwoLocation(currentTrip.locationCustomer , currentTrip.locationDriver) <= 10)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: Container(
-                      height: 60.5,
-                      color: Colors.white,
-                      child: Padding(
-                          padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
-                          child: MaterialButton(
-                            color: Colors.deepOrange,
-                            child: Text("Start trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) , onPressed: () {
-
-                          },)
-                      ),
-                    ),
-                  ),
-
-                ],
               ),
-            Row(
+
+            ],
+          );
+  }
+
+  Row rejectTrip() {
+    return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  height: 60.5,
+                  color: Colors.white,
+                  child: Padding(
+                      padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
+                      child: MaterialButton(
+                        color: Colors.red,
+                        child: Text("Cancel" , style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),) , onPressed: () {
+
+                      },)
+                  ),
+                ),
+              ),
+
+            ],
+          );
+  }
+
+  Row timeAndDistanceWidget() {
+    return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+
+
+              Expanded(
+                child: Container(
+                  height: 60.5,
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 25.0 , right: 5.0 , left: 5.0) ,
+                    child: Text("KM : ${currentTrip.km.toStringAsFixed(2)??0.0}     min : ${currentTrip.minTrip??0}" , textAlign: TextAlign.center,),
+                  ),
+                ),
+              ),
+            ],
+          );
+  }
+
+  Row buttonStartTrip() {
+    return Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
@@ -466,8 +519,21 @@ class _MyHomePageState extends State<HomeDriver> {
                     child: Padding(
                         padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
                         child: MaterialButton(
-                          color: Colors.red,
-                          child: Text("Cancel" , style: TextStyle(color: Colors.white , fontWeight: FontWeight.bold),) , onPressed: () {
+                          color: Colors.deepOrange,
+                          child: Text("Start trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) ,
+                          onPressed: () {
+                            this.setState(() {
+
+                              currentTrip.stateTrip = StateTrip.started;
+                            });
+
+                            _firestore
+                                .collection("Trips")
+                                .doc(currentTrip.idTrip)
+                                .update({
+                               'state' :StateTrip.started.toString(),
+                                'dateStart' :FieldValue.serverTimestamp()
+                               });
 
                         },)
                     ),
@@ -475,16 +541,64 @@ class _MyHomePageState extends State<HomeDriver> {
                 ),
 
               ],
-            ),
+            );
+  }
 
-            Container(height: 10, color: Colors.white,)
-          ],
+  Row buttonFinishTrip() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Expanded(
+          child: Container(
+            height: 60.5,
+            color: Colors.white,
+            child: Padding(
+                padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
+                child: MaterialButton(
+                  color: Colors.deepOrange,
+                  child: Text("Finish trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) ,
+                  onPressed: () {
+                    // this.setState(() {
+                    //
+                    //   currentTrip.stateTrip = StateTrip.started;
+                    // });
+
+
+                    _firestore
+                        .collection("Trips")
+                        .doc(currentTrip.idTrip)
+                        .update({
+                      'totalPrice' : calcPriceTotal() ,
+                      'state' : StateTrip.done.toString()
+                    });
+
+                  },)
+            ),
+          ),
         ),
 
-      ),
-
-
+      ],
     );
+  }
+
+  double calcPriceTotal(){
+
+
+    double startPrice = 0.55 ;
+
+   double totalPriceMin = currentTrip.minTrip * 0.03;
+
+   double totalKmPrice = currentTrip.km * 0.17;
+
+
+   double totalPrice =  startPrice + totalKmPrice + totalPriceMin ;
+
+   if(totalPrice < 1.15)
+     totalPrice = 1.15 ;
+
+   return double.parse(totalPrice.toStringAsFixed(2));
+
   }
 
   Drawer buildDrawer() {
@@ -585,6 +699,17 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
+  double km = 0.0 ;
+
+  _getAddressLine() async
+  {
+    debugPrint('location: ${position.latitude}');
+    final coordinates = new coder.Coordinates(position.latitude, position.longitude);
+    var addresses = await coder.Geocoder.local.findAddressesFromCoordinates(coordinates);
+    var first = addresses.first;
+    print(" ${first.addressLine}");
+  }
+
   onMapCreated( controller) {
 
     _completer.complete(controller);
@@ -595,9 +720,16 @@ class _MyHomePageState extends State<HomeDriver> {
 
     Geolocator.getPositionStream(desiredAccuracy: options.accuracy  , distanceFilter: options.distanceFilter).listen((position) {
 
+
+
+
+
       this.setState(() {
         this.position = position;
       });
+
+      _getAddressLine();
+
 
       geoMyLocation = geo.point(latitude: position.latitude, longitude:position.longitude);
 
@@ -625,6 +757,15 @@ class _MyHomePageState extends State<HomeDriver> {
               .insertLocationUser(auth.currentUser.uid, { 'idUser':'${auth.currentUser.uid}','name': 'random name', 'position': geoMyLocation.data})
 
       });
+
+     // km+= 20 ;
+
+      updateKm(20);
+
+      print("KM : $km");
+
+
+
 
       animateTo(_completer, position.latitude, position.longitude);
 

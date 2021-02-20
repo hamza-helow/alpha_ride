@@ -6,6 +6,7 @@ import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class FirebaseHelper {
 
@@ -48,6 +49,8 @@ class FirebaseHelper {
       'dateStart' : '',
       'dateAcceptRequest' : FieldValue.serverTimestamp(),
       'state' :StateTrip.active.toString() ,
+      'km' : 0.0,
+      'totalPrice' :0.0,
        'locationCustomer' :{
         'lat' : trip.locationCustomer.latitude,
          'lng' :trip.locationCustomer.longitude
@@ -61,6 +64,32 @@ class FirebaseHelper {
 
   }
 
+  
+  void sendNotification(String idSender , String idReceiver , String title , String body){
+
+
+  String idNotification =   FirebaseDatabase
+        .instance
+        .reference()
+        .child("Notification").push().key;
+    
+    FirebaseDatabase
+        .instance
+        .reference()
+        .child("Notification/$idNotification")
+        .set({
+
+          "idSender" :  idSender ,
+          "idReceiver" : idReceiver ,
+          "title" : title ,
+           "body": body ,
+           "createdAt" : DateTime.now().toString()
+
+         });
+    
+    
+  }
+  
 
   Future<bool> infoUserExit(String idUser){
 
