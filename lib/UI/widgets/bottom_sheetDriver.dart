@@ -163,26 +163,31 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
   checkExitRequest() {
     _firestore
         .collection(FirebaseConstant().driverRequests)
+         .doc(auth.currentUser.uid)
         .snapshots()
         .listen((event) {
-      print(event.docs.length);
 
-      if (event.docs.length > 0)
-        this.setState(() {
-          currentTrip = new TripCustomer(
-              idCustomer: event.docs.first.get("idCustomer"),
-              phoneCustomer: event.docs.first.get("phoneCustomer"),
-              nameCustomer: event.docs.first.get("nameCustomer"),
-              lng: event.docs.first.get("lng"),
-              lat: event.docs.first.get("lat"),
-              stateRequest:
-              event.docs.first.get(FirebaseConstant().stateRequest));
+      if (event.exists)
+        {
 
-          if (currentTrip.stateRequest == FirebaseConstant().pending)
-            exitTrip = true;
-          else
-            exitTrip = false;
-        });
+          if(this.mounted)
+          this.setState(() {
+            currentTrip = new TripCustomer(
+                idCustomer: event.get("idCustomer"),
+                phoneCustomer: event.get("phoneCustomer"),
+                nameCustomer: event.get("nameCustomer"),
+                lng: event.get("lng"),
+                lat: event.get("lat"),
+                discount: event.get("discount"),
+                stateRequest:
+                event.get(FirebaseConstant().stateRequest));
+
+            if (currentTrip.stateRequest == FirebaseConstant().pending)
+              exitTrip = true;
+            else
+              exitTrip = false;
+          });
+        }
       else
         {
           if(this.mounted)
@@ -200,7 +205,9 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
          idCustomer: currentTrip.idCustomer ,
          locationCustomer: LatLng(currentTrip.lat , currentTrip.lng),
           locationDriver: LatLng(DataProvider().userLocation.latitude , DataProvider().userLocation.longitude ),
-          rotateDriver: DataProvider().rotateCar
+          rotateDriver: DataProvider().rotateCar ,
+          discount: currentTrip.discount
+
         ))
         .then((value) {
       _firestore
@@ -238,59 +245,72 @@ class _StateDriverState extends State<StateDriver> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(18.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: Container(
-              height: 60.5,
-              color: Colors.grey[200],
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    isOnline ? "You're online" : "You're offline",
-                    style: TextStyle(
-                      color: isOnline
-                          ? Colors.green.shade700
-                          : Colors.grey.shade700,
-                      fontSize: 24,
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance.collection(FirebaseConstant().locations).doc(auth.currentUser.uid).snapshots(),
+
+      builder: (context, snapshot) {
+
+        if( snapshot.hasData )
+        {
+          isOnline = snapshot.data.get("available");
+
+          print("${snapshot.data.exists} true ");
+        }
+        else
+          isOnline = false ;
+
+       return Padding(
+          padding: const EdgeInsets.all(18.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  height: 60.5,
+                  color: Colors.grey[200],
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        isOnline ? "You're online" : "You're offline",
+                        style: TextStyle(
+                          color: isOnline
+                              ? Colors.green.shade700
+                              : Colors.grey.shade700,
+                          fontSize: 24,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          Container(
-            height: 60.5,
-            width: 120,
-            color: Colors.deepOrange[80],
-            child: Padding(
-              padding: EdgeInsets.only(right: 14.0),
-              child: SizedBox(
-                width: 80.0,
-                child: Switch(
-                  value: isOnline,
-                  onChanged: (value) {
-                    _firestore
-                        .collection(FirebaseConstant().locations)
-                        .doc(auth.currentUser.uid)
-                        .update({FirebaseConstant().available: value});
+              Container(
+                height: 60.5,
+                width: 120,
+                color: Colors.deepOrange[80],
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14.0),
+                  child: SizedBox(
+                    width: 80.0,
+                    child: Switch(
+                      value: isOnline,
+                      onChanged: (value) {
+                        _firestore
+                            .collection(FirebaseConstant().locations)
+                            .doc(auth.currentUser.uid)
+                            .update({FirebaseConstant().available: value});
 
-                    this.setState(() {
-                      isOnline = value;
-                    });
-                  },
-                  activeColor: Colors.deepOrange,
+                      },
+                      activeColor: Colors.deepOrange,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          )
-        ],
-      ),
-    );
+              )
+            ],
+          ),
+        );
+
+      },);
   }
 }

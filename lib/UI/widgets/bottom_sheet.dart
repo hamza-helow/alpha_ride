@@ -15,11 +15,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 class CustomerBottomSheet extends StatefulWidget {
-  final Function callBack;
+  final Function callBack , showPromoCodeWidget;
 
   final Function( double ,double , double customerLat , double customerLng , double rotateDriver)  whenDriverComing;
 
-  CustomerBottomSheet({this.callBack , this.whenDriverComing});
+  CustomerBottomSheet({this.callBack , this.whenDriverComing , this.showPromoCodeWidget});
 
   @override
   _CustomerBottomSheetState createState() => _CustomerBottomSheetState();
@@ -203,7 +203,10 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
               child: Text("%" , style: TextStyle(color: Colors.white),),
             ),
             title: Text("Discount"),
-            trailing: Text("Add promo code"),
+            trailing: Text(DataProvider().promoCode.isNotEmpty ?"${DataProvider().promoCode}" :"Add promo code"),
+            onTap: () {
+              widget.showPromoCodeWidget();
+            },
 
           ),
 
@@ -515,6 +518,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
          .where("state" , isEqualTo: StateTrip.active.toString())
          .where("idCustomer" , isEqualTo: auth.currentUser.uid)
         .snapshots().listen((event) {
+           if(this.mounted)
            this.setState(() {
 
              if(event.size > 0 ){

@@ -1,9 +1,16 @@
-
-
 class TripCustomer {
+  String idCustomer, nameCustomer, phoneCustomer, stateRequest;
 
-  String  idCustomer , nameCustomer , phoneCustomer , stateRequest ;
-  double lat , lng  ;
+  double lat, lng;
 
-  TripCustomer({this.idCustomer, this.nameCustomer, this.phoneCustomer, this.lat, this.lng , this.stateRequest});
+  int discount = 0;
+
+  TripCustomer(
+      {this.idCustomer,
+      this.nameCustomer,
+      this.phoneCustomer,
+      this.lat,
+      this.lng,
+      this.stateRequest,
+      this.discount});
 }

@@ -145,6 +145,8 @@ class _MyHomePageState extends State<HomeDriver> {
 
               currentTrip.km =  event.docs.first.get("km");
 
+              currentTrip.discount = event.docs.first.get("discount");
+
             }
 
 
@@ -597,6 +599,15 @@ class _MyHomePageState extends State<HomeDriver> {
    if(totalPrice < 1.15)
      totalPrice = 1.15 ;
 
+
+    double discount = double.parse("0.${currentTrip.discount}");
+
+     totalPrice = totalPrice  -  (totalPrice * discount);
+
+     if(totalPrice < 0)
+       totalPrice = 0.0 ;
+
+
    return double.parse(totalPrice.toStringAsFixed(2));
 
   }
@@ -720,16 +731,11 @@ class _MyHomePageState extends State<HomeDriver> {
 
     Geolocator.getPositionStream(desiredAccuracy: options.accuracy  , distanceFilter: options.distanceFilter).listen((position) {
 
-
-
-
-
       this.setState(() {
         this.position = position;
       });
 
       _getAddressLine();
-
 
       geoMyLocation = geo.point(latitude: position.latitude, longitude:position.longitude);
 
@@ -754,7 +760,7 @@ class _MyHomePageState extends State<HomeDriver> {
               .updateLocationUser(auth.currentUser.uid, { 'name': 'random name', 'position': geoMyLocation.data})
         else
           FirebaseHelper()
-              .insertLocationUser(auth.currentUser.uid, { 'idUser':'${auth.currentUser.uid}','name': 'random name', 'position': geoMyLocation.data})
+              .insertLocationUser(auth.currentUser.uid, { 'available' : false   ,'idUser':'${auth.currentUser.uid}','name': 'random name', 'position': geoMyLocation.data})
 
       });
 

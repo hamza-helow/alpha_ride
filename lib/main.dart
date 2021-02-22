@@ -214,7 +214,7 @@ void setFirebase() async {
   _firebaseMessaging.getToken().then((String token) {
     print("Push Messaging token: $token");
 
-    if(auth.currentUser.uid != null)
+    if(auth.currentUser != null)
       FirebaseDatabase.instance
         .reference().child("TokensDevices")
         .child(auth.currentUser.uid)

@@ -1,15 +1,14 @@
 import 'dart:async';
-
 import 'package:alpha_ride/Helper/DataProvider.dart';
-import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/MapHelper.dart';
-import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart' as w;
 import 'package:alpha_ride/UI/Login.dart';
-import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
+import 'package:alpha_ride/lib/Enum/StateTrip.dart';
+import 'package:alpha_ride/lib/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/lib/UI/widgets/bottom_sheet.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
@@ -54,7 +53,7 @@ class _HomeState extends State<Home> {
 
   UserLocation userLocation ;
 
-  bool confirmPickup = false , usePin = true  ;
+  bool confirmPickup = false , usePin = true  , showPromoCode = false , tripStarted = false  ;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -77,6 +76,8 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     loadInfoUser();
+
+
 
 
     BitmapDescriptor.fromAssetImage(
@@ -174,6 +175,30 @@ class _HomeState extends State<Home> {
 
          if(confirmPickup || selectedDriver.isNotEmpty)
          CustomerBottomSheet(
+
+           onStateTripChanged: (stateTrip) {
+
+
+             print("onStateTripChanged ${stateTrip.toString()}");
+
+             if(this.mounted)
+             this.setState(() {
+
+               if(stateTrip == StateTrip.done)
+                 {
+                   markers.clear();
+                   polylines.clear();
+                   polylineCoordinates.clear();
+                 }
+               else if (stateTrip == StateTrip.started){
+                 tripStarted = true ;
+               }
+             });
+
+
+
+           },
+
            callBack: (){
 
              this.setState(() {
@@ -181,9 +206,28 @@ class _HomeState extends State<Home> {
              });
 
            },
+           showPromoCodeWidget:(){
+
+             this.setState(() {
+               showPromoCode = true ;
+             });
+           },
 
            whenDriverComing: (lat, lng , latCustomer , lngCustomer , rotateDriver) =>whenDriverComing(lat, lng , latCustomer ,  lngCustomer , rotateDriver),
-         )
+
+         ),
+
+
+        if(showPromoCode)
+        PromoCodeBottomSheet((){
+
+          this.setState(() {
+
+            showPromoCode = false ;
+
+          });
+
+        } ,)
 
         ],
 
@@ -693,14 +737,18 @@ class _HomeState extends State<Home> {
 
     this.setState(() {
       usePin  = false ;
+      SharedPreferencesHelper().setDriverSelected("");
     });
 
    print("whenDriverComing , $lat , $lng");
 
-   if(polylines.isEmpty)
-   _getPolyline(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
 
-   showMarkerDriver(lat , lng , rotateDriver);
+     if(polylines.isEmpty && !tripStarted)
+       _getPolyline(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
+
+     showMarkerDriver(lat , lng , rotateDriver);
+
+
 
   }
 

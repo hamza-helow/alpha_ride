@@ -23,6 +23,8 @@ class Trip {
 
   double km = 0.0;
 
+  int discount = 0 ;
+
 
   Trip({
     this.idCustomer,
@@ -41,7 +43,8 @@ class Trip {
     this.hourTrip ,
     this.minTrip = 0 ,
     this.startDate,
-    this.km = 0.0
+    this.km = 0.0,
+    this.discount
   });
 
 }

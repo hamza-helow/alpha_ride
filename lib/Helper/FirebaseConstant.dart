@@ -18,6 +18,10 @@ class FirebaseConstant {
   final String pending = "pending";
   final String  rejected = "rejected";
 
+  final String promoCode = "promoCode";
+
+  final String percentagePromoCode ="percentage";
+
 
 
 

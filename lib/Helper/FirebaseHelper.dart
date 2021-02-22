@@ -58,7 +58,8 @@ class FirebaseHelper {
       'locationDriver' :{
         'lat' : trip.locationDriver.latitude,
         'lng' :trip.locationDriver.longitude ,
-         'rotateDriver' : trip.rotateDriver
+         'rotateDriver' : trip.rotateDriver,
+         'discount' :trip.discount
       }
     });
 
@@ -99,6 +100,25 @@ class FirebaseHelper {
 
     });
 
+  }
+
+
+
+  Future<int> checkPromoCode(String code){
+
+    return  _fireStore
+          .collection(FirebaseConstant().promoCode)
+          .where("endDate" , isGreaterThanOrEqualTo:  DateTime.now())
+          .where("code" ,isEqualTo: code)
+          .limit(1)
+
+          .get().then((value) {
+
+            if(value.docs.length == 0 )
+              return 0;
+
+            return value.docs.first.get(FirebaseConstant().percentagePromoCode);
+      });
   }
 
 

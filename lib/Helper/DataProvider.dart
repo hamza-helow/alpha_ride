@@ -32,6 +32,9 @@ class DataProvider{
 
    LatLng accessPointLatLng ;
 
+   int promoCodePercentage =  0;
+
+   String promoCode="";
 
 
 }

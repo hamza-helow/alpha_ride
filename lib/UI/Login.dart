@@ -30,16 +30,6 @@ class _LoginState extends State<Login> {
   void initState() {
 
 
-    //
-    // auth.createUserWithEmailAndPassword(email: "hamziHelow3@gmail.com", password: "123456789").then((value) => {
-    //
-    //
-    //   print(value.credential)
-    //
-    //
-    // });
-
-
 
 
   }
