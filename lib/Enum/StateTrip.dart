@@ -5,7 +5,9 @@ enum StateTrip {
 
   active ,
   rejected ,
-  started
 
+  started ,
+
+  done
 
 }

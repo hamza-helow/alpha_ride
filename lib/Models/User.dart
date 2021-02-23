@@ -1,4 +1,3 @@
-
 import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 

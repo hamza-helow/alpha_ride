@@ -1,14 +1,13 @@
-
 import 'dart:convert';
 
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/UI/Customers/CompleteCreateAccount.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
-import 'package:alpha_ride/UI/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -37,9 +36,9 @@ class _PhoneVerificationState extends State<PhoneVerification> {
   String otpCode;
 
 
- void  listenForCode() async{
+  void  listenForCode() async{
 
-   await SmsAutoFill().listenForCode;
+    await SmsAutoFill().listenForCode;
   }
 
   @override
@@ -48,7 +47,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
     super.initState();
 
     listenForCode();
-     sendCode();
+    sendCode();
 
     SmsAutoFill().getAppSignature.then((signature) {
       setState(() {
@@ -92,15 +91,15 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                 children: [
 
                   if(inProgress)
-                  SizedBox(
-                    height: 35.0,
-                  ),
+                    SizedBox(
+                      height: 35.0,
+                    ),
 
                   if(inProgress)
                     LinearProgressIndicator(
-                    backgroundColor: Colors.deepOrange,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber,),
-                  ),
+                      backgroundColor: Colors.deepOrange,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.amber,),
+                    ),
 
 
                   SizedBox(
@@ -182,20 +181,20 @@ class _PhoneVerificationState extends State<PhoneVerification> {
     return  PinFieldAutoFill(
 
 
-                autofocus: true,
-                onCodeChanged: (txt)  {
+      autofocus: true,
+      onCodeChanged: (txt)  {
 
-                  print(txt);
-                },
-                codeLength:  6 , //code length, default 6
-              );
+        print(txt);
+      },
+      codeLength:  6 , //code length, default 6
+    );
   }
 
 
   var firebaseAuth =  FirebaseAuth.instance;
 
 
- bool inProgress = false ;
+  bool inProgress = false ;
   void verification (){
 
     this.setState(() {
@@ -203,7 +202,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
     });
 
     AuthCredential phoneAuthCredential =
-        PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
+    PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
 
 
     if(phoneAuthCredential == null)
@@ -230,15 +229,15 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
         }
         else
-       {
+          {
 
-         if(widget.typeAccount == TypeAccount.customer)
-           Navigator.push(context, MaterialPageRoute(builder: (context) => CompleteCreateAccount(c)))
-         else
-           requestNewAccountDriver(c.user.uid)
+            if(widget.typeAccount == TypeAccount.customer)
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CompleteCreateAccount(c)))
+            else
+              requestNewAccountDriver(c.user.uid)
 
 
-       },
+          },
 
 
       }),
@@ -336,7 +335,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       'phoneNumber' : '+962788051422' ,
       'idUser' : idUser
 
-        });
+    });
 
   }
 

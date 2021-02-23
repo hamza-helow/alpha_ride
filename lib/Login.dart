@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
@@ -5,10 +6,13 @@ import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/UI/Driver/joinDriver.dart';
 import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
 
@@ -28,19 +32,6 @@ class _LoginState extends State<Login> {
 
   @override
   void initState() {
-
-
-    //
-    // auth.createUserWithEmailAndPassword(email: "hamziHelow3@gmail.com", password: "123456789").then((value) => {
-    //
-    //
-    //   print(value.credential)
-    //
-    //
-    // });
-
-
-
 
   }
 
@@ -101,8 +92,8 @@ class _LoginState extends State<Login> {
                     child: MaterialButton(
                       onPressed: () {
 
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneVerification(phoneNumber),));
-
+                        print("SSSSSS");
+                        login();
                       },//since this is only a UI app
                       child: Text('${AppLocalizations.of(context).translate("signIn")}',
                         style: TextStyle(
@@ -157,7 +148,14 @@ class _LoginState extends State<Login> {
 
                         SizedBox(width: 22.0,),
                         
-                        Image.asset("Assets/gmail.png" , width: 50, height: 50,)
+                        InkWell(
+                          onTap: () {
+
+                            _handleSignIn();
+                          },
+
+                          child: Image.asset("Assets/gmail.png" , width: 50, height: 50,),
+                        )
 
 
 
@@ -177,7 +175,7 @@ class _LoginState extends State<Login> {
       bottomSheet:GestureDetector(
 
         onTap: () {
-
+          
           Navigator.push(context, MaterialPageRoute(builder: (context) => JoinDriver(),));
 
         } ,
@@ -207,6 +205,58 @@ class _LoginState extends State<Login> {
     );
   }
 
+  void login() {
+    
+    FirebaseFirestore.instance
+        .collection("Users")
+        .where("phoneNumber" , isEqualTo: phoneNumber).get().then((value) {
+
+          print("${value.docs.length} SSSSSSSSSSSSSSSSSSSS");
+
+          if(value.docs.length > 0){
+
+            auth.signInWithEmailAndPassword(email: value.docs.first.get("email"), password: "12345678").then((result) {
+
+              if( result.user != null ){
+
+                if(value.docs.first.get("typeUser") == TypeAccount.customer.toString())
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Home(),));
+                else
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeDriver(),));
+
+              }
+
+            });
+          }
+          else
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneVerification(phoneNumber),));
+
+
+
+    });
+
+    
+  }
+
+  GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: <String>[
+      'email',
+      'https://www.googleapis.com/auth/contacts.readonly',
+    ],
+  );
+
+
+  Future<void> _handleSignIn() async {
+    try {
+      await _googleSignIn.signIn().then((value) {
+
+       print( value.email);
+
+      });
+    } catch (error) {
+      print(error);
+    }
+  }
 }
 
 

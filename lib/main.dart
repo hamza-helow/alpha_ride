@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/UI/widgets/SplashScreen.dart';
@@ -12,11 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-
 import 'Helper/AppLanguage.dart';
 import 'Helper/AppLocalizations.dart';
 import 'Models/user_location.dart';
-import 'UI/Login.dart';
 import 'services/location_service.dart';
 
 var flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
@@ -57,6 +56,7 @@ void main() async{
 
   @override
   void initState() {
+
 
 
 

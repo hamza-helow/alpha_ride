@@ -18,6 +18,8 @@ dialog(Widget child,context,
 
 
 
+
+
 Positioned buttonsZoom(currentZoomLevel , _controller ,userLocation  ) {
   return Positioned(
     top: 120,
@@ -27,9 +29,10 @@ Positioned buttonsZoom(currentZoomLevel , _controller ,userLocation  ) {
       child: Container(
         color: Color(0xFFFAFAFA),
         width: 40,
-        height: 100,
+        height: 110,
         child: Column(
           children: <Widget>[
+
             IconButton(
                 icon: Icon(Icons.add),
                 onPressed: ()  {

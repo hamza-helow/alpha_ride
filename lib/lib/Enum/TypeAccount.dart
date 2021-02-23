@@ -1,7 +1,0 @@
-
-
-enum TypeAccount {
-
-  customer ,
-  driver
-}

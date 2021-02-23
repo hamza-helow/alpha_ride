@@ -1,12 +1,11 @@
 
-
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Models/Trip.dart';
-import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:alpha_ride/Models/User.dart' ;
+
 
 class FirebaseHelper {
 
@@ -49,8 +48,6 @@ class FirebaseHelper {
       'dateStart' : '',
       'dateAcceptRequest' : FieldValue.serverTimestamp(),
       'state' :StateTrip.active.toString() ,
-      'km' : 0.0,
-      'totalPrice' :0.0,
        'locationCustomer' :{
         'lat' : trip.locationCustomer.latitude,
          'lng' :trip.locationCustomer.longitude
@@ -58,39 +55,12 @@ class FirebaseHelper {
       'locationDriver' :{
         'lat' : trip.locationDriver.latitude,
         'lng' :trip.locationDriver.longitude ,
-         'rotateDriver' : trip.rotateDriver,
-         'discount' :trip.discount
+         'rotateDriver' : trip.rotateDriver
       }
     });
 
   }
 
-  
-  void sendNotification(String idSender , String idReceiver , String title , String body){
-
-
-  String idNotification =   FirebaseDatabase
-        .instance
-        .reference()
-        .child("Notification").push().key;
-    
-    FirebaseDatabase
-        .instance
-        .reference()
-        .child("Notification/$idNotification")
-        .set({
-
-          "idSender" :  idSender ,
-          "idReceiver" : idReceiver ,
-          "title" : title ,
-           "body": body ,
-           "createdAt" : DateTime.now().toString()
-
-         });
-    
-    
-  }
-  
 
   Future<bool> infoUserExit(String idUser){
 
@@ -100,25 +70,6 @@ class FirebaseHelper {
 
     });
 
-  }
-
-
-
-  Future<int> checkPromoCode(String code){
-
-    return  _fireStore
-          .collection(FirebaseConstant().promoCode)
-          .where("endDate" , isGreaterThanOrEqualTo:  DateTime.now())
-          .where("code" ,isEqualTo: code)
-          .limit(1)
-
-          .get().then((value) {
-
-            if(value.docs.length == 0 )
-              return 0;
-
-            return value.docs.first.get(FirebaseConstant().percentagePromoCode);
-      });
   }
 
 

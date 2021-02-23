@@ -4,9 +4,8 @@ import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
-import 'package:alpha_ride/Models/TripCustomer.dart';
-import 'package:alpha_ride/UI/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +18,10 @@ class CustomerBottomSheet extends StatefulWidget {
 
   final Function( double ,double , double customerLat , double customerLng , double rotateDriver)  whenDriverComing;
 
-  CustomerBottomSheet({this.callBack , this.whenDriverComing , this.showPromoCodeWidget});
+  final Function(StateTrip stateTrip) onStateTripChanged;
+
+
+  CustomerBottomSheet({this.callBack , this.whenDriverComing , this.showPromoCodeWidget , this.onStateTripChanged});
 
   @override
   _CustomerBottomSheetState createState() => _CustomerBottomSheetState();
@@ -97,11 +99,11 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                     ),
 
 
-                     if(!findDriver && !tripActive )
-                     confirmationTripWidget(),
+                    if(!findDriver && !tripActive )
+                      confirmationTripWidget(),
 
                     if(tripActive)
-                    driverInfo(),
+                      driverInfo(),
 
                     if(findDriver)
                       searchDriverWidget(),
@@ -117,60 +119,60 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   SizedBox searchDriverWidget() {
     return SizedBox(
-                      height: 230,
-                      child: Center(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text("Finding driver.." , style: TextStyle(fontSize: 20.0),) ,
-                            SizedBox(height: 15.0,),
-                            CircularProgressIndicator() ,
+      height: 230,
+      child: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Finding driver.." , style: TextStyle(fontSize: 20.0),) ,
+            SizedBox(height: 15.0,),
+            CircularProgressIndicator() ,
 
-                            SizedBox(height: 15.0,),
+            SizedBox(height: 15.0,),
 
-                            Padding(
-                              padding: EdgeInsets.only(
-                                  top: 10 ,
-                                  bottom: 10.0
-                              ),
+            Padding(
+              padding: EdgeInsets.only(
+                  top: 10 ,
+                  bottom: 10.0
+              ),
 
-                              child: SizedBox(
-                                width: 100.0,
+              child: SizedBox(
+                width: 100.0,
 
-                                child:  MaterialButton(
-                                  color: Colors.deepOrange,
+                child:  MaterialButton(
+                  color: Colors.deepOrange,
 
-                                  shape: RoundedRectangleBorder(
+                  shape: RoundedRectangleBorder(
 
-                                      borderRadius: BorderRadius.circular(25.0),
-                                      side: BorderSide(color: Colors.red)
-                                  ),
+                      borderRadius: BorderRadius.circular(25.0),
+                      side: BorderSide(color: Colors.red)
+                  ),
 
-                                  onPressed: () {
+                  onPressed: () {
 
-                                    this.setState(() {
-                                      findDriver = false ;
-                                      SharedPreferencesHelper().setDriverSelected("");
+                    this.setState(() {
+                      findDriver = false ;
+                      SharedPreferencesHelper().setDriverSelected("");
 
-                                      if(idDriver.isNotEmpty)
-                                      _firestore
-                                          .collection(FirebaseConstant().driverRequests)
-                                           .doc(idDriver)
-                                           .delete();
-                                    });
-                                  },
-                                  height: 60.0,
-                                  child: Icon(Icons.clear ,color: Colors.white,),
+                      if(idDriver.isNotEmpty)
+                        _firestore
+                            .collection(FirebaseConstant().driverRequests)
+                            .doc(idDriver)
+                            .delete();
+                    });
+                  },
+                  height: 60.0,
+                  child: Icon(Icons.clear ,color: Colors.white,),
 
-                                ),
-                              ),
+                ),
+              ),
 
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget confirmationTripWidget(){
@@ -212,83 +214,83 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
         ),
 
-       Padding(
-         padding: EdgeInsets.all(10.0),
+        Padding(
+          padding: EdgeInsets.all(10.0),
 
-         child:  Row(
-           crossAxisAlignment: CrossAxisAlignment.center,
-           mainAxisAlignment: MainAxisAlignment.center,
-
-
-           children: [
-
-             Padding(
-               padding: EdgeInsets.only(
-                   top: 10 ,
-                   bottom: 10.0
-               ),
-
-               child: SizedBox(
-                 width: MediaQuery.of(context).size.width * 0.20,
-
-                 child:  MaterialButton(
-                   color: Colors.deepOrange,
-
-                   shape: RoundedRectangleBorder(
-
-                       borderRadius: BorderRadius.circular(25.0),
-                       side: BorderSide(color: Colors.red)
-                   ),
-
-                   onPressed: () {
-
-                     widget.callBack();
-                   },
-                   height: 50.0,
-                   child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
-
-                 ),
-               ),
-
-             ),
-
-             Padding(
-               padding: EdgeInsets.only(
-                   top: 10 ,
-                   bottom: 10.0 ,
-                   left: 7.0
-               ),
-
-               child: SizedBox(
-                 width: MediaQuery.of(context).size.width * 0.60,
-
-                 child:  MaterialButton(
-                   color: Colors.deepOrange,
-
-                   shape: RoundedRectangleBorder(
-
-                       borderRadius: BorderRadius.circular(25.0),
-                       side: BorderSide(color: Colors.red)
-                   ),
-
-                   onPressed: () {
-
-                     getDriver();
-
-                   },
-                   height: 50.0,
-                   child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
-
-                 ),
-               ),
-
-             ),
+          child:  Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
 
 
-           ],
+            children: [
 
-         ),
-       ),
+              Padding(
+                padding: EdgeInsets.only(
+                    top: 10 ,
+                    bottom: 10.0
+                ),
+
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.20,
+
+                  child:  MaterialButton(
+                    color: Colors.deepOrange,
+
+                    shape: RoundedRectangleBorder(
+
+                        borderRadius: BorderRadius.circular(25.0),
+                        side: BorderSide(color: Colors.red)
+                    ),
+
+                    onPressed: () {
+
+                      widget.callBack();
+                    },
+                    height: 50.0,
+                    child: Icon(Icons.arrow_back_ios_rounded ,color: Colors.white,),
+
+                  ),
+                ),
+
+              ),
+
+              Padding(
+                padding: EdgeInsets.only(
+                    top: 10 ,
+                    bottom: 10.0 ,
+                    left: 7.0
+                ),
+
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.60,
+
+                  child:  MaterialButton(
+                    color: Colors.deepOrange,
+
+                    shape: RoundedRectangleBorder(
+
+                        borderRadius: BorderRadius.circular(25.0),
+                        side: BorderSide(color: Colors.red)
+                    ),
+
+                    onPressed: () {
+
+                      getDriver();
+
+                    },
+                    height: 50.0,
+                    child: Text("YALLA", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
+
+                  ),
+                ),
+
+              ),
+
+
+            ],
+
+          ),
+        ),
 
       ],
     );
@@ -332,7 +334,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
           child:  ListTile(
 
-           leading: Image.asset("Assets/enconomy.png"),
+            leading: Image.asset("Assets/enconomy.png"),
             title: Text("${currentTrip.carType} ${currentTrip.carModel}"),
             trailing: Text("Red color"),
             subtitle: Text("15687988"),
@@ -360,21 +362,21 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                   width: MediaQuery.of(context).size.width * 0.60,
 
                   child:  MaterialButton(
-                    color: Colors.red,
+                    color: currentTrip.stateTrip == StateTrip.active ? Colors.red : Colors.green ,
 
                     shape: RoundedRectangleBorder(
 
                         borderRadius: BorderRadius.circular(25.0),
-                        side: BorderSide(color: Colors.red)
+                        side: BorderSide(color: currentTrip.stateTrip == StateTrip.active ? Colors.red : Colors.green)
                     ),
 
                     onPressed: () {
 
-                    //  getDriver();
+                      //  getDriver();
 
                     },
                     height: 50.0,
-                    child: Text("Cancel", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
+                    child: Text( currentTrip.stateTrip == StateTrip.active ?  "Cancel" : "Trip started", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
 
                   ),
                 ),
@@ -402,56 +404,56 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
     // Create a geoFirePoint
     GeoFirePoint center = geo.point(latitude: DataProvider().userLocation.latitude, longitude: DataProvider().userLocation.longitude);
 
-     // get the collection reference or query
-      var collectionReference =
-      _firestore.collection('locations')
-          .where(FirebaseConstant().available , isEqualTo: true);
-          //.orderBy("idUser" ,descending: false)
-          //.where(FirebaseConstant().available , isNotEqualTo: "0");
+    // get the collection reference or query
+    var collectionReference =
+    _firestore.collection('locations')
+        .where(FirebaseConstant().available , isEqualTo: true);
+    //.orderBy("idUser" ,descending: false)
+    //.where(FirebaseConstant().available , isNotEqualTo: "0");
 
 
     String field = 'position';
 
     Stream<List<DocumentSnapshot>> stream = geo.collection(collectionRef: collectionReference)
-    .within(center: center, radius: radius, field: field);
+        .within(center: center, radius: radius, field: field);
 
-           stream.listen((event) {
+    stream.listen((event) {
 
-             DocumentSnapshot currentDriver =   event.firstWhere((element) => !rejected.contains(element.data()['idUser']) , orElse: () => null,);
+      DocumentSnapshot currentDriver =   event.firstWhere((element) => !rejected.contains(element.data()['idUser']) , orElse: () => null,);
 
-            // print(currentDriver.data());
+      // print(currentDriver.data());
 
-             if(findDriver)
-             if(currentDriver == null)
-              {
-                print("$radius");
+      if(findDriver)
+        if(currentDriver == null)
+        {
+          print("$radius");
+          radius ++ ;
+          getDriver() ;
+
+        }
+        else{
+
+          FirebaseHelper().checkDriverHasActiveTrip(currentDriver.data()['idUser'])
+              .then((exit) {
+
+            if(!exit)
+              sendRequestToDriver(currentDriver.data());
+            else
+            {
+              if(findDriver){
                 radius ++ ;
                 getDriver() ;
-
               }
-             else{
 
-               FirebaseHelper().checkDriverHasActiveTrip(currentDriver.data()['idUser'])
-                   .then((exit) {
-
-                     if(!exit)
-                       sendRequestToDriver(currentDriver.data());
-                     else
-                       {
-                         if(findDriver){
-                           radius ++ ;
-                           getDriver() ;
-                         }
-
-                       }
-               });
+            }
+          });
 
 
 
-             }
+        }
 
 
-        });
+    });
 
 
   }
@@ -463,24 +465,25 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
     SharedPreferencesHelper().setDriverSelected(idDriver);
 
     if(findDriver)
-    _firestore
-        .collection(FirebaseConstant().driverRequests)
-        .doc(dataDriver['idUser'])
-        .set({
-         'idCustomer' : auth.currentUser.uid,
-          'nameCustomer' : "hamza helow" ,
-          'phoneCustomer' : "0788051422" ,
-            'lat' : DataProvider().userLocation.latitude,
-           'lng' : DataProvider().userLocation.longitude ,
-           'stateRequest' : "pending" ,
+      _firestore
+          .collection(FirebaseConstant().driverRequests)
+          .doc(dataDriver['idUser'])
+          .set({
+        'idCustomer' : auth.currentUser.uid,
+        'nameCustomer' : "hamza helow" ,
+        'phoneCustomer' : "0788051422" ,
+        'lat' : DataProvider().userLocation.latitude,
+        'lng' : DataProvider().userLocation.longitude ,
+        'stateRequest' : "pending" ,
+        'discount': DataProvider().promoCodePercentage,
 
-           if(DataProvider().accessPointLatLng != null)
-           "accessPoint" : {
+        if(DataProvider().accessPointLatLng != null)
+          "accessPoint" : {
             'lat' : DataProvider().accessPointLatLng.latitude,
-             'lng' : DataProvider().accessPointLatLng.longitude,
-             'addressName' : DataProvider().accessPointAddress
-           }
-         });
+            'lng' : DataProvider().accessPointLatLng.longitude,
+            'addressName' : DataProvider().accessPointAddress
+          }
+      });
     listenRequestDriver(idDriver);
 
   }
@@ -493,21 +496,21 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
         .snapshots()
         .listen((event) {
 
-            if(event.exists)
-           if(event.data()['stateRequest'] == "rejected")
-             {
-               radius =  1 ;
-               rejected.add(idDriver);
-               getDriver();
+      if(event.exists)
+        if(event.data()['stateRequest'] == "rejected")
+        {
+          radius =  1 ;
+          rejected.add(idDriver);
+          getDriver();
 
-             }
-            else
-              {
-                listenCurrentTrip();
+        }
+        else
+        {
+          listenCurrentTrip();
 
-              }
+        }
 
-        });
+    });
 
   }
 
@@ -515,71 +518,90 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
     _firestore
         .collection("Trips")
-         .where("state" , isEqualTo: StateTrip.active.toString())
-         .where("idCustomer" , isEqualTo: auth.currentUser.uid)
+        .where("state" , whereIn: [StateTrip.active.toString(),StateTrip.started.toString()])
+
+        .where("idCustomer" , isEqualTo: auth.currentUser.uid)
         .snapshots().listen((event) {
-           if(this.mounted)
-           this.setState(() {
+      if(this.mounted)
+        this.setState(() {
 
-             if(event.size > 0 ){
-               tripActive = true ;
-               FirebaseHelper().loadUserInfo(event.docs.first.get("idDriver") , typeAccount: TypeAccount.driver).then((value)  {
+          if(event.size > 0 ){
+            tripActive = true ;
+            FirebaseHelper().loadUserInfo(event.docs.first.get("idDriver") , typeAccount: TypeAccount.driver).then((value)  {
 
-                 print("CCCCC ");
-                 this.setState(() {
-                   currentTrip = Trip(
-                       idCustomer: "" ,
-                       idDriver: event.docs.first.get("idDriver") ,
-                        nameDriver: value.fullName ,
-                        ratingDriver: value.rating/value.countRating ,
-                     locationCustomer: LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng")) ,
-                     locationDriver: LatLng(event.docs.first.get("locationDriver.lat") , event.docs.first.get("locationDriver.lng")) ,
-                     carType: value.carType,
-                     carModel: value.carModel
+              print("CCCCC ");
+              this.setState(() {
+                currentTrip = Trip(
+                    idCustomer: "" ,
+                    idDriver: event.docs.first.get("idDriver") ,
+                    nameDriver: value.fullName ,
+                    ratingDriver: value.rating/value.countRating ,
+                    locationCustomer: LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng")) ,
+                    locationDriver: LatLng(event.docs.first.get("locationDriver.lat") , event.docs.first.get("locationDriver.lng")) ,
+                    carType: value.carType,
+                    carModel: value.carModel,
+                  stateTrip: (){
 
-                   );
+                    var state = event.docs.first.get("state");
 
-                   widget.whenDriverComing(currentTrip.locationDriver.latitude , currentTrip.locationDriver.longitude , currentTrip.locationCustomer.latitude , currentTrip.locationCustomer.longitude ,event.docs.first.get("locationDriver.rotateDriver")  );
+                    if(state == StateTrip.active.toString())
+                      return StateTrip.active ;
+                    else if(state == StateTrip.rejected.toString())
+                      return StateTrip.rejected ;
+                    else
+                      return StateTrip.started ;
 
+                  }()
 
-                   getArriveTime(currentTrip.locationCustomer , currentTrip.locationDriver).then((arriveTime) {
-
-                    this.setState(() {
-                      currentTrip.arriveTime = arriveTime;
-                    });
-
-
-                   });
-
-
-                 });
-
-               });
-             }
-             else
-               this.setState(() {
-
-                 SharedPreferencesHelper().getDriverSelected().then((value) {
-                   this.setState(() {
-                     idDriver = value;
-
-                     if( idDriver != null && idDriver.isNotEmpty)
-                      {
-                        findDriver = true ;
-                        getDriver();
-                      }
-                     else
-                     tripActive = false ;
-
-                   });
-                 });
+                );
 
 
-               });
+                widget.onStateTripChanged(currentTrip.stateTrip);
+                widget.whenDriverComing(currentTrip.locationDriver.latitude , currentTrip.locationDriver.longitude , currentTrip.locationCustomer.latitude , currentTrip.locationCustomer.longitude ,event.docs.first.get("locationDriver.rotateDriver")  );
 
-           });
 
-         });
+                getArriveTime(currentTrip.locationCustomer , currentTrip.locationDriver).then((arriveTime) {
+
+                  this.setState(() {
+                    currentTrip.arriveTime = arriveTime;
+                  });
+
+
+                });
+
+
+              });
+
+            });
+          }
+          else
+            this.setState(() {
+
+              widget.onStateTripChanged(StateTrip.done);
+
+              print("NO NO ");
+
+              SharedPreferencesHelper().getDriverSelected().then((value) {
+                this.setState(() {
+                  idDriver = value;
+
+                  if( idDriver != null && idDriver.isNotEmpty)
+                  {
+                    findDriver = true ;
+                    getDriver();
+                  }
+                  else
+                    tripActive = false ;
+
+                });
+              });
+
+
+            });
+
+        });
+
+    });
 
   }
 
@@ -592,7 +614,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
     return response.data['rows'][0]['elements'][0]['duration']['text'] ;
 
-  //  print("RESULT :  ${response.data['rows'][0]['elements'][0]['duration']['text']}");
+    //  print("RESULT :  ${response.data['rows'][0]['elements'][0]['duration']['text']}");
 
   }
 

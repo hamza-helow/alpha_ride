@@ -2,6 +2,7 @@ import 'package:alpha_ride/Helper/AppLanguage.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/setupLanguage.dart';
+
 import 'package:flutter/material.dart';
 class Settings extends StatefulWidget {
   @override

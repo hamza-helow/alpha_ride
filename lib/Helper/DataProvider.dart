@@ -1,4 +1,3 @@
-
 import 'package:alpha_ride/Models/DriverRequest.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -24,17 +23,17 @@ class DataProvider{
   UserLocation userLocation;
 
 
-   String currentLanguage = "en" ;
+  String currentLanguage = "en" ;
 
-   String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
+  String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
 
-   String accessPointAddress ="";
+  String accessPointAddress ="";
 
-   LatLng accessPointLatLng ;
+  LatLng accessPointLatLng ;
 
-   int promoCodePercentage =  0;
+  int promoCodePercentage =  0;
 
-   String promoCode="";
+  String promoCode="";
 
 
 }

@@ -1,26 +1,23 @@
 import 'dart:async';
+
 import 'package:alpha_ride/Helper/DataProvider.dart';
-import 'package:alpha_ride/Helper/MapHelper.dart';
+import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/user_location.dart';
-import 'package:alpha_ride/UI/Common/Settings.dart' as w;
-import 'package:alpha_ride/UI/Login.dart';
-import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
-import 'package:alpha_ride/lib/Enum/StateTrip.dart';
-import 'package:alpha_ride/lib/Helper/SharedPreferencesHelper.dart';
-import 'package:alpha_ride/lib/UI/widgets/bottom_sheet.dart';
+import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:geocoder/geocoder.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:geoflutterfire/geoflutterfire.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
+import 'package:alpha_ride/UI/Common/Settings.dart' as w;
 
 // key password : hh0788051422**@@
 
@@ -53,11 +50,13 @@ class _HomeState extends State<Home> {
 
   UserLocation userLocation ;
 
-  bool confirmPickup = false , usePin = true  , showPromoCode = false , tripStarted = false  ;
+  bool confirmPickup = false , usePin = true  ;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
   Completer<GoogleMapController> _completer = Completer();
+
+  bool mapIsCreated= false;
 
   static final CameraPosition defaultPosition = CameraPosition(
     target: LatLng(32.5661186, 35.8420676),
@@ -76,8 +75,6 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     loadInfoUser();
-
-
 
 
     BitmapDescriptor.fromAssetImage(
@@ -121,7 +118,6 @@ class _HomeState extends State<Home> {
     });
 
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -173,32 +169,8 @@ class _HomeState extends State<Home> {
 
           buildAppBar() ,
 
-         if(confirmPickup || selectedDriver.isNotEmpty)
+         if((confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated)
          CustomerBottomSheet(
-
-           onStateTripChanged: (stateTrip) {
-
-
-             print("onStateTripChanged ${stateTrip.toString()}");
-
-             if(this.mounted)
-             this.setState(() {
-
-               if(stateTrip == StateTrip.done)
-                 {
-                   markers.clear();
-                   polylines.clear();
-                   polylineCoordinates.clear();
-                 }
-               else if (stateTrip == StateTrip.started){
-                 tripStarted = true ;
-               }
-             });
-
-
-
-           },
-
            callBack: (){
 
              this.setState(() {
@@ -206,28 +178,9 @@ class _HomeState extends State<Home> {
              });
 
            },
-           showPromoCodeWidget:(){
-
-             this.setState(() {
-               showPromoCode = true ;
-             });
-           },
 
            whenDriverComing: (lat, lng , latCustomer , lngCustomer , rotateDriver) =>whenDriverComing(lat, lng , latCustomer ,  lngCustomer , rotateDriver),
-
-         ),
-
-
-        if(showPromoCode)
-        PromoCodeBottomSheet((){
-
-          this.setState(() {
-
-            showPromoCode = false ;
-
-          });
-
-        } ,)
+         )
 
         ],
 
@@ -454,8 +407,6 @@ class _HomeState extends State<Home> {
                                 onTap: () {
                                   this.setState(() {
                                     addressTo ="";
-
-                                    DataProvider().accessPointLatLng = null ;
                                   });
 
                                 },
@@ -603,6 +554,11 @@ class _HomeState extends State<Home> {
 
     _completer.complete(controller);
     _controller  = controller ;
+
+   this.setState(() {
+     mapIsCreated = true ;
+   });
+
     getCurrentLocation();
 
   }
@@ -617,10 +573,7 @@ class _HomeState extends State<Home> {
 
         DataProvider().userLocation = userLocation;
 
-
-      //  _getAddressFromLatLng(userLocation.latitude , userLocation.longitude);
-
-        MapHelper().getAddressLine(LatLng(userLocation.latitude, userLocation.longitude)).then((address) {
+        _getAddressFromLatLng(userLocation.latitude ,userLocation.longitude).then((address) => {
 
           this.setState(() {
             _currentAddress = address;
@@ -628,8 +581,7 @@ class _HomeState extends State<Home> {
             animateTo(value.latitude, value.longitude);
 
             //showMarkerDriver(value.latitude , value.longitude);
-          });
-
+          })
         });
 
       })
@@ -662,6 +614,35 @@ class _HomeState extends State<Home> {
       });
     }
     _addPolyLine();
+  }
+
+
+  void zoomBetweenTwoPoints(LatLng customerLocation , LatLng driverLocation){
+
+    final LatLng offerLatLng =  driverLocation ;
+
+    LatLngBounds bound;
+    if (offerLatLng.latitude > customerLocation.latitude &&
+        offerLatLng.longitude > customerLocation.longitude) {
+      bound = LatLngBounds(southwest: customerLocation, northeast: offerLatLng);
+    } else if (offerLatLng.longitude > customerLocation.longitude) {
+      bound = LatLngBounds(
+          southwest: LatLng(offerLatLng.latitude, customerLocation.longitude),
+          northeast: LatLng(customerLocation.latitude, offerLatLng.longitude));
+    } else if (offerLatLng.latitude > customerLocation.latitude) {
+      bound = LatLngBounds(
+          southwest: LatLng(customerLocation.latitude, offerLatLng.longitude),
+          northeast: LatLng(offerLatLng.latitude, customerLocation.longitude));
+    } else {
+      bound = LatLngBounds(southwest: offerLatLng, northeast: customerLocation);
+    }
+
+    CameraUpdate u2 = CameraUpdate.newLatLngBounds(bound, 50);
+
+
+    this._controller.animateCamera(u2).then((void v){
+    });
+
   }
 
 
@@ -700,10 +681,6 @@ class _HomeState extends State<Home> {
       _getAddressFromLatLng(lat, lng).then((value) => {
         this.setState(() {
       addressTo = value;
-
-        DataProvider().accessPointAddress = addressTo ;
-        DataProvider().accessPointLatLng = LatLng(lat, lng);
-
         })
       });
     }
@@ -722,8 +699,6 @@ class _HomeState extends State<Home> {
 
       address =  "${place.locality}, ${place.name}, ${place.country}";
 
-      print("${place.street} STREET");
-
 
 
     } catch (e) {
@@ -733,21 +708,24 @@ class _HomeState extends State<Home> {
     return address;
   }
 
+
+
+
   whenDriverComing(double lat, double lng ,double latCustomer, double lngCustomer  , double rotateDriver) {
 
     this.setState(() {
       usePin  = false ;
-      SharedPreferencesHelper().setDriverSelected("");
     });
 
    print("whenDriverComing , $lat , $lng");
 
+    zoomBetweenTwoPoints(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
 
-     if(polylines.isEmpty && !tripStarted)
-       _getPolyline(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
 
-     showMarkerDriver(lat , lng , rotateDriver);
+    if(polylines.isEmpty)
+   _getPolyline(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
 
+      showMarkerDriver(lat , lng , rotateDriver);
 
 
   }
