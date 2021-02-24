@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
@@ -105,6 +106,8 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
 
   Column requestWidget() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -155,7 +158,23 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
               ),
             ),
           ],
-        )
+        ),
+
+         Padding(padding: EdgeInsets.only(left: 10.0 ,  right: 10.0)
+         ,
+           child:  ListTile(
+             leading: Icon(Icons.info),
+             title: Text("Other information"),
+             subtitle: Text(currentTrip.tripType == TypeTrip.distance ?"going to ${currentTrip.goingTo}" : "For ${currentTrip.hours} Hours" ),
+             trailing: InkWell(
+               onTap: () {
+
+               },
+               child: Text("Show location" ,style: TextStyle(fontWeight: FontWeight.bold),),
+             ),
+           ),
+         )
+
       ],
     );
   }
@@ -175,6 +194,9 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
               nameCustomer: event.docs.first.get("nameCustomer"),
               lng: event.docs.first.get("lng"),
               lat: event.docs.first.get("lat"),
+              goingTo: "",
+              tripType: event.docs.first.get("typeTrip") == TypeTrip.hours.toString() ? TypeTrip.hours :TypeTrip.distance ,
+              hours: event.docs.first.get("hours") ,
               stateRequest:
               event.docs.first.get(FirebaseConstant().stateRequest));
 
@@ -200,7 +222,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
          idCustomer: currentTrip.idCustomer ,
          locationCustomer: LatLng(currentTrip.lat , currentTrip.lng),
           locationDriver: LatLng(DataProvider().userLocation.latitude , DataProvider().userLocation.longitude ),
-          rotateDriver: DataProvider().rotateCar
+          rotateDriver: DataProvider().rotateCar,
         ))
         .then((value) {
       _firestore

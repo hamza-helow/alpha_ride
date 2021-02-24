@@ -24,5 +24,4 @@ class FirebaseConstant {
   final String promoCode = "promoCode";
 
 
-
 }
