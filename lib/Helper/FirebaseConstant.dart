@@ -5,6 +5,8 @@ class FirebaseConstant {
 
   static final FirebaseConstant _instance = FirebaseConstant._privateConstructor();
 
+
+
   factory FirebaseConstant() {
     return _instance;
   }
@@ -18,6 +20,8 @@ class FirebaseConstant {
   final String pending = "pending";
   final String  rejected = "rejected";
 
+  final String percentagePromoCode ="percentage";
+  final String promoCode = "promoCode";
 
 
 

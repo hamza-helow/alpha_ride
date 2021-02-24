@@ -1,11 +1,10 @@
-
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Models/Trip.dart';
+import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:alpha_ride/Models/User.dart' ;
-
+import 'package:firebase_database/firebase_database.dart';
 
 class FirebaseHelper {
 
@@ -23,15 +22,16 @@ class FirebaseHelper {
 
   Future<void> insertInformationUser(User user) async{
 
-   return _fireStore.collection("Users").doc(user.idUser).set({
+    return _fireStore.collection("Users").doc(user.idUser).set({
 
       'fullName' : user.fullName ,
       'email': user.email ,
       'typeUser' : user.typeAccount.toString() ,
-       'countRating'  : 1 ,
-       'rating' :0.0  ,
-       'countTrips' : 0 ,
-       'stateAccount' : user.stateAccount.toString() ,
+      'countRating'  : 1 ,
+      'rating' :0.0  ,
+      'countTrips' : 0 ,
+      'stateAccount' : user.stateAccount.toString() ,
+      'phoneNumber' : user.phoneNumber
 
     });
 
@@ -48,16 +48,45 @@ class FirebaseHelper {
       'dateStart' : '',
       'dateAcceptRequest' : FieldValue.serverTimestamp(),
       'state' :StateTrip.active.toString() ,
-       'locationCustomer' :{
+      'km' : 0.0,
+      'totalPrice' :0.0,
+      'locationCustomer' :{
         'lat' : trip.locationCustomer.latitude,
-         'lng' :trip.locationCustomer.longitude
-       },
+        'lng' :trip.locationCustomer.longitude
+      },
       'locationDriver' :{
         'lat' : trip.locationDriver.latitude,
         'lng' :trip.locationDriver.longitude ,
-         'rotateDriver' : trip.rotateDriver
+        'rotateDriver' : trip.rotateDriver,
+        'discount' :trip.discount
       }
     });
+
+  }
+
+
+  void sendNotification(String idSender , String idReceiver , String title , String body){
+
+
+    String idNotification =   FirebaseDatabase
+        .instance
+        .reference()
+        .child("Notification").push().key;
+
+    FirebaseDatabase
+        .instance
+        .reference()
+        .child("Notification/$idNotification")
+        .set({
+
+      "idSender" :  idSender ,
+      "idReceiver" : idReceiver ,
+      "title" : title ,
+      "body": body ,
+      "createdAt" : DateTime.now().toString()
+
+    });
+
 
   }
 
@@ -66,7 +95,7 @@ class FirebaseHelper {
 
     return _fireStore.collection("Users").doc(idUser).get().then((value) async{
 
-     return  value.exists ;
+      return  value.exists ;
 
     });
 
@@ -74,17 +103,36 @@ class FirebaseHelper {
 
 
 
+  Future<int> checkPromoCode(String code){
+
+    return  _fireStore
+        .collection(FirebaseConstant().promoCode)
+        .where("endDate" , isGreaterThanOrEqualTo:  DateTime.now())
+        .where("code" ,isEqualTo: code)
+        .limit(1)
+
+        .get().then((value) {
+
+      if(value.docs.length == 0 )
+        return 0;
+
+      return value.docs.first.get(FirebaseConstant().percentagePromoCode);
+    });
+  }
+
+
+
   Future<bool> checkDriverHasActiveTrip(String idDriver){
 
-   return  _fireStore.collection(FirebaseConstant().driverRequests).doc(idDriver).get().then((value) async{
+    return  _fireStore.collection(FirebaseConstant().driverRequests).doc(idDriver).get().then((value) async{
 
       if(value.exists)
-        {
-          if(value.get(FirebaseConstant().stateRequest) == "rejected")
-            return false ;
-          else
-            return true ;
-        }
+      {
+        if(value.get(FirebaseConstant().stateRequest) == "rejected")
+          return false ;
+        else
+          return true ;
+      }
       else
         return false ;
 
@@ -103,7 +151,7 @@ class FirebaseHelper {
 
   Future<void> updateLocationUser(String idUser ,Map<String,dynamic> fields ) async{
 
-   await _fireStore
+    await _fireStore
         .collection(FirebaseConstant().locations)
         .doc(idUser).update(fields);
   }
@@ -123,9 +171,9 @@ class FirebaseHelper {
         .collection(FirebaseConstant().driverRequests)
         .doc(idUser).update({
 
-          FirebaseConstant().stateRequest : FirebaseConstant().rejected
+      FirebaseConstant().stateRequest : FirebaseConstant().rejected
 
-        });
+    });
   }
 
 
@@ -133,7 +181,7 @@ class FirebaseHelper {
   Future<User> loadUserInfo(String idUser , {TypeAccount typeAccount =TypeAccount.customer }){
 
 
-   return _fireStore.collection("Users").doc(idUser).get().then((value) async {
+    return _fireStore.collection("Users").doc(idUser).get().then((value) async {
 
       User user = User(
         idUser: value.id ,

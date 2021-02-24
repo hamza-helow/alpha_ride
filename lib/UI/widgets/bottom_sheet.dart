@@ -1,5 +1,6 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
@@ -20,8 +21,10 @@ class CustomerBottomSheet extends StatefulWidget {
 
   final Function(StateTrip stateTrip) onStateTripChanged;
 
+  final numberHours ;
 
-  CustomerBottomSheet({this.callBack , this.whenDriverComing , this.showPromoCodeWidget , this.onStateTripChanged});
+
+  CustomerBottomSheet({this.callBack , this.whenDriverComing , this.showPromoCodeWidget , this.onStateTripChanged , this.numberHours});
 
   @override
   _CustomerBottomSheetState createState() => _CustomerBottomSheetState();
@@ -43,6 +46,8 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   @override
   void initState() {
+
+    print("Number Hours : ${widget.numberHours}");
 
 
     currentTrip = Trip();
@@ -476,6 +481,9 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
         'lng' : DataProvider().userLocation.longitude ,
         'stateRequest' : "pending" ,
         'discount': DataProvider().promoCodePercentage,
+        'typeTrip': widget.numberHours == 0 ? TypeTrip.distance.toString() : TypeTrip.hours.toString(),
+
+         'hours' : widget.numberHours,
 
         if(DataProvider().accessPointLatLng != null)
           "accessPoint" : {

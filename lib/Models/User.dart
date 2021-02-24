@@ -13,6 +13,8 @@ class User {
 
   int countRating;
 
+  String phoneNumber;
+
 
   User({
     this.fullName,
@@ -23,7 +25,8 @@ class User {
     this.countRating,
     this.rating ,
     this.carModel ,
-    this.carType
+    this.carType,
+    this.phoneNumber
 
   });
 }

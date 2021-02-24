@@ -1,0 +1,7 @@
+
+
+enum TypeTrip{
+
+  hours ,
+  distance
+}

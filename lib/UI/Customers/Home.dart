@@ -4,6 +4,7 @@ import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 
 import 'package:flutter/material.dart';
@@ -50,7 +51,7 @@ class _HomeState extends State<Home> {
 
   UserLocation userLocation ;
 
-  bool confirmPickup = false , usePin = true  ;
+  bool confirmPickup = false , usePin = true , showPromoCode = false  ;
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
@@ -171,6 +172,7 @@ class _HomeState extends State<Home> {
 
          if((confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated)
          CustomerBottomSheet(
+           numberHours: numberHours,
            callBack: (){
 
              this.setState(() {
@@ -180,9 +182,32 @@ class _HomeState extends State<Home> {
            },
 
            whenDriverComing: (lat, lng , latCustomer , lngCustomer , rotateDriver) =>whenDriverComing(lat, lng , latCustomer ,  lngCustomer , rotateDriver),
-         )
 
-        ],
+           onStateTripChanged: (stateTrip) {
+
+           },
+
+           showPromoCodeWidget:(){
+
+             this.setState(() {
+               showPromoCode = true ;
+             });
+
+           },
+
+         ) ,
+
+         if(showPromoCode)
+         PromoCodeBottomSheet((){
+
+           this.setState(() {
+             showPromoCode = false ;
+           });
+
+         }),
+
+
+    ],
 
       ),
 
@@ -376,7 +401,28 @@ class _HomeState extends State<Home> {
                                           size: 21,
                                         ),
                                         backgroundColor: Colors.grey[200],
-                                        label: TimeSelectorWidget(),
+                                        label: RichText(
+                                          text: TextSpan(
+                                            children: <InlineSpan>[
+                                              TextSpan(
+                                                text:  numberHours == 0 ?'Now' : '$numberHours',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w400,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                              WidgetSpan(
+                                                child: SizedBox(
+                                                  width: 2.5,
+                                                ),
+                                              ),
+                                              WidgetSpan(
+                                                alignment: PlaceholderAlignment.middle,
+                                                child: Icon(Icons.keyboard_arrow_down),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -516,6 +562,19 @@ class _HomeState extends State<Home> {
               trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: Colors.deepOrange),),),
             ),
 
+
+            ListTile(
+              onTap: () {
+
+                _scaffoldKey.currentState.openEndDrawer();
+                dialogReserveHours();
+
+              },
+              leading: Icon(Icons.access_time),
+              title: Text("Reserve hours" ,),
+              trailing: Padding(padding: EdgeInsets.only(right: 10), ),
+            ),
+
             ListTile(
               onTap: () {
 
@@ -616,7 +675,6 @@ class _HomeState extends State<Home> {
     _addPolyLine();
   }
 
-
   void zoomBetweenTwoPoints(LatLng customerLocation , LatLng driverLocation){
 
     final LatLng offerLatLng =  driverLocation ;
@@ -644,6 +702,73 @@ class _HomeState extends State<Home> {
     });
 
   }
+
+
+   int numberHours = 0 ;
+
+  dialogReserveHours() async {
+
+     String err ;
+
+     final hours = TextEditingController();
+
+    await showDialog<String>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setState) => new AlertDialog(
+            contentPadding: EdgeInsets.all(20.0),
+            title: Text("Reserve hours"),
+              content: TextField(
+                controller: hours,
+                onChanged: (value) {
+
+                  setState(() {
+                    if(int.parse(value) > 24)
+                      err = "please enter correct number";
+                    else
+                      err = null;
+
+                  });
+
+                },
+
+                decoration: InputDecoration(
+
+                    errorText: err ,
+                  labelText: "Select number of hours",
+
+                  border: new OutlineInputBorder(
+                  ),
+                ),
+
+              ),
+              actions: [
+
+                MaterialButton(onPressed: () {
+
+                  if(err == null)
+                  this.setState(() {
+                    numberHours = int.parse(hours.text);
+                  });
+                  Navigator.pop(context);
+
+                },
+                child: Text("Confirm" , style: TextStyle(color: Colors.deepOrange , fontWeight: FontWeight.bold),),
+                ),
+
+                MaterialButton(onPressed: () {
+
+                  Navigator.pop(context);
+
+                },
+                  child: Text("cancel" , style: TextStyle(color: Colors.deepOrange , fontWeight: FontWeight.bold)),
+                ),
+
+              ]),
+        ));
+  }
+
+
 
 
   Future<void> animateTo(double lat, double lng) async {
