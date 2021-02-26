@@ -182,23 +182,26 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
   checkExitRequest() {
     _firestore
         .collection(FirebaseConstant().driverRequests)
-        .snapshots()
+         .doc(auth.currentUser.uid)
+         .snapshots()
         .listen((event) {
-      print(event.docs.length);
 
-      if (event.docs.length > 0)
+
+
+
+      if (event.exists)
         this.setState(() {
           currentTrip = new TripCustomer(
-              idCustomer: event.docs.first.get("idCustomer"),
-              phoneCustomer: event.docs.first.get("phoneCustomer"),
-              nameCustomer: event.docs.first.get("nameCustomer"),
-              lng: event.docs.first.get("lng"),
-              lat: event.docs.first.get("lat"),
+              idCustomer: event.get("idCustomer"),
+              phoneCustomer: event.get("phoneCustomer"),
+              nameCustomer: event.get("nameCustomer"),
+              lng: event.get("lng"),
+              lat: event.get("lat"),
               goingTo: "",
-              tripType: event.docs.first.get("typeTrip") == TypeTrip.hours.toString() ? TypeTrip.hours :TypeTrip.distance ,
-              hours: event.docs.first.get("hours") ,
+              tripType: event.get("typeTrip") == TypeTrip.hours.toString() ? TypeTrip.hours :TypeTrip.distance ,
+              hours: event.get("hours") ,
               stateRequest:
-              event.docs.first.get(FirebaseConstant().stateRequest));
+              event.get(FirebaseConstant().stateRequest));
 
           if (currentTrip.stateRequest == FirebaseConstant().pending)
             exitTrip = true;
@@ -256,62 +259,74 @@ class _StateDriverState extends State<StateDriver> {
 
   final _firestore = FirebaseFirestore.instance;
 
+  
+  
 
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(18.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Expanded(
-            child: Container(
-              height: 60.5,
-              color: Colors.grey[200],
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Text(
-                    isOnline ? "You're online" : "You're offline",
-                    style: TextStyle(
-                      color: isOnline
-                          ? Colors.green.shade700
-                          : Colors.grey.shade700,
-                      fontSize: 24,
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore.collection("locations").doc(auth.currentUser.uid).snapshots(),
+        
+        builder: (context, snapshot){
+
+          if(snapshot.hasData)
+           isOnline = snapshot.data.data()['available'];
+          else
+            isOnline = false;
+
+
+          return  Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                child: Container(
+                  height: 60.5,
+                  color: Colors.grey[200],
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        isOnline ? "You're online" : "You're offline",
+                        style: TextStyle(
+                          color: isOnline
+                              ? Colors.green.shade700
+                              : Colors.grey.shade700,
+                          fontSize: 24,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          Container(
-            height: 60.5,
-            width: 120,
-            color: Colors.deepOrange[80],
-            child: Padding(
-              padding: EdgeInsets.only(right: 14.0),
-              child: SizedBox(
-                width: 80.0,
-                child: Switch(
-                  value: isOnline,
-                  onChanged: (value) {
-                    _firestore
-                        .collection(FirebaseConstant().locations)
-                        .doc(auth.currentUser.uid)
-                        .update({FirebaseConstant().available: value});
+              Container(
+                height: 60.5,
+                width: 120,
+                color: Colors.deepOrange[80],
+                child: Padding(
+                  padding: EdgeInsets.only(right: 14.0),
+                  child: SizedBox(
+                    width: 80.0,
+                    child: Switch(
+                      value: isOnline,
+                      onChanged: (value) {
+                        _firestore
+                            .collection(FirebaseConstant().locations)
+                            .doc(auth.currentUser.uid)
+                            .update({FirebaseConstant().available: value});
 
-                    this.setState(() {
-                      isOnline = value;
-                    });
-                  },
-                  activeColor: Colors.deepOrange,
+                      },
+                      activeColor: Colors.deepOrange,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          )
-        ],
+              )
+            ],
+          );
+        },
       ),
     );
   }

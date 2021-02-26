@@ -1,6 +1,7 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -60,6 +61,28 @@ class FirebaseHelper {
         'rotateDriver' : trip.rotateDriver,
         'discount' :trip.discount
       }
+    });
+
+  }
+
+
+  Future<void> resetRequestDriver() async{
+
+
+  await  _fireStore
+        .collection(FirebaseConstant().driverRequests)
+        .doc(auth.currentUser.uid)
+        .delete();
+
+  }
+
+  Future<void> ratingUser(String idUser , double rating)async{
+
+    _fireStore.collection("Users").doc(idUser).update({
+
+      'rating' : FieldValue.increment(rating),
+      'countRating' : FieldValue.increment(1)
+
     });
 
   }

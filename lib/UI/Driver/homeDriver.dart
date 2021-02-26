@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
-import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
@@ -10,12 +9,11 @@ import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_compass/flutter_compass.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geocoder/geocoder.dart' as coder;
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
-
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -62,7 +60,7 @@ class _MyHomePageState extends State<HomeDriver> {
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
 
-  bool exitTrip = false ;
+  bool exitTrip = false  , showResultTrip = false ;
 
 
   Trip currentTrip ;
@@ -190,7 +188,6 @@ class _MyHomePageState extends State<HomeDriver> {
   Widget build(BuildContext context) {
     userLocation = Provider.of<UserLocation>(context);
 
-
     var cameraPosition = userLocation != null
         ? CameraPosition(
       target: LatLng(userLocation.latitude, userLocation.longitude),
@@ -226,7 +223,10 @@ class _MyHomePageState extends State<HomeDriver> {
 
           if(!exitTrip)
             DriverBottomSheet(),
-          buildAppBar(),
+            buildAppBar(),
+
+             if(showResultTrip)
+             resultTrip()
 
         ],
 
@@ -361,7 +361,7 @@ class _MyHomePageState extends State<HomeDriver> {
               if(!exitTrip)
                 NotificationWidget() ,
 
-              if(exitTrip)
+              if(exitTrip  && !showResultTrip)
                 controlTrip()
 
 
@@ -371,6 +371,171 @@ class _MyHomePageState extends State<HomeDriver> {
       ),
     );
   }
+
+
+   double ratingCustomer = 3.0 ;
+  Positioned resultTrip(){
+
+    return Positioned(
+      bottom: 15,
+      left: 0,
+      right: 0,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          margin: EdgeInsets.only(top: 10),
+          child: Column(
+
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+
+            children: <Widget>[
+
+              Padding(
+                padding: EdgeInsets.only(top: 20.0) ,
+
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey, blurRadius: 10, offset: Offset(3.0, 4.0))
+                    ],
+                    borderRadius: new BorderRadius.all(new Radius.circular(5)),
+                    border: new Border.all(
+                      color: Colors.white,
+                      width: 1.0,
+                    ),
+                  ),
+
+                  width: MediaQuery.of(context).size.width -30 ,
+
+
+                  child: Container(
+
+                    color: Colors.white,
+
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+
+                      children: [
+
+
+                        SizedBox(height: 20,),
+
+                        Text("Your earnings for this trip" ,
+                          style: TextStyle(fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+
+                        SizedBox(height: 10,),
+
+                        Text("${calcPriceTotal()} JD" ,style: TextStyle(color: Colors.green ,fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+
+                        SizedBox(height: 20,)
+                      ],
+                    ),
+                  ),
+
+                ),
+
+
+              ) ,
+
+              Padding(
+                padding: EdgeInsets.only(top: 10.0) ,
+
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey, blurRadius: 11, offset: Offset(3.0, 4.0))
+                    ],
+                    borderRadius: new BorderRadius.all(new Radius.circular(5)),
+                    border: new Border.all(
+                      color: Colors.white,
+                      width: 1.0,
+                    ),
+                  ),
+
+                  width: MediaQuery.of(context).size.width -30 ,
+
+
+                  child: Container(
+
+                    color: Colors.white,
+
+
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+
+                      children: [
+
+
+                        SizedBox(height: 20,),
+
+                        Text("Rate hamza helow" ,
+                          style: TextStyle(fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+
+                        SizedBox(height: 10,),
+
+                    RatingBar.builder(
+                      initialRating: 3,
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                      itemBuilder: (context, _) => Icon(
+                        Icons.star,
+                        color: Colors.deepOrange,
+                      ),
+                      onRatingUpdate: (rating) {
+                        print(rating);
+                        ratingCustomer = rating;
+                      },
+                    ),
+
+                        SizedBox(height: 20,)
+                      ],
+                    ),
+                  ),
+
+                ),
+
+
+              ) ,
+
+              SizedBox(
+                height: 60,
+                width: MediaQuery.of(context).size.width - 30,
+                child: MaterialButton(
+                  color: Colors.deepOrange,
+                  onPressed: () {
+
+                    FirebaseHelper().ratingUser(auth.currentUser.uid , ratingCustomer).then((_){
+
+                     this.setState(() {
+                       exitTrip = false ;
+                       showResultTrip = false ;
+                     });
+
+                    });
+
+                  },
+                  child: Text("DONE" , style: TextStyle(color: Colors.white),),
+                ),
+              ),
+
+
+            ],
+          ),
+        ),
+      ),
+    );
+
+  }
+
 
   Padding controlTrip() {
     return Padding(
@@ -560,19 +725,23 @@ class _MyHomePageState extends State<HomeDriver> {
                   color: Colors.deepOrange,
                   child: Text("Finish trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) ,
                   onPressed: () {
-                    // this.setState(() {
-                    //
-                    //   currentTrip.stateTrip = StateTrip.started;
-                    // });
+                    this.setState(() {
 
-
-                    _firestore
-                        .collection("Trips")
-                        .doc(currentTrip.idTrip)
-                        .update({
-                      'totalPrice' : calcPriceTotal() ,
-                      'state' : StateTrip.done.toString()
+                      showResultTrip = true ;
                     });
+
+                    FirebaseHelper().resetRequestDriver().then((_) {
+                      _firestore
+                          .collection("Trips")
+                          .doc(currentTrip.idTrip)
+                          .update({
+                        'totalPrice' : calcPriceTotal() ,
+                        'state' : StateTrip.done.toString()
+                      });
+
+                    });
+
+
 
                   },)
             ),
@@ -892,7 +1061,6 @@ class _MyHomePageState extends State<HomeDriver> {
     markers.add(marker) ;
 
   }
-
 
 }
 

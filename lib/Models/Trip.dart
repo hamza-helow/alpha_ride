@@ -1,4 +1,5 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -14,6 +15,8 @@ class Trip {
   double ratingDriver  , rotateDriver , ratingCustomer;
 
   StateTrip stateTrip ;
+
+  TypeTrip typeTrip ;
 
   String hourTrip ;
   int minTrip ;
@@ -43,7 +46,8 @@ class Trip {
     this.minTrip = 0 ,
     this.startDate,
     this.km = 0.0,
-    this.discount
+    this.discount,
+    this.typeTrip
   });
 
 }
