@@ -44,11 +44,19 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   Trip currentTrip ;
 
+  String closerTimeTrip = "";
+
   @override
   void initState() {
 
-    print("Number Hours : ${widget.numberHours}");
+    FirebaseHelper().getCloserTimeTrip().then((value) {
 
+      if(this.mounted)
+        this.setState(() {
+          closerTimeTrip = value;
+        });
+
+    });
 
     currentTrip = Trip();
 
@@ -191,7 +199,8 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
             leading: Image.asset("Assets/enconomy.png"),
             title: Text("Enconomy"),
-            trailing: Text("1 min"),
+            trailing: Text("$closerTimeTrip"),
+            subtitle: Text( widget.numberHours == 0 ? "":  "${widget.numberHours * 10} JD" , style: TextStyle(color: Colors.green),),
 
           ),
 
@@ -398,7 +407,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
     );
 
   }
-
 
   void getDriver() {
 

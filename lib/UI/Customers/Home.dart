@@ -4,6 +4,7 @@ import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/UI/Customers/TripsScreen.dart';
 import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 
@@ -64,17 +65,22 @@ class _HomeState extends State<Home> {
     zoom: 17.4746,
   );
 
-  void _onCameraMove(CameraPosition position) {
+  void _onCameraMove(CameraPosition position)async {
     if(usePin)
     DataProvider().userLocation = UserLocation( latitude: position.target.latitude ,longitude: position.target.longitude);
+
+   // await _getAddressFromLatLng(position.target.latitude , position.target.longitude);
   }
 
   String _fullName ="" , _email =""  , selectedDriver ="";
 
   BitmapDescriptor carIcon;
 
+
+
   @override
   void initState() {
+
     loadInfoUser();
 
 
@@ -405,7 +411,7 @@ class _HomeState extends State<Home> {
                                           text: TextSpan(
                                             children: <InlineSpan>[
                                               TextSpan(
-                                                text:  numberHours == 0 ?'Now' : '$numberHours',
+                                                text:  numberHours == 0.0 ?'Now' : '$numberHours',
                                                 style: TextStyle(
                                                   fontWeight: FontWeight.w400,
                                                   color: Colors.black,
@@ -557,6 +563,7 @@ class _HomeState extends State<Home> {
             ),
 
             ListTile(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TripsScreen(),)),
               leading: Icon(Icons.time_to_leave_sharp),
               title: Text("You trips" ,),
               trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: Colors.deepOrange),),),
@@ -704,7 +711,7 @@ class _HomeState extends State<Home> {
   }
 
 
-   int numberHours = 0 ;
+   double numberHours = 0 ;
 
   dialogReserveHours() async {
 
@@ -723,7 +730,7 @@ class _HomeState extends State<Home> {
                 onChanged: (value) {
 
                   setState(() {
-                    if(int.parse(value) > 24)
+                    if(double.parse(value) > 24)
                       err = "please enter correct number";
                     else
                       err = null;
@@ -748,7 +755,8 @@ class _HomeState extends State<Home> {
 
                   if(err == null)
                   this.setState(() {
-                    numberHours = int.parse(hours.text);
+                    confirmPickup = true ;
+                    numberHours = double.parse(hours.text);
                   });
                   Navigator.pop(context);
 
@@ -767,8 +775,6 @@ class _HomeState extends State<Home> {
               ]),
         ));
   }
-
-
 
 
   Future<void> animateTo(double lat, double lng) async {
@@ -824,6 +830,8 @@ class _HomeState extends State<Home> {
 
       address =  "${place.locality}, ${place.name}, ${place.country}";
 
+
+      print(place);
 
 
     } catch (e) {

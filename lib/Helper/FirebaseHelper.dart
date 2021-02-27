@@ -1,11 +1,14 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class FirebaseHelper {
 
@@ -85,6 +88,46 @@ class FirebaseHelper {
 
     });
 
+  }
+
+
+
+  final geo = Geoflutterfire();
+
+  Future<String> getCloserTimeTrip() async{
+
+    GeoFirePoint center = geo.point(latitude: DataProvider().userLocation.latitude, longitude: DataProvider().userLocation.longitude);
+
+    var collectionReference =
+    _fireStore.collection('locations')
+        .where(FirebaseConstant().available , isEqualTo: true);
+
+    String field = 'position';
+
+   Future<LatLng> latLng =   geo.collection(collectionRef: collectionReference)
+        .within(center: center, radius: 100, field: field).first.then((value) async {
+
+          if(value.isEmpty)
+            return null ;
+
+        GeoPoint geoPoint =value.first.get("$field.geopoint");
+          return LatLng(geoPoint.latitude, geoPoint.longitude);
+    });
+
+   if(latLng == null)
+     return "";
+
+    Future<String> time =  latLng.then((value)  async{
+
+       return  DataProvider().getArriveTime
+         (LatLng(DataProvider().userLocation.latitude, DataProvider().userLocation.longitude)
+           , LatLng(value.latitude, value.longitude)).then((value) async {
+
+         return value;
+       });
+     });
+
+    return time;
   }
 
 

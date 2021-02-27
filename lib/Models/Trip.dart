@@ -23,9 +23,12 @@ class Trip {
 
   DateTime startDate ;
 
-  double km = 0.0;
+  double km = 0.0 , totalPrice;
 
   int discount = 0 ;
+
+
+  String addressStart , addressEnd ;
 
 
   Trip({
@@ -47,7 +50,8 @@ class Trip {
     this.startDate,
     this.km = 0.0,
     this.discount,
-    this.typeTrip
+    this.typeTrip ,
+    this.totalPrice
   });
 
 }
