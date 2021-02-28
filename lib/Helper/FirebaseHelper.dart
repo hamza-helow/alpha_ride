@@ -1,9 +1,11 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
+import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -42,6 +44,32 @@ class FirebaseHelper {
   }
 
 
+  Future<void> sendRequestToDriver(TripCustomer tripCustomer , idDriver) async{
+
+  return   FirebaseFirestore.instance
+          .collection(FirebaseConstant().driverRequests)
+          .doc(idDriver)
+          .set({
+        'idCustomer' : auth.currentUser.uid,
+        'nameCustomer' : tripCustomer.nameCustomer ,
+        'phoneCustomer' : "0788051422" ,
+        'lat' : tripCustomer.lat,
+        'lng' : tripCustomer.lng ,
+        'stateRequest' : "pending" ,
+        'discount': DataProvider().promoCodePercentage,
+        'typeTrip': tripCustomer.tripType.toString(),
+        'hours' : tripCustomer.hours,
+        if(DataProvider().accessPointLatLng != null)
+          "accessPoint" : {
+            'lat' : DataProvider().accessPointLatLng.latitude,
+            'lng' : DataProvider().accessPointLatLng.longitude,
+            'addressName' : DataProvider().accessPointAddress
+          }
+      });
+  }
+
+
+
 
   Future<void> insertTrip(Trip trip) async{
 
@@ -54,6 +82,11 @@ class FirebaseHelper {
       'state' :StateTrip.active.toString() ,
       'km' : 0.0,
       'totalPrice' :0.0,
+       'hours' :trip.hourTrip,
+       'typeTrip' : trip.typeTrip.toString(),
+       'discount' :trip.discount,
+
+
       'locationCustomer' :{
         'lat' : trip.locationCustomer.latitude,
         'lng' :trip.locationCustomer.longitude
@@ -62,7 +95,6 @@ class FirebaseHelper {
         'lat' : trip.locationDriver.latitude,
         'lng' :trip.locationDriver.longitude ,
         'rotateDriver' : trip.rotateDriver,
-        'discount' :trip.discount
       }
     });
 
@@ -95,6 +127,9 @@ class FirebaseHelper {
   final geo = Geoflutterfire();
 
   Future<String> getCloserTimeTrip() async{
+
+    if(DataProvider().userLocation== null)
+      return "";
 
     GeoFirePoint center = geo.point(latitude: DataProvider().userLocation.latitude, longitude: DataProvider().userLocation.longitude);
 

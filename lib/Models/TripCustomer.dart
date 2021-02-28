@@ -9,7 +9,11 @@ class TripCustomer {
 
   TypeTrip tripType;
 
-  int hours = 0;
+  double hours = 0;
+
+  int discount ;
+
+
 
   TripCustomer(
       {this.idCustomer,
@@ -20,6 +24,7 @@ class TripCustomer {
       this.stateRequest,
       this.goingTo,
       this.hours,
-        this.tripType
+        this.tripType,
+        this.discount
       });
 }

@@ -1,14 +1,14 @@
+import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
-import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dio/dio.dart';
+import 'package:alpha_ride/Models/TripCustomer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' ;
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -23,7 +23,6 @@ class CustomerBottomSheet extends StatefulWidget {
 
   final numberHours ;
 
-
   CustomerBottomSheet({this.callBack , this.whenDriverComing , this.showPromoCodeWidget , this.onStateTripChanged , this.numberHours});
 
   @override
@@ -32,10 +31,16 @@ class CustomerBottomSheet extends StatefulWidget {
 
 class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
+   final String field = 'position';
+
+   StreamSubscription<DocumentSnapshot> subscription;
+
+  var locationReference;
+
   final geo = Geoflutterfire();
   final _firestore = FirebaseFirestore.instance;
 
-  String idDriver ="";
+  String idDriver ="" , closerTimeTrip = "";
   double radius = 1;
 
   List<String > rejected ;
@@ -44,10 +49,17 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   Trip currentTrip ;
 
-  String closerTimeTrip = "";
+ GeoFirePoint geoFirePoint ;
 
+
+ Stream<List<DocumentSnapshot>> streamCloserDrivers ;
   @override
   void initState() {
+    init();
+    super.initState();
+  }
+
+  void init(){
 
     FirebaseHelper().getCloserTimeTrip().then((value) {
 
@@ -57,14 +69,11 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
         });
 
     });
-
     currentTrip = Trip();
-
     rejected = List();
     listenCurrentTrip();
 
 
-    super.initState();
   }
 
   @override
@@ -110,7 +119,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                         ],
                       ),
                     ),
-
 
                     if(!findDriver && !tripActive )
                       confirmationTripWidget(),
@@ -166,8 +174,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
                     this.setState(() {
                       findDriver = false ;
-                      SharedPreferencesHelper().setDriverSelected("");
-
                       if(idDriver.isNotEmpty)
                         _firestore
                             .collection(FirebaseConstant().driverRequests)
@@ -207,7 +213,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
         ),
 
         Divider(),
-
 
         Padding(
           padding: EdgeInsets.all(10.0),
@@ -414,28 +419,19 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
       findDriver =true;
     });
 
-    // Create a geoFirePoint
-    GeoFirePoint center = geo.point(latitude: DataProvider().userLocation.latitude, longitude: DataProvider().userLocation.longitude);
+    if(DataProvider().userLocation != null){
+      geoFirePoint = geo.point(latitude: DataProvider().userLocation.latitude, longitude: DataProvider().userLocation.longitude);
+      locationReference =
+          _firestore.collection('locations')
+              .where(FirebaseConstant().available , isEqualTo: true);
 
-    // get the collection reference or query
-    var collectionReference =
-    _firestore.collection('locations')
-        .where(FirebaseConstant().available , isEqualTo: true);
-    //.orderBy("idUser" ,descending: false)
-    //.where(FirebaseConstant().available , isNotEqualTo: "0");
+      streamCloserDrivers = geo.collection(collectionRef: locationReference)
+          .within(center: geoFirePoint, radius: radius, field: field);
+    }
 
-
-    String field = 'position';
-
-    Stream<List<DocumentSnapshot>> stream = geo.collection(collectionRef: collectionReference)
-        .within(center: center, radius: radius, field: field);
-
-    stream.listen((event) {
+    streamCloserDrivers.listen((event) {
 
       DocumentSnapshot currentDriver =   event.firstWhere((element) => !rejected.contains(element.data()['idUser']) , orElse: () => null,);
-
-      // print(currentDriver.data());
-
       if(findDriver)
         if(currentDriver == null)
         {
@@ -475,201 +471,124 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
     idDriver  = dataDriver['idUser'] ;
 
-    SharedPreferencesHelper().setDriverSelected(idDriver);
-
     if(findDriver)
-      _firestore
-          .collection(FirebaseConstant().driverRequests)
-          .doc(dataDriver['idUser'])
-          .set({
-        'idCustomer' : auth.currentUser.uid,
-        'nameCustomer' : "hamza helow" ,
-        'phoneCustomer' : "0788051422" ,
-        'lat' : DataProvider().userLocation.latitude,
-        'lng' : DataProvider().userLocation.longitude ,
-        'stateRequest' : "pending" ,
-        'discount': DataProvider().promoCodePercentage,
-        'typeTrip': widget.numberHours == 0 ? TypeTrip.distance.toString() : TypeTrip.hours.toString(),
-
-         'hours' : widget.numberHours,
-
-        if(DataProvider().accessPointLatLng != null)
-          "accessPoint" : {
-            'lat' : DataProvider().accessPointLatLng.latitude,
-            'lng' : DataProvider().accessPointLatLng.longitude,
-            'addressName' : DataProvider().accessPointAddress
-          }
-      });
-    listenRequestDriver(idDriver);
+    FirebaseHelper().sendRequestToDriver(
+      TripCustomer(
+        idCustomer: auth.currentUser.uid,
+        discount: DataProvider().promoCodePercentage,
+        lat: DataProvider().userLocation.latitude,
+        lng:  DataProvider().userLocation.longitude,
+        nameCustomer: '',
+        phoneCustomer: '',
+        stateRequest: 'pending',
+        goingTo: DataProvider().accessPointAddress,
+        hours: widget.numberHours,
+        tripType: widget.numberHours == 0 ? TypeTrip.distance: TypeTrip.hours,
+      ),
+      idDriver
+    ).then((_) {
+      listenRequestDriver(idDriver);
+    });
 
   }
 
-  void listenRequestDriver (String idDriver){
 
+  void listenRequestDriver (String idDriver) async{
+
+    subscription  =
     _firestore
         .collection(FirebaseConstant().driverRequests)
         .doc(idDriver)
         .snapshots()
         .listen((event) {
 
+          print("event Lis");
       if(event.exists)
         if(event.data()['stateRequest'] == "rejected")
         {
           radius =  1 ;
           rejected.add(idDriver);
           getDriver();
-
         }
         else
         {
+          subscription.cancel();
           listenCurrentTrip();
-
+          return;
         }
 
     });
 
+
   }
 
   void listenCurrentTrip (){
-
     _firestore
         .collection("Trips")
         .where("state" , whereIn: [StateTrip.active.toString(),StateTrip.started.toString()])
-
         .where("idCustomer" , isEqualTo: auth.currentUser.uid)
         .snapshots().listen((event) {
       if(this.mounted)
         this.setState(() {
-
           if(event.size > 0 ){
             tripActive = true ;
-            FirebaseHelper().loadUserInfo(event.docs.first.get("idDriver") , typeAccount: TypeAccount.driver).then((value)  {
-
-              print("CCCCC ");
-              this.setState(() {
-                currentTrip = Trip(
-                    idCustomer: "" ,
-                    idDriver: event.docs.first.get("idDriver") ,
-                    nameDriver: value.fullName ,
-                    ratingDriver: value.rating/value.countRating ,
-                    locationCustomer: LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng")) ,
-                    locationDriver: LatLng(event.docs.first.get("locationDriver.lat") , event.docs.first.get("locationDriver.lng")) ,
-                    carType: value.carType,
-                    carModel: value.carModel,
-                  stateTrip: (){
-
-                    var state = event.docs.first.get("state");
-
-                    if(state == StateTrip.active.toString())
-                      return StateTrip.active ;
-                    else if(state == StateTrip.rejected.toString())
-                      return StateTrip.rejected ;
-                    else
-                      return StateTrip.started ;
-
-                  }()
-
-                );
-
-
-                widget.onStateTripChanged(currentTrip.stateTrip);
-                widget.whenDriverComing(currentTrip.locationDriver.latitude , currentTrip.locationDriver.longitude , currentTrip.locationCustomer.latitude , currentTrip.locationCustomer.longitude ,event.docs.first.get("locationDriver.rotateDriver")  );
-
-
-                getArriveTime(currentTrip.locationCustomer , currentTrip.locationDriver).then((arriveTime) {
-
-                  this.setState(() {
-                    currentTrip.arriveTime = arriveTime;
-                  });
-
-
-                });
-
-
-              });
-
-            });
+            setupCurrentTrip(event);
           }
           else
-            this.setState(() {
-
-              widget.onStateTripChanged(StateTrip.done);
-
-              print("NO NO ");
-
-              SharedPreferencesHelper().getDriverSelected().then((value) {
-                this.setState(() {
-                  idDriver = value;
-
-                  if( idDriver != null && idDriver.isNotEmpty)
-                  {
-                    findDriver = true ;
-                    getDriver();
-                  }
-                  else
-                    tripActive = false ;
-
-                });
-              });
-
-
-            });
-
+            tripActive = false ;
         });
 
     });
 
   }
 
-  Future<String> getArriveTime(LatLng from , LatLng to)async{
+  LatLng driverLocation ;
+  void setupCurrentTrip(event){
+    FirebaseHelper().loadUserInfo(event.docs.first.get("idDriver") , typeAccount: TypeAccount.driver).then((value)  {
 
-    Dio dio = new Dio();
-    Response response=await dio.get("https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${from.latitude},${from.longitude}&destinations=${to.latitude},${to.longitude}&key=${DataProvider().mapKey}");
-    print("RESULT :  ${response.data}");
+      print("CCCCC  ${event.docs.first.id}");
+      if(this.mounted)
+      this.setState(() {
+
+        currentTrip.idCustomer= "";
+        currentTrip.idDriver =event.docs.first.get("idDriver") ;
+        currentTrip.nameDriver = value.fullName ;
+        currentTrip.ratingDriver = value.rating/value.countRating ;
+        currentTrip.locationCustomer =  LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng")) ;
+        currentTrip.locationDriver = LatLng(event.docs.first.get("locationDriver.lat") , event.docs.first.get("locationDriver.lng")) ;
+        currentTrip.carType =value.carType;
+        currentTrip.carModel= value.carModel;
+        currentTrip.stateTrip = (){
+          var state = event.docs.first.get("state");
+
+          if(state == StateTrip.active.toString())
+            return StateTrip.active ;
+          else if(state == StateTrip.rejected.toString())
+            return StateTrip.rejected ;
+          else
+            return StateTrip.started ;
+        }();
+
+        widget.onStateTripChanged(currentTrip.stateTrip);
+        widget.whenDriverComing(currentTrip.locationDriver.latitude , currentTrip.locationDriver.longitude , currentTrip.locationCustomer.latitude , currentTrip.locationCustomer.longitude ,event.docs.first.get("locationDriver.rotateDriver")  );
 
 
-    return response.data['rows'][0]['elements'][0]['duration']['text'] ;
 
-    //  print("RESULT :  ${response.data['rows'][0]['elements'][0]['duration']['text']}");
+          DataProvider().getArriveTime(currentTrip.locationCustomer , currentTrip.locationDriver).then((arriveTime) {
+
+          this.setState(() {
+            currentTrip.arriveTime = arriveTime;
+          });
+
+        });
+
+
+      });
+
+    });
 
   }
 
 }
 
-
-class TimeSelectorWidget extends StatelessWidget {
-  const TimeSelectorWidget({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        children: <InlineSpan>[
-          TextSpan(
-            text: 'Now',
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-          ),
-          WidgetSpan(
-            child: SizedBox(
-              width: 2.5,
-            ),
-          ),
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Icon(Icons.keyboard_arrow_down),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
-
-}
 

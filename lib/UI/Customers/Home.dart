@@ -842,8 +842,6 @@ class _HomeState extends State<Home> {
   }
 
 
-
-
   whenDriverComing(double lat, double lng ,double latCustomer, double lngCustomer  , double rotateDriver) {
 
     this.setState(() {

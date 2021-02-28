@@ -18,7 +18,7 @@ class Trip {
 
   TypeTrip typeTrip ;
 
-  String hourTrip ;
+  double hourTrip ;
   int minTrip ;
 
   DateTime startDate ;

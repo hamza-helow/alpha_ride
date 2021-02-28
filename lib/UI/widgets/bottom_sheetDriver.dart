@@ -187,27 +187,29 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
         .listen((event) {
 
 
-
-
       if (event.exists)
-        this.setState(() {
-          currentTrip = new TripCustomer(
-              idCustomer: event.get("idCustomer"),
-              phoneCustomer: event.get("phoneCustomer"),
-              nameCustomer: event.get("nameCustomer"),
-              lng: event.get("lng"),
-              lat: event.get("lat"),
-              goingTo: "",
-              tripType: event.get("typeTrip") == TypeTrip.hours.toString() ? TypeTrip.hours :TypeTrip.distance ,
-              hours: event.get("hours") ,
-              stateRequest:
-              event.get(FirebaseConstant().stateRequest));
+        {
+          if(this.mounted)
+          this.setState(() {
+            currentTrip = new TripCustomer(
+                idCustomer: event.get("idCustomer"),
+                phoneCustomer: event.get("phoneCustomer"),
+                nameCustomer: event.get("nameCustomer"),
+                lng: event.get("lng"),
+                lat: event.get("lat"),
+                discount:event.get("discount") ,
+                goingTo: "",
+                tripType: event.get("typeTrip") == TypeTrip.hours.toString() ? TypeTrip.hours :TypeTrip.distance ,
+                hours: event.get("hours") ,
+                stateRequest:
+                event.get(FirebaseConstant().stateRequest));
 
-          if (currentTrip.stateRequest == FirebaseConstant().pending)
-            exitTrip = true;
-          else
-            exitTrip = false;
-        });
+            if (currentTrip.stateRequest == FirebaseConstant().pending)
+              exitTrip = true;
+            else
+              exitTrip = false;
+          });
+        }
       else
         {
           if(this.mounted)
@@ -226,6 +228,9 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
          locationCustomer: LatLng(currentTrip.lat , currentTrip.lng),
           locationDriver: LatLng(DataProvider().userLocation.latitude , DataProvider().userLocation.longitude ),
           rotateDriver: DataProvider().rotateCar,
+         typeTrip:  currentTrip.tripType,
+         hourTrip: currentTrip.hours ,
+        discount: currentTrip.discount
         ))
         .then((value) {
       _firestore
@@ -258,10 +263,6 @@ class _StateDriverState extends State<StateDriver> {
   bool isOnline = false;
 
   final _firestore = FirebaseFirestore.instance;
-
-  
-  
-
 
   @override
   Widget build(BuildContext context) {

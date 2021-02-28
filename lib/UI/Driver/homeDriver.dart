@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Login.dart';
@@ -42,6 +43,8 @@ class _MyHomePageState extends State<HomeDriver> {
   BitmapDescriptor carIcon;
   Set<Marker> markers = Set();
 
+  double ratingCustomer = 3.0 ;
+
   UserLocation userLocation ;
 
   final geo = Geoflutterfire();
@@ -53,6 +56,10 @@ class _MyHomePageState extends State<HomeDriver> {
   var currentZoomLevel;
   var _controller ;
 
+  double km = 0.0 ;
+
+  LatLng last  ;
+
   Position position ;
 
   Completer<GoogleMapController> _completer = Completer();
@@ -62,7 +69,6 @@ class _MyHomePageState extends State<HomeDriver> {
 
   bool exitTrip = false  , showResultTrip = false ;
 
-
   Trip currentTrip ;
 
   //32.5661186,35.8420676
@@ -70,12 +76,6 @@ class _MyHomePageState extends State<HomeDriver> {
     target: LatLng(32.5661186, 35.8420676),
     zoom: 16.4746,
   );
-
-
-  LatLng _lastMapPosition ;
-  void _onCameraMove(CameraPosition position) {
-    _lastMapPosition = position.target;
-  }
 
 
   @override
@@ -93,6 +93,7 @@ class _MyHomePageState extends State<HomeDriver> {
     listenCurrentTrip();
   }
 
+
   void listenCurrentTrip(){
 
     _firestore
@@ -101,76 +102,16 @@ class _MyHomePageState extends State<HomeDriver> {
         .where("idDriver" , isEqualTo: auth.currentUser.uid)
         .snapshots().listen((event) {
 
-      if(event.docs.length > 0) {
-
         this.setState(() {
-          exitTrip = true ;
-        });
+          if(event.docs.length > 0) {
+            exitTrip = true ;
 
-
-        FirebaseHelper().loadUserInfo(event.docs.first.get("idCustomer")).then((value) {
-
-          this.setState(() {
-
-            currentTrip.nameCustomer = value.fullName;
-            currentTrip.ratingCustomer = value.rating;
-            currentTrip.idTrip = event.docs.first.id;
-            currentTrip.locationCustomer = LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng"));
-            currentTrip.locationDriver = LatLng(event.docs.first.get("locationDriver.lat")??0.0 , event.docs.first.get("locationDriver.lng")??0.0) ;
-
-
-            currentTrip.stateTrip = (){
-
-              var state = event.docs.first.get("state");
-
-              if(state == StateTrip.active.toString())
-                return StateTrip.active ;
-              else if(state == StateTrip.rejected.toString())
-                return StateTrip.rejected ;
-              else
-                return StateTrip.started ;
-
-            }();
-
-            if(currentTrip.stateTrip == StateTrip.started){
-
-              currentTrip.startDate =  DateTime.parse(event.docs.first.get("dateStart").toDate().toString());
-
-              currentTrip.minTrip = DateTime.now().difference(currentTrip.startDate ).inMinutes;
-
-              currentTrip.hourTrip = DateTime.now().difference(currentTrip.startDate ).inHours.toString();
-
-              currentTrip.km =  event.docs.first.get("km");
-
-              currentTrip.discount = event.docs.first.get("discount");
-
-            }
-
-
-
-
-            if(polylineCoordinates.isEmpty && currentTrip.stateTrip == StateTrip.active){
-              _getPolyline(currentTrip.locationCustomer,  currentTrip.locationDriver);
-
-              zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
-
-              addMarker(currentTrip.locationCustomer);
-
-              print("DIS : ${ distanceBetweenTwoLocation(currentTrip.locationCustomer , currentTrip.locationDriver)}");
-
-
-            }
-
-
-          });
-
+            setupCurrentTrip(event);
+          }// trip exit
+          else
+            exitTrip = false;
 
         });
-
-
-
-      }// trip exit
-      print("Exit trip ${event.size}");
 
     });
 
@@ -216,7 +157,6 @@ class _MyHomePageState extends State<HomeDriver> {
             minMaxZoomPreference: MinMaxZoomPreference(12, 20),
             mapToolbarEnabled: false,
             rotateGesturesEnabled: false,
-            onCameraMove: _onCameraMove,
             polylines: Set<Polyline>.of(polylines.values),
 
           ),
@@ -235,8 +175,9 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-
   void updateKm(double meter){
+
+    print("Meter = $meter");
 
     if(meter == 0.0)
       return;
@@ -269,7 +210,6 @@ class _MyHomePageState extends State<HomeDriver> {
       ),
     );
   }
-
 
   Card buttonCurrentLocation( ) {
     return Card(
@@ -372,8 +312,6 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-
-   double ratingCustomer = 3.0 ;
   Positioned resultTrip(){
 
     return Positioned(
@@ -429,7 +367,7 @@ class _MyHomePageState extends State<HomeDriver> {
 
                         SizedBox(height: 10,),
 
-                        Text("${calcPriceTotal()} JD" ,style: TextStyle(color: Colors.green ,fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
+                        Text("${DataProvider().calcPriceTotal(currentTrip)} JD" ,style: TextStyle(color: Colors.green ,fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
 
                         SizedBox(height: 20,)
                       ],
@@ -535,7 +473,6 @@ class _MyHomePageState extends State<HomeDriver> {
     );
 
   }
-
 
   Padding controlTrip() {
     return Padding(
@@ -735,7 +672,7 @@ class _MyHomePageState extends State<HomeDriver> {
                           .collection("Trips")
                           .doc(currentTrip.idTrip)
                           .update({
-                        'totalPrice' : calcPriceTotal() ,
+                        'totalPrice' : DataProvider().calcPriceTotal(currentTrip) ,
                         'state' : StateTrip.done.toString()
                       });
 
@@ -752,33 +689,7 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-  double calcPriceTotal(){
 
-
-    double startPrice = 0.55 ;
-
-    double totalPriceMin = currentTrip.minTrip * 0.03;
-
-    double totalKmPrice = currentTrip.km * 0.17;
-
-
-    double totalPrice =  startPrice + totalKmPrice + totalPriceMin ;
-
-    if(totalPrice < 1.15)
-      totalPrice = 1.15 ;
-
-
-    double discount = double.parse("0.${currentTrip.discount}");
-
-    totalPrice = totalPrice  -  (totalPrice * discount);
-
-    if(totalPrice < 0)
-      totalPrice = 0.0 ;
-
-
-    return double.parse(totalPrice.toStringAsFixed(2));
-
-  }
 
   Drawer buildDrawer() {
     return Drawer(
@@ -878,16 +789,6 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-  double km = 0.0 ;
-
-  _getAddressLine() async
-  {
-    debugPrint('location: ${position.latitude}');
-    final coordinates = new coder.Coordinates(position.latitude, position.longitude);
-    var addresses = await coder.Geocoder.local.findAddressesFromCoordinates(coordinates);
-    var first = addresses.first;
-    print(" ${first.addressLine}");
-  }
 
   onMapCreated( controller) {
 
@@ -903,12 +804,10 @@ class _MyHomePageState extends State<HomeDriver> {
         this.position = position;
       });
 
-      _getAddressLine();
 
       geoMyLocation = geo.point(latitude: position.latitude, longitude:position.longitude);
 
       DataProvider().userLocation = UserLocation(latitude: position.latitude , longitude:position.longitude  );
-
 
       markers.addAll([
         Marker(
@@ -919,32 +818,13 @@ class _MyHomePageState extends State<HomeDriver> {
       ]);
 
 
-      FirebaseHelper()
-          .checkLocationExit(auth.currentUser.uid)
-          .then((isExit) => {
-
-        if(isExit)
-          FirebaseHelper()
-              .updateLocationUser(auth.currentUser.uid, { 'name': 'random name', 'position': geoMyLocation.data})
-        else
-          FirebaseHelper()
-              .insertLocationUser(auth.currentUser.uid, { 'available' : false   ,'idUser':'${auth.currentUser.uid}','name': 'random name', 'position': geoMyLocation.data})
-
-      });
-
-      // km+= 20 ;
-
-      updateKm(20);
-
-      print("KM : $km");
+      updateDriverInfo();
 
 
+      calcKmCurrentTrip();
 
 
       animateTo(_completer, position.latitude, position.longitude);
-
-      //   listenCurrentTrip();
-
 
       if(exitTrip)
         updateLocationDriverInTrip();
@@ -992,10 +872,8 @@ class _MyHomePageState extends State<HomeDriver> {
 
   }
 
-
   PolylineId id = PolylineId("poly");
   _addPolyLine() {
-
 
     Polyline polyline = Polyline(
         polylineId: id, color: Colors.deepOrange, points: polylineCoordinates);
@@ -1050,7 +928,6 @@ class _MyHomePageState extends State<HomeDriver> {
 
   void addMarker(LatLng latLng) {
 
-
     final Marker marker = Marker(
       markerId: MarkerId("Customer"),
       position: latLng,
@@ -1060,6 +937,94 @@ class _MyHomePageState extends State<HomeDriver> {
 
     markers.add(marker) ;
 
+  }
+
+  void setupCurrentTrip(QuerySnapshot event) {
+
+    FirebaseHelper().loadUserInfo(event.docs.first.get("idCustomer")).then((value) {
+
+      this.setState(() {
+
+        currentTrip.nameCustomer = value.fullName;
+        currentTrip.ratingCustomer = value.rating;
+        currentTrip.idTrip = event.docs.first.id;
+        currentTrip.locationCustomer = LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng"));
+        currentTrip.locationDriver = LatLng(event.docs.first.get("locationDriver.lat")??0.0 , event.docs.first.get("locationDriver.lng")??0.0) ;
+        currentTrip.typeTrip =  event.docs.first.get("typeTrip") == TypeTrip.hours.toString() ? TypeTrip.hours :TypeTrip.distance ;
+        currentTrip.stateTrip = (){
+
+          var state = event.docs.first.get("state");
+
+          if(state == StateTrip.active.toString())
+            return StateTrip.active ;
+          else if(state == StateTrip.rejected.toString())
+            return StateTrip.rejected ;
+          else
+            return StateTrip.started ;
+
+        }();
+
+        if(currentTrip.stateTrip == StateTrip.started){
+
+          currentTrip.startDate =  DateTime.parse(event.docs.first.get("dateStart").toDate().toString());
+
+          currentTrip.minTrip = DateTime.now().difference(currentTrip.startDate ).inMinutes;
+
+          //  currentTrip.hourTrip = DateTime.now().difference(currentTrip.startDate ).inHours.toString();
+
+          currentTrip.km =  event.docs.first.get("km");
+
+          currentTrip.discount = event.docs.first.get("discount");
+        }
+
+
+
+
+        if(polylineCoordinates.isEmpty && currentTrip.stateTrip == StateTrip.active){
+          _getPolyline(currentTrip.locationCustomer,  currentTrip.locationDriver);
+
+          zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
+
+          addMarker(currentTrip.locationCustomer);
+
+          print("DIS : ${ distanceBetweenTwoLocation(currentTrip.locationCustomer , currentTrip.locationDriver)}");
+
+        }
+
+
+      });
+
+
+    });
+
+
+
+  }
+
+  void updateDriverInfo() {
+    FirebaseHelper()
+        .checkLocationExit(auth.currentUser.uid)
+        .then((isExit) => {
+
+      if(isExit)
+        FirebaseHelper()
+            .updateLocationUser(auth.currentUser.uid, {  'position': geoMyLocation.data})
+      else
+        FirebaseHelper()
+            .insertLocationUser(auth.currentUser.uid, { 'available' : false   ,'idUser':'${auth.currentUser.uid}','position': geoMyLocation.data})
+
+    });
+
+  }
+
+  void calcKmCurrentTrip() {
+
+    if(currentTrip.stateTrip == StateTrip.started)
+    if(currentTrip.typeTrip == TypeTrip.distance){
+      if(last != null )
+        updateKm(Geolocator.distanceBetween(last.latitude, last.longitude, position.latitude, position.longitude));
+        last = LatLng(position.latitude, position.longitude);
+    }
   }
 
 }
