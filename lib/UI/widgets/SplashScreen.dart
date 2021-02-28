@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
 
 
-       //   Text("Alpha Ride"  , style: TextStyle(color: Colors.deepOrange  ,fontSize: 30.0),) ,
+       //   Text("Alpha Ride"  , style: TextStyle(color: DataProvider().baseColor  ,fontSize: 30.0),) ,
         ],
       ),
 

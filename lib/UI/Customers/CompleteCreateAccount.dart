@@ -1,6 +1,7 @@
 
 import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
@@ -42,7 +43,7 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
               child: InkWell(
 
                 onTap: () => Navigator.pop(context),
-                child: Icon(Icons.logout , color: Colors.deepOrange,),
+                child: Icon(Icons.logout , color: DataProvider().baseColor,),
               ),
             ),
 
@@ -113,7 +114,7 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        color: Colors.deepOrange,
+                        color: DataProvider().baseColor,
                         elevation: 0,
                         minWidth: 400,
                         height: 50,
@@ -155,7 +156,7 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
                   labelText: labelText,
                   prefixIcon:icon,
                   prefixText: ' ',
-                  suffixStyle: const TextStyle(color: Colors.deepOrange)),
+                  suffixStyle:  TextStyle(color: DataProvider().baseColor)),
             ),
           );
   }

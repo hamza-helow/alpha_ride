@@ -1,5 +1,6 @@
 import 'package:alpha_ride/Helper/AppLanguage.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/setupLanguage.dart';
 
@@ -24,7 +25,7 @@ class _SettingsState extends State<Settings> {
     return Scaffold(
 
       appBar: AppBar(
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: DataProvider().baseColor,
       ),
 
       body: SingleChildScrollView(
@@ -150,7 +151,7 @@ class _SettingsState extends State<Settings> {
         
         widgets: [
 
-      MaterialButton(onPressed: () => Navigator.pop(context), child: Text("Done" , style: TextStyle(fontWeight: FontWeight.bold , color: Colors.deepOrange),),)
+      MaterialButton(onPressed: () => Navigator.pop(context), child: Text("Done" , style: TextStyle(fontWeight: FontWeight.bold , color: DataProvider().baseColor),),)
     ]);
 
   }

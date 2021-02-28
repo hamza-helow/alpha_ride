@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pin_input_text_field/pin_input_text_field.dart';
@@ -63,7 +64,7 @@ class PinFieldAutoFill extends StatefulWidget {
     this.focusNode,
     this.controller,
     this.decoration = const UnderlineDecoration(
-        colorBuilder: FixedColorBuilder(Colors.deepOrange), textStyle: TextStyle(color: Colors.deepOrange)),
+        colorBuilder: FixedColorBuilder(Colors.teal), textStyle: TextStyle(color: Colors.teal)),
     this.onCodeSubmitted,
     this.onCodeChanged,
     this.currentCode,

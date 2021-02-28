@@ -70,11 +70,11 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                         controller: code,
                         decoration: new InputDecoration(
                             border: new OutlineInputBorder(
-                                borderSide: new BorderSide(color: Colors.deepOrange)),
+                                borderSide: new BorderSide(color: DataProvider().baseColor)),
                             hintText: 'Enter promo code',
                             labelText: 'promo code',
                             errorText:errText ,
-                            suffixStyle: const TextStyle(color: Colors.deepOrange)),
+                            suffixStyle:  TextStyle(color: DataProvider().baseColor)),
                       ),
                     ),
 
@@ -98,7 +98,7 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                               widget.hide();
 
                             },
-                            color: Colors.deepOrange,
+                            color: DataProvider().baseColor,
                             child: Icon(Icons.clear , color: Colors.white,),
                           ),
                         ),
@@ -137,7 +137,7 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                               });
 
                             },
-                            color: Colors.deepOrange,
+                            color: DataProvider().baseColor,
                             child: Text("ADD" , style: TextStyle(color: Colors.white),),
                           ),
                         ),

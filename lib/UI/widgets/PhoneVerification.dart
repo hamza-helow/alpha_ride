@@ -77,7 +77,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
               child: InkWell(
 
                 onTap: () => Navigator.pop(context),
-                child: Icon(Icons.arrow_back_ios_rounded , color: Colors.deepOrange,),
+                child: Icon(Icons.arrow_back_ios_rounded , color: DataProvider().baseColor,),
               ),
             ),
 
@@ -98,7 +98,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
                   if(inProgress)
                     LinearProgressIndicator(
-                    backgroundColor: Colors.deepOrange,
+                    backgroundColor: DataProvider().baseColor,
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.amber,),
                   ),
 
@@ -143,7 +143,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      color: Colors.deepOrange,
+                      color: DataProvider().baseColor,
                       elevation: 0,
                       minWidth: 400,
                       height: 50,

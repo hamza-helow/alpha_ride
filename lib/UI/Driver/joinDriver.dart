@@ -1,6 +1,4 @@
 import 'dart:io';
-
-
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
@@ -254,7 +252,7 @@ class _JoinDriverState extends State<JoinDriver> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    color: Colors.deepOrange,
+                    color: DataProvider().baseColor,
                     elevation: 0,
                     minWidth: 400,
                     height: 60,
@@ -294,7 +292,7 @@ class _JoinDriverState extends State<JoinDriver> {
             labelText: labelText,
             prefixIcon:icon,
             prefixText: ' ',
-            suffixStyle: const TextStyle(color: Colors.deepOrange)),
+            suffixStyle:  TextStyle(color: DataProvider().baseColor)),
       ),
     );
   }

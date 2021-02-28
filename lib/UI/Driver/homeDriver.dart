@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/UI/Common/ResultTrip.dart';
 import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -165,8 +167,13 @@ class _MyHomePageState extends State<HomeDriver> {
             DriverBottomSheet(),
             buildAppBar(),
 
-             if(showResultTrip)
-             resultTrip()
+               if(showResultTrip)
+               ResultTrip((){
+                 this.setState(() {
+                   exitTrip = false ;
+                   showResultTrip = false ;
+                 });
+               } ,currentTrip  ,typeUser: TypeAccount.driver,),
 
         ],
 
@@ -201,7 +208,7 @@ class _MyHomePageState extends State<HomeDriver> {
         width: 40,
         height: 40,
         child:  IconButton(
-            color: Colors.deepOrange,
+            color: DataProvider().baseColor,
             icon: Icon(Icons.menu),
             onPressed: () {
               _scaffoldKey.currentState.openDrawer();
@@ -312,167 +319,6 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-  Positioned resultTrip(){
-
-    return Positioned(
-      bottom: 15,
-      left: 0,
-      right: 0,
-      child: Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-          margin: EdgeInsets.only(top: 10),
-          child: Column(
-
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-
-            children: <Widget>[
-
-              Padding(
-                padding: EdgeInsets.only(top: 20.0) ,
-
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.grey, blurRadius: 10, offset: Offset(3.0, 4.0))
-                    ],
-                    borderRadius: new BorderRadius.all(new Radius.circular(5)),
-                    border: new Border.all(
-                      color: Colors.white,
-                      width: 1.0,
-                    ),
-                  ),
-
-                  width: MediaQuery.of(context).size.width -30 ,
-
-
-                  child: Container(
-
-                    color: Colors.white,
-
-
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-
-                      children: [
-
-
-                        SizedBox(height: 20,),
-
-                        Text("Your earnings for this trip" ,
-                          style: TextStyle(fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-
-                        SizedBox(height: 10,),
-
-                        Text("${DataProvider().calcPriceTotal(currentTrip)} JD" ,style: TextStyle(color: Colors.green ,fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-
-                        SizedBox(height: 20,)
-                      ],
-                    ),
-                  ),
-
-                ),
-
-
-              ) ,
-
-              Padding(
-                padding: EdgeInsets.only(top: 10.0) ,
-
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.grey, blurRadius: 11, offset: Offset(3.0, 4.0))
-                    ],
-                    borderRadius: new BorderRadius.all(new Radius.circular(5)),
-                    border: new Border.all(
-                      color: Colors.white,
-                      width: 1.0,
-                    ),
-                  ),
-
-                  width: MediaQuery.of(context).size.width -30 ,
-
-
-                  child: Container(
-
-                    color: Colors.white,
-
-
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-
-                      children: [
-
-
-                        SizedBox(height: 20,),
-
-                        Text("Rate hamza helow" ,
-                          style: TextStyle(fontSize: 22.0  , fontWeight: FontWeight.bold), textAlign: TextAlign.center,),
-
-                        SizedBox(height: 10,),
-
-                    RatingBar.builder(
-                      initialRating: 3,
-                      minRating: 1,
-                      direction: Axis.horizontal,
-                      allowHalfRating: true,
-                      itemCount: 5,
-                      itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                      itemBuilder: (context, _) => Icon(
-                        Icons.star,
-                        color: Colors.deepOrange,
-                      ),
-                      onRatingUpdate: (rating) {
-                        print(rating);
-                        ratingCustomer = rating;
-                      },
-                    ),
-
-                        SizedBox(height: 20,)
-                      ],
-                    ),
-                  ),
-
-                ),
-
-
-              ) ,
-
-              SizedBox(
-                height: 60,
-                width: MediaQuery.of(context).size.width - 30,
-                child: MaterialButton(
-                  color: Colors.deepOrange,
-                  onPressed: () {
-
-                    FirebaseHelper().ratingUser(auth.currentUser.uid , ratingCustomer).then((_){
-
-                     this.setState(() {
-                       exitTrip = false ;
-                       showResultTrip = false ;
-                     });
-
-                    });
-
-                  },
-                  child: Text("DONE" , style: TextStyle(color: Colors.white),),
-                ),
-              ),
-
-
-            ],
-          ),
-        ),
-      ),
-    );
-
-  }
 
   Padding controlTrip() {
     return Padding(
@@ -541,7 +387,7 @@ class _MyHomePageState extends State<HomeDriver> {
                 alignment: Alignment.centerLeft,
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.deepOrange,
+                    backgroundColor: DataProvider().baseColor,
                     child: Icon(Icons.person ,color: Colors.white,),),
                   title: Text("${currentTrip.nameCustomer??"-"}"),
 
@@ -550,7 +396,7 @@ class _MyHomePageState extends State<HomeDriver> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
 
-                      Icon(Icons.star , color: Colors.deepOrange,),
+                      Icon(Icons.star , color: DataProvider().baseColor,),
                       Text("${currentTrip.ratingCustomer??"-"}")
                     ],
                   ),
@@ -622,7 +468,7 @@ class _MyHomePageState extends State<HomeDriver> {
             child: Padding(
                 padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
                 child: MaterialButton(
-                  color: Colors.deepOrange,
+                  color: DataProvider().baseColor,
                   child: Text("Start trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) ,
                   onPressed: () {
                     this.setState(() {
@@ -659,13 +505,16 @@ class _MyHomePageState extends State<HomeDriver> {
             child: Padding(
                 padding: const EdgeInsets.only(top: 15.0 , right: 15.0 , left: 15.0) ,
                 child: MaterialButton(
-                  color: Colors.deepOrange,
+                  color: DataProvider().baseColor,
                   child: Text("Finish trip" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ),) ,
                   onPressed: () {
+
                     this.setState(() {
 
                       showResultTrip = true ;
                     });
+
+                    FirebaseHelper().updateCustomerPoint(currentTrip.idCustomer);
 
                     FirebaseHelper().resetRequestDriver().then((_) {
                       _firestore
@@ -709,7 +558,7 @@ class _MyHomePageState extends State<HomeDriver> {
               accountName: Text("Hamza helow" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold) ),
               accountEmail: Text("hamzihelow3@gmail.com" , style: TextStyle(color: Colors.black54)),
               currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.deepOrange ,
+                backgroundColor: DataProvider().baseColor ,
                 child: Icon(FontAwesomeIcons.user , color: Colors.white,),
               ),
 
@@ -728,7 +577,7 @@ class _MyHomePageState extends State<HomeDriver> {
                       child: Chip(
                         avatar: Icon(
                           FontAwesomeIcons.gift,
-                          color: Colors.deepOrange,
+                          color: DataProvider().baseColor,
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
@@ -747,7 +596,7 @@ class _MyHomePageState extends State<HomeDriver> {
                       child: Chip(
                         avatar: Icon(
                           Icons.star,
-                          color: Colors.deepOrange,
+                          color: DataProvider().baseColor,
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
@@ -762,7 +611,7 @@ class _MyHomePageState extends State<HomeDriver> {
             ListTile(
               leading: Icon(Icons.time_to_leave_sharp),
               title: Text("You trips" ,),
-              trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: Colors.deepOrange),),),
+              trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: DataProvider().baseColor),),),
             ),
 
             ListTile(
@@ -876,13 +725,19 @@ class _MyHomePageState extends State<HomeDriver> {
   _addPolyLine() {
 
     Polyline polyline = Polyline(
-        polylineId: id, color: Colors.deepOrange, points: polylineCoordinates);
+        polylineId: id, color: DataProvider().baseColor, points: polylineCoordinates);
 
     polylines[id] = polyline;
     setState(() {});
   }
 
   _getPolyline(LatLng origin ,LatLng dest ) async {
+
+    polylineCoordinates.clear();
+
+
+    print("_getPolyline");
+
     poly.PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       DataProvider().mapKey,
       poly.PointLatLng(origin.latitude, origin.longitude),
@@ -946,6 +801,8 @@ class _MyHomePageState extends State<HomeDriver> {
       this.setState(() {
 
         currentTrip.nameCustomer = value.fullName;
+        currentTrip.idCustomer = event.docs.first.get("idCustomer");
+        currentTrip.idDriver = event.docs.first.get("idDriver");
         currentTrip.ratingCustomer = value.rating;
         currentTrip.idTrip = event.docs.first.id;
         currentTrip.locationCustomer = LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng"));
@@ -980,10 +837,11 @@ class _MyHomePageState extends State<HomeDriver> {
 
 
 
-        if(polylineCoordinates.isEmpty && currentTrip.stateTrip == StateTrip.active){
+        if(currentTrip.stateTrip == StateTrip.active){
           _getPolyline(currentTrip.locationCustomer,  currentTrip.locationDriver);
 
-          zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
+
+         // zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
 
           addMarker(currentTrip.locationCustomer);
 
@@ -1098,7 +956,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
 
         child: CircleAvatar(
           radius: 30.0,
-          backgroundColor: Colors.deepOrange,
+          backgroundColor: DataProvider().baseColor,
 
           child: Icon(FontAwesomeIcons.user  ,size: 25.0, color: Colors.white,),
 
@@ -1140,7 +998,7 @@ class _NotificationWidgetState extends State<NotificationWidget> {
 
         child: CircleAvatar(
           radius: 30.0,
-          backgroundColor: Colors.deepOrange,
+          backgroundColor: DataProvider().baseColor,
 
           child: Icon(Icons.notification_important  ,size: 25.0, color: Colors.white,),
 
@@ -1170,7 +1028,7 @@ class _PriceWidgetState extends State<PriceWidget> {
       height: 60,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white, width: 2),
-        color: Colors.deepOrange,
+        color: DataProvider().baseColor,
         borderRadius: BorderRadius.all(Radius.circular(25.0)),
         boxShadow: [
           BoxShadow(

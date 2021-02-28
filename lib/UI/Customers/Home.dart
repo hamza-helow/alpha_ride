@@ -1,18 +1,27 @@
 import 'dart:async';
 
+import 'package:alpha_ride/Enum/StateTrip.dart';
+import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
+import 'package:alpha_ride/Models/Trip.dart';
+import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Customers/TripsScreen.dart';
 import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
@@ -29,6 +38,27 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+
+  final String field = 'position';
+
+  StreamSubscription<DocumentSnapshot> subscription;
+
+  var locationReference;
+
+  final geo = Geoflutterfire();
+  final _firestore = FirebaseFirestore.instance;
+
+  String idDriver ="" , closerTimeTrip = "";
+  double radius = 1;
+
+  List<String > rejected ;
+
+  bool findDriver = false , tripActive = false;
+
+  Trip currentTrip ;
+
+  GeoFirePoint geoFirePoint ;
+
 
   Set<Marker> markers = Set();
   Map<PolylineId, Polyline> polylines = {};
@@ -60,6 +90,9 @@ class _HomeState extends State<Home> {
 
   bool mapIsCreated= false;
 
+  Stream<List<DocumentSnapshot>> streamCloserDrivers ;
+
+
   static final CameraPosition defaultPosition = CameraPosition(
     target: LatLng(32.5661186, 35.8420676),
     zoom: 17.4746,
@@ -77,12 +110,203 @@ class _HomeState extends State<Home> {
   BitmapDescriptor carIcon;
 
 
+  void getDriver() {
+
+    this.setState(() {
+      findDriver =true;
+    });
+
+    if(DataProvider().userLocation != null){
+      geoFirePoint = geo.point(latitude: DataProvider().userLocation.latitude, longitude: DataProvider().userLocation.longitude);
+      locationReference =
+          _firestore.collection('locations')
+              .where(FirebaseConstant().available , isEqualTo: true);
+
+      streamCloserDrivers = geo.collection(collectionRef: locationReference)
+          .within(center: geoFirePoint, radius: radius, field: field);
+    }
+
+    streamCloserDrivers.listen((event) {
+
+      DocumentSnapshot currentDriver =   event.firstWhere((element) => !rejected.contains(element.data()['idUser']) , orElse: () => null,);
+      if(findDriver)
+        if(currentDriver == null)
+        {
+          print("$radius");
+          radius ++ ;
+          getDriver() ;
+
+        }
+        else{
+
+          FirebaseHelper().checkDriverHasActiveTrip(currentDriver.data()['idUser'])
+              .then((exit) {
+
+            if(!exit)
+              sendRequestToDriver(currentDriver.data());
+            else
+            {
+              if(findDriver){
+                radius ++ ;
+                getDriver() ;
+              }
+
+            }
+          });
+
+
+
+        }
+
+
+    });
+
+
+  }
+
+  void sendRequestToDriver(Map<String, dynamic> dataDriver){
+
+    this.setState(() {
+      idDriver  = dataDriver['idUser'] ;
+    });
+
+    if(findDriver)
+      FirebaseHelper().sendRequestToDriver(
+          TripCustomer(
+            idCustomer: auth.currentUser.uid,
+            discount: DataProvider().promoCodePercentage,
+            lat: DataProvider().userLocation.latitude,
+            lng:  DataProvider().userLocation.longitude,
+            nameCustomer: '',
+            phoneCustomer: '',
+            stateRequest: 'pending',
+            goingTo: DataProvider().accessPointAddress,
+            hours: numberHours,
+            tripType: numberHours == 0 ? TypeTrip.distance: TypeTrip.hours,
+          ),
+          idDriver
+      ).then((_) {
+        listenRequestDriver(idDriver);
+      });
+
+  }
+
+
+  void deleteRequest(){
+    this.setState(() {
+      findDriver = false ;
+      if(idDriver.isNotEmpty)
+        _firestore
+            .collection(FirebaseConstant().driverRequests)
+            .doc(idDriver)
+            .delete();
+    });
+  }
+
+  void listenRequestDriver (String idDriver) async{
+
+    subscription  =
+        FirebaseFirestore.instance
+            .collection(FirebaseConstant().driverRequests)
+            .doc(idDriver)
+            .snapshots()
+            .listen((event) {
+
+          print("event Lis");
+          if(event.exists)
+            if(event.data()['stateRequest'] == "rejected")
+            {
+              radius =  1 ;
+              rejected.add(idDriver);
+              getDriver();
+            }
+            else
+            {
+              subscription.cancel();
+              listenCurrentTrip();
+              return;
+            }
+
+        });
+
+
+  }
+
+  void listenCurrentTrip (){
+    FirebaseFirestore.instance
+        .collection("Trips")
+        .where("state" , whereIn: [StateTrip.active.toString(),StateTrip.started.toString()])
+        .where("idCustomer" , isEqualTo: auth.currentUser.uid)
+        .snapshots().listen((event) {
+      if(this.mounted)
+        this.setState(() {
+          if(event.size > 0 ){
+            tripActive = true ;
+            setupCurrentTrip(event);
+          }
+          else
+            tripActive = false ;
+        });
+
+    });
+
+  }
+
+  LatLng driverLocation ;
+  void setupCurrentTrip(event){
+    FirebaseHelper().loadUserInfo(event.docs.first.get("idDriver") , typeAccount: TypeAccount.driver).then((value)  {
+
+      if(this.mounted)
+        this.setState(() {
+
+
+          currentTrip.idCustomer= "";
+          currentTrip.idDriver =event.docs.first.get("idDriver") ;
+          currentTrip.nameDriver = value.fullName ;
+          currentTrip.ratingDriver = value.rating/value.countRating ;
+          currentTrip.locationCustomer =  LatLng(event.docs.first.get("locationCustomer.lat") , event.docs.first.get("locationCustomer.lng")) ;
+          currentTrip.locationDriver = LatLng(event.docs.first.get("locationDriver.lat") , event.docs.first.get("locationDriver.lng")) ;
+          currentTrip.carType =value.carType;
+          currentTrip.carModel= value.carModel;
+          currentTrip.stateTrip = (){
+            var state = event.docs.first.get("state");
+
+            if(state == StateTrip.active.toString())
+              return StateTrip.active ;
+            else if(state == StateTrip.rejected.toString())
+              return StateTrip.rejected ;
+            else
+              return StateTrip.started ;
+          }();
+
+          //widget.onStateTripChanged(currentTrip.stateTrip);
+          whenDriverComing(currentTrip.locationDriver.latitude , currentTrip.locationDriver.longitude , currentTrip.locationCustomer.latitude , currentTrip.locationCustomer.longitude ,event.docs.first.get("locationDriver.rotateDriver")  );
+
+
+          DataProvider().getArriveTime(currentTrip.locationCustomer , currentTrip.locationDriver).then((arriveTime) {
+
+            this.setState(() {
+              currentTrip.arriveTime = arriveTime;
+            });
+
+          });
+
+
+        });
+
+    });
+
+  }
 
   @override
   void initState() {
 
     loadInfoUser();
 
+    listenCurrentTrip();
+
+    rejected = List();
+     currentTrip = Trip();
 
     BitmapDescriptor.fromAssetImage(
         ImageConfiguration(platform: TargetPlatform.android), "Assets/car.png")
@@ -178,7 +402,15 @@ class _HomeState extends State<Home> {
 
          if((confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated)
          CustomerBottomSheet(
+           currentTrip: currentTrip,
+           findDriver: findDriver,
+           getDriver: (){
+             getDriver();
+           },
+           deleteRequest: ()=>deleteRequest(),
+           tripActive: tripActive,
            numberHours: numberHours,
+           idDriver: idDriver,
            callBack: (){
 
              this.setState(() {
@@ -187,7 +419,7 @@ class _HomeState extends State<Home> {
 
            },
 
-           whenDriverComing: (lat, lng , latCustomer , lngCustomer , rotateDriver) =>whenDriverComing(lat, lng , latCustomer ,  lngCustomer , rotateDriver),
+          // whenDriverComing: (lat, lng , latCustomer , lngCustomer , rotateDriver) =>whenDriverComing(lat, lng , latCustomer ,  lngCustomer , rotateDriver),
 
            onStateTripChanged: (stateTrip) {
 
@@ -278,7 +510,7 @@ class _HomeState extends State<Home> {
           right: 0,
           child: Column(
             children: <Widget>[
-              Icon(Icons.location_on_sharp , size: 50, color: Colors.deepOrange,)
+              Icon(Icons.location_on_sharp , size: 50, color: DataProvider().baseColor,)
             ],
           ),
         );
@@ -291,7 +523,7 @@ class _HomeState extends State<Home> {
           right: 35,
           child:  MaterialButton(
             height: 60.0,
-            color: Colors.deepOrange,
+            color: DataProvider().baseColor,
 
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25.0),
@@ -329,7 +561,7 @@ class _HomeState extends State<Home> {
                 onTap: () => {
                   _scaffoldKey.currentState.openDrawer()
                 },
-                child: Icon(Icons.menu ,size: 30.0, color: Colors.deepOrange,) ,
+                child: Icon(Icons.menu ,size: 30.0, color: DataProvider().baseColor,) ,
               ),
 
               SizedBox(width: 20,),
@@ -403,7 +635,7 @@ class _HomeState extends State<Home> {
                                       child: Chip(
                                         avatar: Icon(
                                           Icons.watch_later,
-                                          color: Colors.deepOrange,
+                                          color: DataProvider().baseColor,
                                           size: 21,
                                         ),
                                         backgroundColor: Colors.grey[200],
@@ -511,7 +743,7 @@ class _HomeState extends State<Home> {
                 accountName: Text("$_fullName" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold) ),
                 accountEmail: Text("$_email" , style: TextStyle(color: Colors.black54)),
                 currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.deepOrange ,
+                  backgroundColor: DataProvider().baseColor ,
                   child: Icon(FontAwesomeIcons.user , color: Colors.white,),
                 ),
 
@@ -531,7 +763,7 @@ class _HomeState extends State<Home> {
                       child: Chip(
                         avatar: Icon(
                           FontAwesomeIcons.gift,
-                          color: Colors.deepOrange,
+                          color: DataProvider().baseColor,
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
@@ -550,7 +782,7 @@ class _HomeState extends State<Home> {
                       child: Chip(
                         avatar: Icon(
                           Icons.star,
-                          color: Colors.deepOrange,
+                          color: DataProvider().baseColor,
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
@@ -566,7 +798,7 @@ class _HomeState extends State<Home> {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TripsScreen(),)),
               leading: Icon(Icons.time_to_leave_sharp),
               title: Text("You trips" ,),
-              trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: Colors.deepOrange),),),
+              trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: DataProvider().baseColor),),),
             ),
 
 
@@ -661,7 +893,7 @@ class _HomeState extends State<Home> {
 
 
     Polyline polyline = Polyline(
-        polylineId: id, color: Colors.deepOrange, points: polylineCoordinates);
+        polylineId: id, color: DataProvider().baseColor, points: polylineCoordinates);
 
     polylines[id] = polyline;
     setState(() {});
@@ -761,7 +993,7 @@ class _HomeState extends State<Home> {
                   Navigator.pop(context);
 
                 },
-                child: Text("Confirm" , style: TextStyle(color: Colors.deepOrange , fontWeight: FontWeight.bold),),
+                child: Text("Confirm" , style: TextStyle(color: DataProvider().baseColor , fontWeight: FontWeight.bold),),
                 ),
 
                 MaterialButton(onPressed: () {
@@ -769,7 +1001,7 @@ class _HomeState extends State<Home> {
                   Navigator.pop(context);
 
                 },
-                  child: Text("cancel" , style: TextStyle(color: Colors.deepOrange , fontWeight: FontWeight.bold)),
+                  child: Text("cancel" , style: TextStyle(color: DataProvider().baseColor , fontWeight: FontWeight.bold)),
                 ),
 
               ]),
@@ -874,5 +1106,42 @@ class _HomeState extends State<Home> {
 
    });
   }
+
+
+
+  // _addPolyLine() {
+  //
+  //
+  //
+  //   PolylineId id = PolylineId("poly");
+  //   Polyline polyline = Polyline(
+  //       polylineId: id, color: Colors.red, points: polylineCoordinates);
+  //   polylines[id] = polyline;
+  //   setState(() {});
+  // }
+  //
+  // _getPolyline(LatLng p1 , LatLng p2) async {
+  //
+  //
+  //
+  //
+  //   PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+  //     "AIzaSyDncLgtrZEw0UfktoxG8At9OuXOLqRspv0",
+  //     PointLatLng(p1.latitude, p1.longitude),
+  //     PointLatLng(p2.latitude, p2.longitude),
+  //     travelMode: TravelMode.driving,
+  //   );
+  //
+  //   //AIzaSyDncLgtrZEw0UfktoxG8At9OuXOLqRspv0
+  //
+  //
+  //   if (result.points.isNotEmpty) {
+  //     result.points.forEach((PointLatLng point) {
+  //       polylineCoordinates.add(LatLng(point.latitude, point.longitude));
+  //     });
+  //   }
+  //   _addPolyLine();
+  // }
+
 
 }

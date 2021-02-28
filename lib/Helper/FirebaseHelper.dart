@@ -44,6 +44,19 @@ class FirebaseHelper {
   }
 
 
+  Future <void > updateCustomerPoint(String idUser) async{
+
+   return FirebaseFirestore
+        .instance
+        .collection("Users")
+        .doc(idUser).update({
+         'points' : FieldValue.increment(10) ,
+          'countTrips' : FieldValue.increment(1) ,
+        });
+
+  }
+
+
   Future<void> sendRequestToDriver(TripCustomer tripCustomer , idDriver) async{
 
   return   FirebaseFirestore.instance

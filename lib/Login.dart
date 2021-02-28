@@ -1,6 +1,7 @@
 import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/User.dart' as m;
@@ -133,7 +134,7 @@ class _LoginState extends State<Login> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      color: Colors.deepOrange,
+                      color: DataProvider().baseColor,
                       elevation: 0,
                       minWidth: 400,
                       height: 50,
@@ -165,7 +166,7 @@ class _LoginState extends State<Login> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Icon(FontAwesomeIcons.facebook ,  size: 50, color: Colors.deepOrange,),
+                        // Icon(FontAwesomeIcons.facebook ,  size: 50, color: DataProvider().baseColor,),
 
                         Image.asset(
                           "Assets/facebook.png",
@@ -215,7 +216,7 @@ class _LoginState extends State<Login> {
                 Icon(
                   Icons.drive_eta,
                   size: 40,
-                  color: Colors.deepOrange,
+                  color: DataProvider().baseColor,
                 ),
                 SizedBox(
                   width: 10.0,

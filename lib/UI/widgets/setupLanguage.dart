@@ -41,7 +41,7 @@ class _SetupLanguageState extends State<SetupLanguage> {
               children: <Widget>[
                 RadioListTile(
                   groupValue: selectedRadio,
-                  activeColor: Colors.deepOrange,
+                  activeColor: DataProvider().baseColor,
                   value: 1,
                   title: Text(
                       "${AppLocalizations.of(context).translate('english')}"),
@@ -55,7 +55,7 @@ class _SetupLanguageState extends State<SetupLanguage> {
                 ),
                 RadioListTile(
                   groupValue: selectedRadio,
-                  activeColor: Colors.deepOrange,
+                  activeColor: DataProvider().baseColor,
                   value: 2,
                   title: Text(
                       "${AppLocalizations.of(context).translate('arabic')}"),

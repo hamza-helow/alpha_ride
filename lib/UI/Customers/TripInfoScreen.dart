@@ -48,7 +48,7 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: DataProvider().baseColor,
       ),
 
       body: SingleChildScrollView(
@@ -93,7 +93,7 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
             Row(
               children: [
 
-                Icon(Icons.monetization_on , size: 40.0, color: Colors.deepOrange,),
+                Icon(Icons.monetization_on , size: 40.0, color: DataProvider().baseColor,),
                 SizedBox(width: 20.0,),
                 Text("cash" , style: TextStyle( fontWeight: FontWeight.bold , fontSize: 17.0),)
               ],
@@ -120,7 +120,7 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
                 trailing: Chip(
                   avatar: Icon(
                     Icons.star,
-                    color: Colors.deepOrange,
+                    color: DataProvider().baseColor,
                     size: 21,
                   ),
                   backgroundColor: Colors.grey[200],
@@ -185,7 +185,7 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
   _addPolyLine() {
 
     Polyline polyline = Polyline(
-        polylineId: id, color: Colors.deepOrange,
+        polylineId: id, color: DataProvider().baseColor,
         points: polylineCoordinates ,
         geodesic: false,
 

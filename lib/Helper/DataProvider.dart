@@ -2,6 +2,7 @@ import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Models/DriverRequest.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class DataProvider{
@@ -10,10 +11,16 @@ class DataProvider{
 
   DataProvider._privateConstructor();
 
+   Color baseColor = Colors.teal;
+
   static final DataProvider _instance = DataProvider._privateConstructor();
 
   factory DataProvider() {
     return _instance;
+
+    // DataProvider().baseColor
+
+
   }
 
 
@@ -85,7 +92,11 @@ class DataProvider{
 
       int min =   currentTrip.startDate.difference(DateTime.now()).inMinutes;
 
-      totalPrice =  double.parse(DataProvider().getHoursFromMin(min)) * 10.0;
+      totalPrice =  double.parse(DataProvider().getHoursFromMin(min).replaceAll(":", ".")) * 10.0;
+
+      if(totalPrice < 5)
+        totalPrice = 5 ;
+
     }
 
     return double.parse(totalPrice.toStringAsFixed(2));

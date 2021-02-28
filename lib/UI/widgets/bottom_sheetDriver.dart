@@ -91,7 +91,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
         Icon(
           Icons.info_outline,
           size: 30,
-          color: Colors.deepOrange,
+          color: DataProvider().baseColor,
         ),
         SizedBox(
           width: 10,
@@ -140,7 +140,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
               width: 200,
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.deepOrange,
+                  backgroundColor: DataProvider().baseColor,
                   child: Icon(
                     Icons.person_outline_rounded,
                     color: Colors.white,
@@ -151,7 +151,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
               ),
             ),
             CircleAvatar(
-              backgroundColor: Colors.deepOrange,
+              backgroundColor: DataProvider().baseColor,
               child: Icon(
                 Icons.phone,
                 color: Colors.white,
@@ -233,6 +233,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
         discount: currentTrip.discount
         ))
         .then((value) {
+
       _firestore
           .collection(FirebaseConstant().driverRequests)
           .doc(auth.currentUser.uid)
@@ -306,7 +307,7 @@ class _StateDriverState extends State<StateDriver> {
               Container(
                 height: 60.5,
                 width: 120,
-                color: Colors.deepOrange[80],
+                color: Colors.white,
                 child: Padding(
                   padding: EdgeInsets.only(right: 14.0),
                   child: SizedBox(
@@ -320,7 +321,7 @@ class _StateDriverState extends State<StateDriver> {
                             .update({FirebaseConstant().available: value});
 
                       },
-                      activeColor: Colors.deepOrange,
+                      activeColor: DataProvider().baseColor,
                     ),
                   ),
                 ),

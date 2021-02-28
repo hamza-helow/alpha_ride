@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/UI/Customers/TripInfoScreen.dart';
@@ -60,7 +61,7 @@ class _TripsScreenState extends State<TripsScreen> {
     return Scaffold(
 
       appBar: AppBar(
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: DataProvider().baseColor,
         title: Text("Your trips"),
       ),
 
@@ -93,9 +94,9 @@ class _TripsScreenState extends State<TripsScreen> {
 
                       Column(
                         children: [
-                          Icon(Icons.circle , size: 15, color: Colors.deepOrange,)  ,
+                          Icon(Icons.circle , size: 15, color: DataProvider().baseColor,)  ,
                           Text("|"),
-                          Icon(Icons.circle , size: 25, color: Colors.deepOrange,)  ,
+                          Icon(Icons.circle , size: 25, color: DataProvider().baseColor,)  ,
                         ],
                       ),
                       Column(
