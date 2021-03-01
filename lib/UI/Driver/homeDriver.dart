@@ -102,6 +102,7 @@ class _MyHomePageState extends State<HomeDriver> {
     listenCurrentTrip();
   }
 
+
   void initImageCar() async{
 
     final Uint8List markerIcon = await getBytesFromAsset('Assets/car.png', 100);
