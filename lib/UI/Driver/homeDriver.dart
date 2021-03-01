@@ -94,11 +94,12 @@ class _MyHomePageState extends State<HomeDriver> {
     //     ImageConfiguration(platform: Platform.isAndroid? TargetPlatform.android : TargetPlatform.iOS), "Assets/car.png")
     //     .then((onValue) {
     //   carIcon = onValue;
-    // });
+    // });::::::
 
     initImageCar();
     listenCurrentTrip();
   }
+
 
   void initImageCar() async{
 
