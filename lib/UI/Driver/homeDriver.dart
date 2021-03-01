@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:alpha_ride/Enum/StateTrip.dart';
@@ -22,10 +21,10 @@ import 'package:geocoder/geocoder.dart' as coder;
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
-import 'dart:ui' as ui;
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui' as ui;
 
 class HomeDriver extends StatefulWidget {
   HomeDriver({Key key, this.title}) : super(key: key);
@@ -98,7 +97,6 @@ class _MyHomePageState extends State<HomeDriver> {
     // });
 
     initImageCar();
-
     listenCurrentTrip();
   }
 
@@ -114,6 +112,7 @@ class _MyHomePageState extends State<HomeDriver> {
     ui.FrameInfo fi = await codec.getNextFrame();
     return (await fi.image.toByteData(format: ui.ImageByteFormat.png)).buffer.asUint8List();
   }
+
 
   void listenCurrentTrip(){
 
