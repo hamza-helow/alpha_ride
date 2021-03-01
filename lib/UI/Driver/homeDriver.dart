@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
@@ -87,7 +88,7 @@ class _MyHomePageState extends State<HomeDriver> {
     currentTrip = Trip();
 
     BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(platform: TargetPlatform.android), "Assets/car.png")
+        ImageConfiguration(platform: Platform.isAndroid? TargetPlatform.android : TargetPlatform.iOS), "Assets/car.png")
         .then((onValue) {
       carIcon = onValue;
     });
@@ -623,11 +624,11 @@ class _MyHomePageState extends State<HomeDriver> {
             Divider(),
 
             ListTile(
-              onTap: () {
+                onTap: () {
 
-                auth.signOut();
-                Navigator.push(context, MaterialPageRoute(builder: (context) => Login(),));
-              },
+                  auth.signOut().then((value) =>  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Login(),), (route) => false) );
+
+                },
               leading: Icon(Icons.logout),
               title: Text("Log out" ,),
             ),

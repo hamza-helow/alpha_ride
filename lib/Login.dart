@@ -289,17 +289,11 @@ class _LoginState extends State<Login> {
         .then((result) {
       if (result.user != null) {
         if (currentUser.typeAccount == TypeAccount.customer)
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Home(),
-              ));
+          
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);
         else
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => HomeDriver(),
-              ));
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
+
 
         SharedPreferencesHelper()
             .setFullName(currentUser.fullName);

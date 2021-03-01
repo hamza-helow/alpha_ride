@@ -240,12 +240,16 @@ class _HomeState extends State<Home> {
         .snapshots().listen((event) {
       if(this.mounted)
         this.setState(() {
+           print("Size :${event.size}");
           if(event.size > 0 ){
             tripActive = true ;
             setupCurrentTrip(event);
           }
           else
-            tripActive = false ;
+           {
+             tripActive = false ;
+             clearPolyline();
+           }
         });
 
     });
@@ -831,11 +835,7 @@ class _HomeState extends State<Home> {
             ListTile(
               onTap: () {
 
-                auth.signOut() ;
-
-                Navigator.of(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                  Login(),));
+                auth.signOut().then((value) =>  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Login(),), (route) => false) );
 
               },
               leading: Icon(Icons.logout),
@@ -1086,11 +1086,20 @@ class _HomeState extends State<Home> {
 
 
     if(polylines.isEmpty)
-   _getPolyline(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
+     _getPolyline(LatLng(latCustomer, lngCustomer) ,LatLng(lat, lng) );
 
       showMarkerDriver(lat , lng , rotateDriver);
 
 
+  }
+
+
+  void clearPolyline(){
+
+    this.setState(() {
+      polylineCoordinates.clear();
+      polylines.clear();
+    });
   }
 
 
