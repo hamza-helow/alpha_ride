@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
@@ -13,12 +15,14 @@ import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geocoder/geocoder.dart' as coder;
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
+import 'dart:ui' as ui;
 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -87,15 +91,29 @@ class _MyHomePageState extends State<HomeDriver> {
 
     currentTrip = Trip();
 
-    BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(platform: Platform.isAndroid? TargetPlatform.android : TargetPlatform.iOS), "Assets/car.png")
-        .then((onValue) {
-      carIcon = onValue;
-    });
+    // BitmapDescriptor.fromAssetImage(
+    //     ImageConfiguration(platform: Platform.isAndroid? TargetPlatform.android : TargetPlatform.iOS), "Assets/car.png")
+    //     .then((onValue) {
+    //   carIcon = onValue;
+    // });
+
+    initImageCar();
 
     listenCurrentTrip();
   }
 
+  void initImageCar() async{
+
+    final Uint8List markerIcon = await getBytesFromAsset('Assets/car.png', 100);
+    carIcon = BitmapDescriptor.fromBytes(markerIcon);
+  }
+
+  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png)).buffer.asUint8List();
+  }
 
   void listenCurrentTrip(){
 
