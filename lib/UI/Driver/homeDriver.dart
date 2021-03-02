@@ -6,6 +6,7 @@ import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
+import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/user_location.dart';
@@ -699,10 +700,59 @@ class _MyHomePageState extends State<HomeDriver> {
 
     });
 
+  }
 
 
+  String  _email ,_fullName;
+  int points = 0 ;
+  double rating ;
+  void loadInfoUser(){
+
+    FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
+        .snapshots().listen((event) {
+          SharedPreferencesHelper().setEmail(event.get('email'));
+      SharedPreferencesHelper().setFullName(event.get("fullName"));
+      SharedPreferencesHelper().setRating(event.get("rating") /event.get('countRating'));
+      if(this.mounted)
+        this.setState(() {
+          _email= event.get('email');
+          _fullName = event.get("fullName");
+          rating = event.get("rating") /event.get('countRating');
+
+        });
+    });
+
+    SharedPreferencesHelper().getEmail().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          _email= value;
+        });
+
+    });
+
+    SharedPreferencesHelper().getFullName().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          _fullName= value;
+        });
+
+    });
+
+
+
+    SharedPreferencesHelper().getRating().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          rating= value??0.0;
+        });
+
+    });
 
   }
+
 
   void updateLocationDriverInTrip() {
 

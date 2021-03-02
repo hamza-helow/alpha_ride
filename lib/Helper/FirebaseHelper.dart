@@ -34,10 +34,12 @@ class FirebaseHelper {
       'email': user.email ,
       'typeUser' : user.typeAccount.toString() ,
       'countRating'  : 1 ,
-      'rating' :0.0  ,
+      'rating' :5.0  ,
       'countTrips' : 0 ,
       'stateAccount' : user.stateAccount.toString() ,
-      'phoneNumber' : user.phoneNumber
+      'phoneNumber' : user.phoneNumber ,
+      'points' : 0 ,
+      'emailVerified' : user.emailVerified
 
     });
 

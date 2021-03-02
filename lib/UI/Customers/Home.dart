@@ -92,6 +92,9 @@ class _HomeState extends State<Home> {
 
   Stream<List<DocumentSnapshot>> streamCloserDrivers ;
 
+  double rating =0;
+  int points =0;
+
 
   static final CameraPosition defaultPosition = CameraPosition(
     target: LatLng(32.5661186, 35.8420676),
@@ -262,8 +265,6 @@ class _HomeState extends State<Home> {
 
       if(this.mounted)
         this.setState(() {
-
-
           currentTrip.idCustomer= "";
           currentTrip.idDriver =event.docs.first.get("idDriver") ;
           currentTrip.nameDriver = value.fullName ;
@@ -324,6 +325,22 @@ class _HomeState extends State<Home> {
 
   void loadInfoUser(){
 
+    FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
+        .snapshots().listen((event) {
+
+      SharedPreferencesHelper().setPoints(event.get("points"));
+      SharedPreferencesHelper().setEmail(event.get('email'));
+      SharedPreferencesHelper().setFullName(event.get("fullName"));
+      SharedPreferencesHelper().setRating(event.get("rating") /event.get('countRating'));
+      if(this.mounted)
+      this.setState(() {
+        _email= event.get('email');
+        _fullName = event.get("fullName");
+        rating = event.get("rating") /event.get('countRating');
+        points=event.get("points");
+
+      });
+    });
 
     SharedPreferencesHelper().getEmail().then((value) {
 
@@ -348,6 +365,24 @@ class _HomeState extends State<Home> {
       if(this.mounted)
         this.setState(() {
           selectedDriver= value??"";
+        });
+
+    });
+
+    SharedPreferencesHelper().getPoints().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          points= value??0;
+        });
+
+    });
+
+    SharedPreferencesHelper().getRating().then((value) {
+
+      if(this.mounted)
+        this.setState(() {
+          rating= value??0.0;
         });
 
     });
@@ -771,7 +806,7 @@ class _HomeState extends State<Home> {
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("300 point"),
+                        label: Text("$points point"),
                       ),
                     ),
                   ),
@@ -790,7 +825,7 @@ class _HomeState extends State<Home> {
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("4.8"),
+                        label: Text("${rating.toStringAsFixed(2)}"),
                       ),
                     ),
                   ),

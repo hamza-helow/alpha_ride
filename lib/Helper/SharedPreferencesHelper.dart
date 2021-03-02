@@ -10,6 +10,10 @@ class SharedPreferencesHelper {
 
   static const  String idDriverSelected = "IdDriverSelected";
 
+  static const  String points = "points";
+
+  static const  String rating = "rating";
+
   SharedPreferences prefs ;
 
   SharedPreferencesHelper._privateConstructor(){
@@ -27,6 +31,30 @@ class SharedPreferencesHelper {
 
      prefs = await SharedPreferences.getInstance();
   }
+
+
+
+  void  setRating(double rating) async {
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(points,rating);
+  }
+
+  Future<double > getRating() async{
+    prefs = await SharedPreferences.getInstance();
+    return prefs.getDouble(points) ;
+  }
+
+
+  void  setPoints(int point) async {
+    prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(points,point);
+  }
+
+  Future<int > getPoints() async{
+    prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(points) ;
+  }
+
 
 
   void  setDriverSelected(String id) async {

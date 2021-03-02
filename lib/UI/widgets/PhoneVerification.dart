@@ -1,6 +1,6 @@
 
 import 'dart:convert';
-
+import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
@@ -12,6 +12,7 @@ import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:alpha_ride/Models/User.dart' as model;
 
 import 'Timer.dart';
 import 'autoFill_sms.dart';
@@ -23,7 +24,11 @@ class PhoneVerification extends StatefulWidget {
 
   TypeAccount typeAccount ;
 
-  PhoneVerification(this.phoneNumber , {this.typeAccount = TypeAccount.customer});
+  AuthCredential credential;
+
+  String fullName , email ;
+
+  PhoneVerification(this.phoneNumber , { this.email,this.typeAccount = TypeAccount.customer ,  this.credential , this.fullName });
 
   @override
   _PhoneVerificationState createState() => _PhoneVerificationState();
@@ -44,7 +49,6 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
   @override
   void initState()  {
-    // TODO: implement initState
     super.initState();
 
     listenForCode();
@@ -206,9 +210,6 @@ class _PhoneVerificationState extends State<PhoneVerification> {
         PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
 
 
-
-
-
     if(phoneAuthCredential == null)
       return;
 
@@ -216,6 +217,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
     firebaseAuth.signInWithCredential(phoneAuthCredential).then((c) => {
 
 
+      if( widget.credential == null)
       FirebaseHelper().infoUserExit(c.user.uid).then((value) => {
 
         if(value){
@@ -243,14 +245,34 @@ class _PhoneVerificationState extends State<PhoneVerification> {
        },
 
 
-      }),
+      })
+      else{
+
+        c.user.linkWithCredential(widget.credential).then((value) {
+
+          FirebaseHelper().insertInformationUser(model.User(
+              fullName: widget.fullName ,
+              email: widget.email,
+              idUser: c.user.uid,
+              stateAccount: StateAccount.active ,
+              phoneNumber: widget.phoneNumber,
+              typeAccount: TypeAccount.customer,
+              emailVerified: true
+          )).then((value) {
+
+            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);
+
+          });
+
+
+        }),
+
+
+        },
 
       this.setState(() {
         inProgress = false ;
       }),
-
-
-
 
 
     }).catchError((err){

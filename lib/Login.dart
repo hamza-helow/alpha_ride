@@ -14,6 +14,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -28,11 +30,13 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   String phoneNumber = "";
 
-  bool exitAccount = false ;
+  bool exitAccount = false   , onLogin = false ;
 
   m.User currentUser ;
 
   final passwordController = TextEditingController();
+
+
 
   @override
   void initState() {}
@@ -52,7 +56,7 @@ class _LoginState extends State<Login> {
           ),
           Container(
             width: MediaQuery.of(context).size.width,
-            margin: EdgeInsets.only(top: 300),
+            margin: EdgeInsets.only(top: 200),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Colors.white,
@@ -126,13 +130,30 @@ class _LoginState extends State<Login> {
                         login();
                       },
                       //since this is only a UI app
-                      child: Text(
-                        '${AppLocalizations.of(context).translate("signIn")}',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'SFUIDisplay',
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${AppLocalizations.of(context).translate("signIn")}',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'SFUIDisplay',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ) ,
+
+                         if(onLogin)
+                         Padding(padding:
+                         EdgeInsets.all(10.0),
+                           child:  CircularProgressIndicator(
+                             valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                             backgroundColor: Colors.white,
+                             strokeWidth: 2.0,
+                           ),
+                         )
+
+                        ],
                       ),
                       color: DataProvider().baseColor,
                       elevation: 0,
@@ -168,12 +189,17 @@ class _LoginState extends State<Login> {
                       children: [
                         // Icon(FontAwesomeIcons.facebook ,  size: 50, color: DataProvider().baseColor,),
 
-                        Image.asset(
-                          "Assets/facebook.png",
-                          width: 50,
-                          height: 50,
-                        ),
+                        InkWell(
 
+                          child:  Image.asset(
+                            "Assets/facebook.png",
+                            width: 50,
+                            height: 50,
+                          ),
+                            onTap: () {
+                              loginFacebook();
+                            },
+                        ),
                         SizedBox(
                           width: 22.0,
                         ),
@@ -190,45 +216,46 @@ class _LoginState extends State<Login> {
                         )
                       ],
                     ),
+                  ) ,
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => JoinDriver(),
+                          ));
+                    },
+                    child: Container(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: 20.0, top: 20.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.drive_eta,
+                              size: 40,
+                              color: DataProvider().baseColor,
+                            ),
+                            SizedBox(
+                              width: 10.0,
+                            ),
+                            Text(
+                              "Join as captain",
+                              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
                   )
                 ],
               ),
             ),
           )
         ],
-      ),
-      bottomSheet: GestureDetector(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => JoinDriver(),
-              ));
-        },
-        child: Container(
-          color: Colors.white,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: 20.0, top: 20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.drive_eta,
-                  size: 40,
-                  color: DataProvider().baseColor,
-                ),
-                SizedBox(
-                  width: 10.0,
-                ),
-                Text(
-                  "Join as captain",
-                  style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-                )
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -282,11 +309,20 @@ class _LoginState extends State<Login> {
 
   void login() {
 
+    this.setState(() {
+      onLogin = true ;
+    });
+
     if(currentUser != null)
     auth
         .signInWithEmailAndPassword(
         email: currentUser.email, password: passwordController.text)
         .then((result) {
+
+          this.setState(() {
+            onLogin = false ;
+          });
+
       if (result.user != null) {
         if (currentUser.typeAccount == TypeAccount.customer)
           
@@ -319,12 +355,136 @@ class _LoginState extends State<Login> {
   );
 
   Future<void> _handleSignIn() async {
-    try {
-      await _googleSignIn.signIn().then((value) {
-        print(value.email);
+
+    this.setState(() {
+      onLogin = true ;
+    });
+
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    // //googleSignInAccount.email;
+    // checkAccountExit();
+    //
+    //
+    // final UserCredential authResult = await FirebaseAuth.instance.signInWithCredential(credential);
+    // final User user = authResult.user;
+
+  //  getPhoneFromEmail(googleSignInAccount.email , googleSignInAccount.displayName ,credential);
+
+    loginGoogle(googleSignInAccount.email , googleSignInAccount.displayName ,credential);
+
+    // try {
+    //   await _googleSignIn.signIn().then((value) {
+    //     print(value.photoUrl);
+    //   });
+    // } catch (error) {
+    //   print(error);
+    // }
+  }
+
+  Future<QuerySnapshot> getPhoneFromEmail(String email ) async{
+
+        return FirebaseFirestore.instance
+        .collection("Users")
+        .where("email" ,isEqualTo: email)
+        .get()
+        .then((user) async {
+         return user;
+       });
+
+
+  }
+
+
+  void loginGoogle(String email  ,String fullName ,AuthCredential  credential){
+    getPhoneFromEmail(email).then((user) {
+
+      this.setState(() {
+        onLogin = false ;
       });
-    } catch (error) {
-      print(error);
+
+      if(user.size > 0 ){
+
+        print("EXIT");
+
+        String phoneNumber = user.docs.first.get("phoneNumber");
+
+        if(user.docs.first.get("emailVerified"))
+        {
+          FirebaseAuth.instance.signInWithCredential(credential).then((value) {
+           
+            if(user.docs.first.get("typeUser") == TypeAccount.customer.toString())
+              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);
+            else
+              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
+
+          });
+        }
+
+        else
+        if(phoneNumber != null){
+          phoneVerification(phoneNumber , credential: credential , fullName: fullName );
+        }
+        else
+          phoneVerification(this.phoneNumber , credential: credential , fullName: fullName );
+      }
+      else
+      {
+        phoneVerification( this.phoneNumber , credential: credential , fullName: fullName  , email: email );
+      }
+
+    });
+
+  }
+
+
+  Future<void> loginFacebook() async {
+    try {
+      // by default the login method has the next permissions ['email','public_profile']
+      AccessToken accessToken = await FacebookAuth.instance.login();
+      print(accessToken.toJson());
+      // get the user data
+      final userData = await FacebookAuth.instance.getUserData();
+
+
+      print(accessToken.token);
+
+      FirebaseAuth.instance.signInWithCredential(FacebookAuthProvider.credential(accessToken.token) );
+
+      print(userData);
+    } on FacebookAuthException catch (e) {
+      switch (e.errorCode) {
+        case FacebookAuthErrorCode.OPERATION_IN_PROGRESS:
+          print("You have a previous login operation in progress");
+          break;
+        case FacebookAuthErrorCode.CANCELLED:
+          print("login cancelled");
+          break;
+        case FacebookAuthErrorCode.FAILED:
+          print("login failed");
+          break;
+      }
     }
   }
+
+
+  void phoneVerification (String phoneNumber ,   { String email,String fullName ,TypeAccount typeAccount , AuthCredential credential}){
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PhoneVerification(phoneNumber , typeAccount: typeAccount , credential:credential ,email: email ,fullName: fullName,),
+        ));
+
+  }
+
 }
+

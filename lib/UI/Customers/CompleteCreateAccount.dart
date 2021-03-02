@@ -163,14 +163,24 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
   void addUserInfo() {
 
-    auth.createUserWithEmailAndPassword(email: "hamziHelow3@gmail.com", password: "123456789").then((value) => {
+    AuthCredential credential = EmailAuthProvider.credential(email: email.text , password: "12345678");
+
+    widget.credential.user.linkWithCredential(credential);
 
 
-      widget.credential.user.linkWithCredential(value.credential)
+    // auth.createUserWithEmailAndPassword(email: "hamziHelow3@gmail.com", password: "123456789").then((value) => {
+    //
+    //
+    //   print(value.credential),
+    //
+    //   widget.credential.user.linkWithCredential(value.credential)
+    //
+    //
+    // });
 
 
-    });
-    
+   // auth.c
+
 
     SharedPreferencesHelper().setEmail(email.text);
     SharedPreferencesHelper().setFullName(fullName.text);

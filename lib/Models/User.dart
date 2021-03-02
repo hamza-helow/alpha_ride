@@ -15,6 +15,8 @@ class User {
 
   String phoneNumber;
 
+  bool emailVerified   ;
+
 
   User({
     this.fullName,
@@ -26,7 +28,7 @@ class User {
     this.rating ,
     this.carModel ,
     this.carType,
-    this.phoneNumber
-
+    this.phoneNumber ,
+    this.emailVerified = false
   });
 }
