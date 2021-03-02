@@ -26,9 +26,11 @@ class PhoneVerification extends StatefulWidget {
 
   AuthCredential credential;
 
-  String fullName , email ;
+  String fullName , email  , imageProfile ;
 
-  PhoneVerification(this.phoneNumber , { this.email,this.typeAccount = TypeAccount.customer ,  this.credential , this.fullName });
+  int flag ;
+
+  PhoneVerification(this.phoneNumber , { this.imageProfile,this.email,this.typeAccount = TypeAccount.customer ,  this.credential , this.fullName , this.flag });
 
   @override
   _PhoneVerificationState createState() => _PhoneVerificationState();
@@ -185,7 +187,6 @@ class _PhoneVerificationState extends State<PhoneVerification> {
   PinFieldAutoFill buildPinFieldAutoFill() {
     return  PinFieldAutoFill(
 
-
                 autofocus: true,
                 onCodeChanged: (txt)  {
 
@@ -250,14 +251,18 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
         c.user.linkWithCredential(widget.credential).then((value) {
 
+          auth.currentUser.updateProfile(displayName: "${widget.fullName}" , photoURL: widget.imageProfile);
+
           FirebaseHelper().insertInformationUser(model.User(
               fullName: widget.fullName ,
-              email: widget.email,
+              email:  widget.flag == 0 ?  widget.email : null,
               idUser: c.user.uid,
               stateAccount: StateAccount.active ,
               phoneNumber: widget.phoneNumber,
+              imageProfile: widget.imageProfile,
               typeAccount: TypeAccount.customer,
-              emailVerified: true
+              emailVerified: true ,
+              emailFacebook: widget.flag == 1 ? widget.email : null
           )).then((value) {
 
             Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);

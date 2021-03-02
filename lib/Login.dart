@@ -38,12 +38,20 @@ class _LoginState extends State<Login> {
 
 
 
+  void showInSnackBar(String value ) {
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+        content: new Text(value) , backgroundColor: Colors.red,));
+  }
+
   @override
   void initState() {}
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
+      key: _scaffoldKey,
+
       body: Stack(
         children: <Widget>[
           Container(
@@ -127,6 +135,8 @@ class _LoginState extends State<Login> {
                     padding: EdgeInsets.only(top: 20),
                     child: MaterialButton(
                       onPressed: () {
+
+
                         login();
                       },
                       //since this is only a UI app
@@ -206,6 +216,7 @@ class _LoginState extends State<Login> {
 
                         InkWell(
                           onTap: () {
+
                             _handleSignIn();
                           },
                           child: Image.asset(
@@ -331,6 +342,7 @@ class _LoginState extends State<Login> {
           Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
 
 
+        auth.currentUser.updateProfile(displayName: "${currentUser.fullName}" , photoURL: "");
         SharedPreferencesHelper()
             .setFullName(currentUser.fullName);
         SharedPreferencesHelper().setEmail(currentUser.email);
@@ -338,21 +350,11 @@ class _LoginState extends State<Login> {
       }
     });
     else
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PhoneVerification(phoneNumber),
-          ));
+      phoneVerification(phoneNumber , typeAccount: TypeAccount.customer);
 
 
   }
 
-  GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: <String>[
-      'email',
-      'https://www.googleapis.com/auth/contacts.readonly',
-    ],
-  );
 
   Future<void> _handleSignIn() async {
 
@@ -370,42 +372,47 @@ class _LoginState extends State<Login> {
       idToken: googleSignInAuthentication.idToken,
     );
 
-    // //googleSignInAccount.email;
-    // checkAccountExit();
-    //
-    //
-    // final UserCredential authResult = await FirebaseAuth.instance.signInWithCredential(credential);
-    // final User user = authResult.user;
 
-  //  getPhoneFromEmail(googleSignInAccount.email , googleSignInAccount.displayName ,credential);
-
-    loginGoogle(googleSignInAccount.email , googleSignInAccount.displayName ,credential);
-
-    // try {
-    //   await _googleSignIn.signIn().then((value) {
-    //     print(value.photoUrl);
-    //   });
-    // } catch (error) {
-    //   print(error);
-    // }
-  }
-
-  Future<QuerySnapshot> getPhoneFromEmail(String email ) async{
-
-        return FirebaseFirestore.instance
-        .collection("Users")
-        .where("email" ,isEqualTo: email)
-        .get()
-        .then((user) async {
-         return user;
-       });
-
+    loginOtherMethod(   credential: credential ,  fullName: googleSignInAccount.displayName,imageProfile: googleSignInAccount.photoUrl, email: googleSignInAccount.email , flag: 0);
 
   }
 
+  Future<QuerySnapshot> getPhoneFromEmail(String email , int flag ) async{
 
-  void loginGoogle(String email  ,String fullName ,AuthCredential  credential){
-    getPhoneFromEmail(email).then((user) {
+      // if(flag == 0 )
+      //   return FirebaseFirestore.instance
+      //   .collection("Users")
+      //   .where("email" ,isEqualTo: email)
+      //   .get()
+      //   .then((user) async {
+      //    return user;
+      //  });
+      // else
+      //   return FirebaseFirestore.instance
+      //       .collection("Users")
+      //       .where('emailFacebook' ,isEqualTo: email)
+      //       .get()
+      //       .then((user) async {
+      //     return user;
+      //   });
+
+
+      return FirebaseFirestore.instance
+          .collection("Users")
+          .where( flag == 0 ? "email" : "emailFacebook" ,isEqualTo: email)
+          .get()
+          .then((user) async {
+        return user;
+      });
+
+
+
+
+  }
+
+
+  void loginOtherMethod({String email  ,String fullName , String imageProfile ,AuthCredential  credential  ,  int  flag=0}){ // flag 0 : gmail , flag 1 :facebook
+    getPhoneFromEmail(email , flag) .then((user) {
 
       this.setState(() {
         onLogin = false ;
@@ -420,31 +427,40 @@ class _LoginState extends State<Login> {
         if(user.docs.first.get("emailVerified"))
         {
           FirebaseAuth.instance.signInWithCredential(credential).then((value) {
-           
+
+            auth.currentUser.updateProfile(displayName: "${user.docs.first.get("fullName")}" , photoURL: "");
+
+            SharedPreferencesHelper()
+                .setFullName(user.docs.first.get("fullName"));
+            SharedPreferencesHelper().setEmail(user.docs.first.get("email"));
+            SharedPreferencesHelper().setSetTypeAccount(user.docs.first.get("typeUser") == TypeAccount.customer.toString() ? TypeAccount.customer : TypeAccount.driver);
+
             if(user.docs.first.get("typeUser") == TypeAccount.customer.toString())
               Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);
             else
               Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
 
+
+
           });
+
         }
 
         else
         if(phoneNumber != null){
-          phoneVerification(phoneNumber , credential: credential , fullName: fullName );
+          phoneVerification(phoneNumber , credential: credential , fullName: fullName  , flag:flag );
         }
         else
-          phoneVerification(this.phoneNumber , credential: credential , fullName: fullName );
+          phoneVerification(this.phoneNumber , credential: credential , fullName: fullName,flag:flag  );
       }
       else
       {
-        phoneVerification( this.phoneNumber , credential: credential , fullName: fullName  , email: email );
+         phoneVerification( this.phoneNumber , credential: credential , fullName: fullName  , email: email, flag:flag  );
       }
 
     });
 
   }
-
 
   Future<void> loginFacebook() async {
     try {
@@ -454,10 +470,11 @@ class _LoginState extends State<Login> {
       // get the user data
       final userData = await FacebookAuth.instance.getUserData();
 
+      loginOtherMethod(email: userData['email'] , fullName: userData['name'] ,
+          credential: FacebookAuthProvider.credential(accessToken.token) , imageProfile: userData['picture']['data']['url'] , flag: 1);
 
-      print(accessToken.token);
 
-      FirebaseAuth.instance.signInWithCredential(FacebookAuthProvider.credential(accessToken.token) );
+      print(userData['picture']['data']['url']);
 
       print(userData);
     } on FacebookAuthException catch (e) {
@@ -476,12 +493,23 @@ class _LoginState extends State<Login> {
   }
 
 
-  void phoneVerification (String phoneNumber ,   { String email,String fullName ,TypeAccount typeAccount , AuthCredential credential}){
+  void phoneVerification (String phoneNumber ,   {String imageProfile ,String email,String fullName ,TypeAccount typeAccount , AuthCredential credential , int flag}){
+
+    if(phoneNumber == null || phoneNumber.isEmpty)
+      {
+        showInSnackBar("Pleas enter phone number");
+        this.setState(() {
+          onLogin = false;
+        });
+        return;
+      }
+
 
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => PhoneVerification(phoneNumber , typeAccount: typeAccount , credential:credential ,email: email ,fullName: fullName,),
+          builder: (context) => PhoneVerification( phoneNumber , imageProfile: imageProfile,
+            typeAccount: typeAccount , credential:credential ,email: email ,fullName: fullName,flag: flag,),
         ));
 
   }

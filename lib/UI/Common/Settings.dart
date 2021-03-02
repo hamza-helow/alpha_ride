@@ -1,10 +1,14 @@
 import 'package:alpha_ride/Helper/AppLanguage.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/setupLanguage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 class Settings extends StatefulWidget {
   @override
   _SettingsState createState() => _SettingsState();
@@ -17,12 +21,16 @@ class _SettingsState extends State<Settings> {
   void initState() {
 
 
+
+
+
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  Scaffold(
 
       appBar: AppBar(
         backgroundColor: DataProvider().baseColor,
@@ -42,7 +50,7 @@ class _SettingsState extends State<Settings> {
 
               leading: Icon(Icons.person  ),
               title: Text("Full Name" , ),
-              subtitle: Text("hamza helow" ,style: TextStyle(fontSize: 17.0 ),),
+              subtitle: Text("${auth.currentUser.displayName}" ,style: TextStyle(fontSize: 17.0 ),),
 
 
             ),
@@ -53,7 +61,7 @@ class _SettingsState extends State<Settings> {
 
               leading: Icon(Icons.phone  ,),
               title: Text("Phone number" ),
-              subtitle: Text("+962 788051422" ,style: TextStyle(fontSize: 17.0 ),),
+              subtitle: Text("${auth.currentUser.phoneNumber}" ,style: TextStyle(fontSize: 17.0 ),),
 
             ),
 
@@ -63,7 +71,7 @@ class _SettingsState extends State<Settings> {
 
               leading: Icon(Icons.email ),
               title: Text("Email" ,),
-              subtitle: Text("hamzahelow3@gmail.com" ,style: TextStyle(fontSize: 17.0 ),),
+              subtitle: Text("${auth.currentUser.email}" ,style: TextStyle(fontSize: 17.0 ),),
 
             ),
 
@@ -155,6 +163,20 @@ class _SettingsState extends State<Settings> {
     ]);
 
   }
+
+dialog(Widget child,context,
+    {List<Widget> widgets, barrierDismissible = true , Widget title , EdgeInsets padding =const EdgeInsets.all(16.0)  }) async {
+  await showDialog<String>(
+      barrierDismissible: barrierDismissible,
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => new AlertDialog(
+            title: title,
+            contentPadding: padding,
+            content: child,
+            actions: widgets),
+      ));
+}
 
 }
 

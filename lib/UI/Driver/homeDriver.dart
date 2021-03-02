@@ -91,16 +91,24 @@ class _MyHomePageState extends State<HomeDriver> {
 
     currentTrip = Trip();
 
-    // BitmapDescriptor.fromAssetImage(
-    //     ImageConfiguration(platform: Platform.isAndroid? TargetPlatform.android : TargetPlatform.iOS), "Assets/car.png")
-    //     .then((onValue) {
-    //   carIcon = onValue;
-    // });::::::
+
 
     initImageCar();
     listenCurrentTrip();
+
+    getAarningsDay();
   }
 
+
+  double aarningsDay = 0.0 ;
+
+  void getAarningsDay(){
+    FirebaseHelper().getAarningsDay(auth.currentUser.uid).then((value) {
+      this.setState(() {
+        aarningsDay = value;
+      });
+    });
+  }
 
   void initImageCar() async{
 
@@ -248,7 +256,7 @@ class _MyHomePageState extends State<HomeDriver> {
         child:  IconButton(
             icon: Icon(Icons.gps_fixed),
             onPressed: () {
-              animateTo( _completer,position.latitude , position.longitude);
+              animateTo( position.latitude , position.longitude);
 
             }),
       ),
@@ -285,6 +293,23 @@ class _MyHomePageState extends State<HomeDriver> {
   }
 
 
+  void changeZoom( currentZoomLevel , _controller ,userLocation  , {int typeZoom = 0 }) async{
+
+  currentZoomLevel = await _controller.getZoomLevel();
+
+  currentZoomLevel = typeZoom == 0 ? currentZoomLevel +  2 : currentZoomLevel -  2;
+  _controller.animateCamera(
+    CameraUpdate.newCameraPosition(
+      CameraPosition(
+        target: LatLng(userLocation.latitude ,userLocation.longitude),
+        zoom: currentZoomLevel,
+      ),
+    ),
+  );
+
+}
+
+
   Positioned buildAppBar() {
     return Positioned(
       top: 20,
@@ -314,7 +339,7 @@ class _MyHomePageState extends State<HomeDriver> {
 
               if(!exitTrip)
                 PriceWidget(
-                  price: "0.00",
+                  price: "$aarningsDay",
                   onPressed: () {},
                 ),
 
@@ -693,7 +718,7 @@ class _MyHomePageState extends State<HomeDriver> {
       calcKmCurrentTrip();
 
 
-      animateTo(_completer, position.latitude, position.longitude);
+      animateTo( position.latitude, position.longitude);
 
       if(exitTrip)
         updateLocationDriverInTrip();
@@ -702,6 +727,11 @@ class _MyHomePageState extends State<HomeDriver> {
 
   }
 
+  Future<void> animateTo(double lat, double lng) async {
+  final c = await _completer.future;
+  final p = CameraPosition(target: LatLng(lat, lng), zoom: 17.0);
+  c.animateCamera(CameraUpdate.newCameraPosition(p));
+}
 
   String  _email ,_fullName;
   int points = 0 ;
@@ -1078,7 +1108,6 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   }
 }
 
-
 class PriceWidget extends StatefulWidget {
   final String price;
   final Function() onPressed;
@@ -1093,7 +1122,7 @@ class _PriceWidgetState extends State<PriceWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 120,
+      width: MediaQuery.of(context).size.width/2.5,
       height: 60,
       decoration: BoxDecoration(
         border: Border.all(color: Colors.white, width: 2),
@@ -1112,12 +1141,12 @@ class _PriceWidgetState extends State<PriceWidget> {
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 26,
-                  fontWeight: FontWeight.bold)),
+                  fontWeight: FontWeight.bold) ,overflow: TextOverflow.clip),
           Text(widget.price,
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 26,
-                  fontWeight: FontWeight.bold)),
+                  fontWeight: FontWeight.bold) , overflow: TextOverflow.visible,),
         ],
       ),
     );

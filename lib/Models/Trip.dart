@@ -8,7 +8,7 @@ class Trip {
 
   String idCustomer ,
       idDriver , state  , nameDriver
-  , arriveTime , carType , carModel , idTrip , nameCustomer;
+  , arriveTime , carType , carModel , idTrip , nameCustomer , carColor;
 
   LatLng locationDriver , locationCustomer ;
 
@@ -37,10 +37,10 @@ class Trip {
     this.state ,
     this.locationCustomer ,
     this.locationDriver ,
-    this.nameDriver ,
+    this.nameDriver ="" ,
     this.ratingDriver,
-    this.carModel ,
-    this.carType ,
+    this.carModel ="" ,
+    this.carType ="" ,
     this.rotateDriver,
     this.idTrip,
     this.ratingCustomer,
@@ -51,7 +51,9 @@ class Trip {
     this.km = 0.0,
     this.discount,
     this.typeTrip ,
-    this.totalPrice
+    this.totalPrice,
+    this.carColor = "",
+    this.nameCustomer = "",
   });
 
 }

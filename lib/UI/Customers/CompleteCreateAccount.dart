@@ -28,6 +28,8 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
   final fullName = TextEditingController();
   final email = TextEditingController();
 
+  final password = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -79,7 +81,7 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
                         helperText: "Email",
                         hintText: "enter your email",
                         icon: Icon(Icons.email),
-                        labelText: "Full name"
+                        labelText: "Email"
 
                     ),
 
@@ -87,7 +89,7 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
 
                     buildThemeTextField(
-                       fullName,
+                        password,
                         helperText: "Password",
                         hintText: "enter password",
                         icon: Icon(Icons.lock),
@@ -163,7 +165,7 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
   void addUserInfo() {
 
-    AuthCredential credential = EmailAuthProvider.credential(email: email.text , password: "12345678");
+    AuthCredential credential = EmailAuthProvider.credential(email: email.text , password: password.text);
 
     widget.credential.user.linkWithCredential(credential);
 

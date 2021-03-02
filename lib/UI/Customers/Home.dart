@@ -11,7 +11,7 @@ import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
-import 'package:alpha_ride/UI/Customers/TripsScreen.dart';
+import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -58,7 +58,6 @@ class _HomeState extends State<Home> {
   Trip currentTrip ;
 
   GeoFirePoint geoFirePoint ;
-
 
   Set<Marker> markers = Set();
   Map<PolylineId, Polyline> polylines = {};
@@ -328,7 +327,7 @@ class _HomeState extends State<Home> {
     FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
         .snapshots().listen((event) {
 
-      SharedPreferencesHelper().setPoints(event.get("points"));
+      SharedPreferencesHelper().setPoints(int.parse('${event.get("points")}'));
       SharedPreferencesHelper().setEmail(event.get('email'));
       SharedPreferencesHelper().setFullName(event.get("fullName"));
       SharedPreferencesHelper().setRating(event.get("rating") /event.get('countRating'));
@@ -337,7 +336,7 @@ class _HomeState extends State<Home> {
         _email= event.get('email');
         _fullName = event.get("fullName");
         rating = event.get("rating") /event.get('countRating');
-        points=event.get("points");
+        points=int.parse('${event.get("points")}');
 
       });
     });
@@ -457,8 +456,6 @@ class _HomeState extends State<Home> {
              });
 
            },
-
-          // whenDriverComing: (lat, lng , latCustomer , lngCustomer , rotateDriver) =>whenDriverComing(lat, lng , latCustomer ,  lngCustomer , rotateDriver),
 
            onStateTripChanged: (stateTrip) {
 
@@ -997,7 +994,7 @@ class _HomeState extends State<Home> {
                 onChanged: (value) {
 
                   setState(() {
-                    if(double.parse(value) > 24)
+                    if(value.isEmpty || double.parse(value) > 24 )
                       err = "please enter correct number";
                     else
                       err = null;
@@ -1019,6 +1016,15 @@ class _HomeState extends State<Home> {
               actions: [
 
                 MaterialButton(onPressed: () {
+
+                  setState(() {
+                    if(hours.text.isEmpty)
+                      err = "please enter correct number";
+                    return;
+                  });
+
+                  if(hours.text.isEmpty)
+                    return;
 
                   if(err == null)
                   this.setState(() {

@@ -1,7 +1,8 @@
+import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 
@@ -11,8 +12,9 @@ class TripInfoScreen extends StatefulWidget {
 
   Trip trip ;
 
+  TypeAccount typeAccount ;
 
-  TripInfoScreen(this.trip);
+  TripInfoScreen(this.trip , {this.typeAccount = TypeAccount.customer});
 
   @override
   _TripInfoScreenState createState() => _TripInfoScreenState();
@@ -30,18 +32,61 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
   var cameraPosition ;
 
 
+
+  Trip currentTrip ;
+
+
   @override
   void initState() {
 
-    print(widget.trip.locationCustomer.latitude);
+    currentTrip = widget.trip;
+
+    print("driver id : ${widget.trip.idDriver}");
 
      this.setState(() {
 
-       cameraPosition =CameraPosition(
-         target: LatLng(widget.trip.locationCustomer.latitude, widget.trip.locationCustomer.longitude),
-         zoom: 16.4,
-       );
+
+       FirebaseHelper()
+           .loadUserInfo(
+           widget.typeAccount == TypeAccount.customer ?   widget.trip.idDriver : widget.trip.idCustomer ,
+           typeAccount: widget.typeAccount == TypeAccount.customer ? TypeAccount.driver : TypeAccount.customer)
+           .then((user) {
+
+             if(user != null){
+
+               if(this.mounted)
+                 this.setState(() {
+                   print("User Exit");
+
+                   if(widget.typeAccount == TypeAccount.customer )
+                  {
+                    currentTrip.nameDriver = user.fullName;
+                    currentTrip.carModel = user.carModel ;
+                    currentTrip.carColor = user.carColor;
+                    currentTrip.carType = user.carType;
+                    currentTrip.ratingDriver  =user.rating / user.countRating;
+                  }
+                   else
+                    {
+
+                      widget.trip.nameCustomer = user.fullName;
+                      currentTrip.ratingCustomer  =user.rating / user.countRating;
+
+                    }
+
+                 });
+             }
+
+
+           });
+
+
      });
+
+    cameraPosition =CameraPosition(
+      target: LatLng(widget.trip.locationCustomer.latitude, widget.trip.locationCustomer.longitude),
+      zoom: 16.4,
+    );
   }
 
   @override
@@ -114,8 +159,10 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
                   child: Icon(Icons.person_outline),
                 ),
 
-                title: Text("Hamza helow"),
-                subtitle: Text("Economy -Dark Red Fusion 2568794"),
+                title: Text( widget.typeAccount == TypeAccount.customer ?   currentTrip.nameDriver : currentTrip.nameCustomer),
+                subtitle: Text(
+                    widget.typeAccount == TypeAccount.customer ?
+                    "Economy ${currentTrip.carColor} ${currentTrip.carType} ${currentTrip.carModel} 2568794" :""),
 
                 trailing: Chip(
                   avatar: Icon(
@@ -124,7 +171,7 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
                     size: 21,
                   ),
                   backgroundColor: Colors.grey[200],
-                  label: Text("5.0"),
+                  label: Text("${widget.typeAccount == TypeAccount.customer ? currentTrip.ratingDriver : currentTrip.ratingCustomer }"),
                 ),
 
               ),

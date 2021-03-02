@@ -11,6 +11,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 
 class FirebaseHelper {
 
@@ -28,20 +29,56 @@ class FirebaseHelper {
 
   Future<void> insertInformationUser(User user) async{
 
-    return _fireStore.collection("Users").doc(user.idUser).set({
 
-      'fullName' : user.fullName ,
-      'email': user.email ,
-      'typeUser' : user.typeAccount.toString() ,
-      'countRating'  : 1 ,
-      'rating' :5.0  ,
-      'countTrips' : 0 ,
-      'stateAccount' : user.stateAccount.toString() ,
-      'phoneNumber' : user.phoneNumber ,
-      'points' : 0 ,
-      'emailVerified' : user.emailVerified
+ return   _fireStore.collection("Users").doc(user.idUser).get().then((value) async{
 
+      if(value.exists)//update
+       {
+        return _fireStore.collection("Users").doc(user.idUser).update({
+          if(user.email  != null)
+          'email': user.email ,
+          if(user.emailFacebook  != null)
+          'emailFacebook' :user.emailFacebook,
+          'phoneNumber' : user.phoneNumber ,
+          'imageProfile' : user.imageProfile == null ? "" : user.imageProfile
+        });
+
+       }
+      else{ // insert
+
+        return _fireStore.collection("Users").doc(user.idUser).set({
+
+          'fullName' : user.fullName ,
+          'email': user.email ,
+          'typeUser' : user.typeAccount.toString() ,
+          'countRating'  : 1 ,
+          'rating' :5.0  ,
+          'countTrips' : 0 ,
+          'stateAccount' : user.stateAccount.toString() ,
+          'phoneNumber' : user.phoneNumber ,
+          'points' : 0 ,
+          'emailVerified' : user.emailVerified ,
+          'emailFacebook' :user.emailFacebook ,
+          'imageProfile' : user.imageProfile == null ? "" : user.imageProfile
+        });
+      }
     });
+
+
+    // return _fireStore.collection("Users").doc(user.idUser).set({
+    //
+    //   'fullName' : user.fullName ,
+    //   'email': user.email ,
+    //   'typeUser' : user.typeAccount.toString() ,
+    //   'countRating'  : 1 ,
+    //   'rating' :5.0  ,
+    //   'countTrips' : 0 ,
+    //   'stateAccount' : user.stateAccount.toString() ,
+    //   'phoneNumber' : user.phoneNumber ,
+    //   'points' : 0 ,
+    //   'emailVerified' : user.emailVerified ,
+    //   'emailFacebook' :user.emailFacebook
+    // });
 
   }
 
@@ -90,6 +127,7 @@ class FirebaseHelper {
 
     return _fireStore.collection("Trips").doc().set({
 
+      'date' : DateFormat("yyyy/MM/dd").format(DateTime.now()),
       'idCustomer' : trip.idCustomer ,
       'idDriver': trip.idDriver ,
       'dateStart' : '',
@@ -218,6 +256,33 @@ class FirebaseHelper {
   }
 
 
+  Future<double> getAarningsDay(String idDriver){
+    double total  = 0.0 ;
+  return  _fireStore
+        .collection("Trips")
+        .where("idDriver",isEqualTo: idDriver)
+        .where("date" , isEqualTo: DateFormat("yyyy/MM/dd").format(DateTime.now()))
+         .get().then((value) async{
+
+           print( "getAarningsDay ${value.docs.length}");
+
+           if(value.docs.length == 0)
+             return 0.0 ;
+
+           value.docs.forEach((element) {
+
+             print( "getAarningsDay ${element.get("dateStart")}");
+
+
+             if(element.get("totalPrice") != null)
+             total+= element.get("totalPrice");
+           });
+
+           return total ;
+          });
+
+  }
+
 
   Future<int> checkPromoCode(String code){
 
@@ -298,23 +363,18 @@ class FirebaseHelper {
 
 
     return _fireStore.collection("Users").doc(idUser).get().then((value) async {
-
-      User user = User(
+      return User(
         idUser: value.id ,
         typeAccount: value.data()['typeUser'] == TypeAccount.customer.toString() ? TypeAccount.customer : TypeAccount.driver,
         fullName: value.data()['fullName'] ,
         email: value.data()['email'] ,
         countRating: value.data()['countRating'] == 0 ? 1 : value.data()['countRating'] ,
         rating: value.data()['rating']==0.0 ?5.0 :value.data()['rating'] ,
-
         carModel: typeAccount == TypeAccount.driver ? value.data()['carModel']  :"",
         carType: typeAccount == TypeAccount.driver ? value.data()['carType']  :"",
+        carColor: typeAccount == TypeAccount.driver ? value.data()['carColor']  :"",
 
       ) ;
-
-      print("RATING : ${user.rating}");
-
-      return user;
     }) ;
   }
 
