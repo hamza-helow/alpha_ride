@@ -11,6 +11,7 @@ import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
+import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/widgets/CustomWidgets.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -95,9 +96,12 @@ class _MyHomePageState extends State<HomeDriver> {
 
     initImageCar();
     listenCurrentTrip();
+    loadInfoUser();
 
     getAarningsDay();
   }
+
+
 
 
   double aarningsDay = 0.0 ;
@@ -585,6 +589,7 @@ class _MyHomePageState extends State<HomeDriver> {
 
 
 
+  double balance = 100;
   Drawer buildDrawer() {
     return Drawer(
 
@@ -621,12 +626,13 @@ class _MyHomePageState extends State<HomeDriver> {
                       alignment: Alignment.centerLeft,
                       child: Chip(
                         avatar: Icon(
-                          FontAwesomeIcons.gift,
+
+                        Icons.monetization_on,
                           color: DataProvider().baseColor,
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("300 point"),
+                        label: Text("$balance JD" , style: TextStyle(color: balance<0 ?Colors.red :null ),),
                       ),
                     ),
                   ),
@@ -645,7 +651,7 @@ class _MyHomePageState extends State<HomeDriver> {
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("4.8"),
+                        label: Text("${rating.toStringAsFixed(2)}"),
                       ),
                     ),
                   ),
@@ -654,6 +660,7 @@ class _MyHomePageState extends State<HomeDriver> {
             ),
 
             ListTile(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TripsScreen(typeAccount: TypeAccount.driver,),)),
               leading: Icon(Icons.time_to_leave_sharp),
               title: Text("You trips" ,),
               trailing: Padding(padding: EdgeInsets.only(right: 10), child: Text("10+" ,  style: TextStyle(color: DataProvider().baseColor),),),
@@ -735,8 +742,10 @@ class _MyHomePageState extends State<HomeDriver> {
 
   String  _email ,_fullName;
   int points = 0 ;
-  double rating ;
+  double rating=0.0 ;
   void loadInfoUser(){
+
+
 
     FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
         .snapshots().listen((event) {

@@ -1,3 +1,5 @@
+import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
@@ -6,11 +8,16 @@ import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 
 import 'package:alpha_ride/UI/Common/TripInfoScreen.dart';
 
 class TripsScreen extends StatefulWidget {
+
+  TypeAccount  typeAccount ;
+
+
+  TripsScreen({this.typeAccount = TypeAccount.customer});
+
   @override
   _TripsScreenState createState() => _TripsScreenState();
 }
@@ -34,26 +41,26 @@ class _TripsScreenState extends State<TripsScreen> {
       if(from.isEmpty && to.isNotEmpty)
     return  FirebaseFirestore.instance
           .collection("Trips")
-          .where("idCustomer" , isEqualTo: auth.currentUser.uid)
+          .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
           .where('date' , isEqualTo: to)
           .get();
       else if (to.isEmpty&& from.isNotEmpty)
         return  FirebaseFirestore.instance
             .collection("Trips")
-            .where("idCustomer" , isEqualTo: auth.currentUser.uid)
+            .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
             .where('date' , isEqualTo: from)
             .get();
       else if (to.isNotEmpty&& from.isNotEmpty)
         return  FirebaseFirestore.instance
             .collection("Trips")
-            .where("idCustomer" , isEqualTo: auth.currentUser.uid)
+            .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
             .where('date' , isGreaterThanOrEqualTo: from)
             .where('date' , isLessThanOrEqualTo: to)
             .get();
       else
         return  FirebaseFirestore.instance
             .collection("Trips")
-            .where("idCustomer" , isEqualTo: auth.currentUser.uid)
+            .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
             .get();
     }().then((list) {
 
@@ -68,7 +75,10 @@ class _TripsScreenState extends State<TripsScreen> {
                 totalPrice: trip.get('totalPrice'),
                 startDate: DateTime.parse(trip.get('dateStart').toDate().toString()) ,
                 idCustomer: trip.get("idCustomer"),
-                idDriver: trip.get("idDriver")
+                idDriver: trip.get("idDriver"),
+              hourTrip: trip.get("hours"),
+              typeTrip: trip.get("typeTrip") == TypeTrip.distance.toString() ? TypeTrip.distance : TypeTrip.hours
+              
 
             );
 
@@ -166,7 +176,8 @@ class _TripsScreenState extends State<TripsScreen> {
                 itemCount: trips.length,itemBuilder: (context, index) =>
 
                 InkWell(
-                  onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) => TripInfoScreen(trips[index]),)),
+                  onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                      TripInfoScreen(trips[index] , typeAccount: widget.typeAccount,))),
 
                   child: Padding(
                     padding: EdgeInsets.all(20.0),

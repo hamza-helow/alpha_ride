@@ -1,4 +1,5 @@
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/Trip.dart';
@@ -69,8 +70,9 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
                    else
                     {
 
-                      widget.trip.nameCustomer = user.fullName;
+                      currentTrip.nameCustomer = user.fullName;
                       currentTrip.ratingCustomer  =user.rating / user.countRating;
+
 
                     }
 
@@ -162,7 +164,9 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
                 title: Text( widget.typeAccount == TypeAccount.customer ?   currentTrip.nameDriver : currentTrip.nameCustomer),
                 subtitle: Text(
                     widget.typeAccount == TypeAccount.customer ?
-                    "Economy ${currentTrip.carColor} ${currentTrip.carType} ${currentTrip.carModel} 2568794" :""),
+                    "Economy ${currentTrip.carColor} ${currentTrip.carType} ${currentTrip.carModel} 2568794"
+                        :
+                       "${widget.trip.typeTrip == TypeTrip.hours ? "For ${widget.trip.hourTrip} hours": ""}"),
 
                 trailing: Chip(
                   avatar: Icon(

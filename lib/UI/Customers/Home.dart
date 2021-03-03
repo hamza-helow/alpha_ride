@@ -432,44 +432,65 @@ class _HomeState extends State<Home> {
 
           if(usePin)
           pin(context),
+          //
 
-          if(!confirmPickup)
-          startTrip(),
+           startTrip(),
+
+          // Visibility(
+          //     maintainAnimation: true,
+          //     maintainState: true,
+          //
+          //   visible: !confirmPickup,
+          //     child: startTrip() ),
 
           buildAppBar() ,
 
-         if((confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated)
-         CustomerBottomSheet(
-           currentTrip: currentTrip,
-           findDriver: findDriver,
-           getDriver: (){
-             getDriver();
-           },
-           deleteRequest: ()=>deleteRequest(),
-           tripActive: tripActive,
-           numberHours: numberHours,
-           idDriver: idDriver,
-           callBack: (){
+        // if((confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated)
 
-             this.setState(() {
-               confirmPickup = false ;
-             });
 
-           },
+          AnimatedOpacity(
+              opacity: (confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated ? 1.0 : 0.0,
 
-           onStateTripChanged: (stateTrip) {
+              duration: Duration(milliseconds: 500),
 
-           },
+            child: Visibility(
+              visible:  (confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated,
 
-           showPromoCodeWidget:(){
+              child: CustomerBottomSheet(
+                currentTrip: currentTrip,
+                findDriver: findDriver,
+                getDriver: (){
+                  getDriver();
+                },
+                deleteRequest: ()=>deleteRequest(),
+                tripActive: tripActive,
+                numberHours: numberHours,
+                idDriver: idDriver,
+                callBack: (){
 
-             this.setState(() {
-               showPromoCode = true ;
-             });
+                  this.setState(() {
+                    confirmPickup = false ;
+                  });
 
-           },
+                },
 
-         ) ,
+                onStateTripChanged: (stateTrip) {
+
+                },
+
+                showPromoCodeWidget:(){
+
+                  this.setState(() {
+                    showPromoCode = true ;
+                  });
+                },
+
+              ),
+            ),
+
+          ),
+
+
 
          if(showPromoCode)
          PromoCodeBottomSheet((){
@@ -557,22 +578,29 @@ class _HomeState extends State<Home> {
           left: 35,
           bottom: 20,
           right: 35,
-          child:  MaterialButton(
-            height: 60.0,
-            color: DataProvider().baseColor,
+          child:  Visibility(
+            maintainState: true ,
+            maintainAnimation: true ,
+            visible: !confirmPickup ,
+            child: MaterialButton(
+              height: 60.0,
+              color: DataProvider().baseColor,
 
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25.0),
-                side: BorderSide(color: Colors.red)
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25.0),
+                  side: BorderSide(color: Colors.red)
+              ),
+              onPressed: ()  {
+                setState(() {
+                  confirmPickup = true;
+
+                  print("true");
+                });
+
+              },
+
+              child: Text("Confirm pickup" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0),),
             ),
-            onPressed: ()  {
-              this.setState(() {
-                confirmPickup = true;
-              });
-
-            },
-
-            child: Text("Confirm pickup" , style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0),),
           ),
         );
   }
@@ -974,12 +1002,11 @@ class _HomeState extends State<Home> {
 
   }
 
-
    double numberHours = 0 ;
 
   dialogReserveHours() async {
 
-     String err ;
+    String err ;
 
      final hours = TextEditingController();
 
