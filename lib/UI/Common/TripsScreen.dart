@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
@@ -12,9 +13,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:alpha_ride/UI/Common/TripInfoScreen.dart';
 
 class TripsScreen extends StatefulWidget {
-
-  TypeAccount  typeAccount ;
-
+  TypeAccount typeAccount;
 
   TripsScreen({this.typeAccount = TypeAccount.customer});
 
@@ -23,119 +22,142 @@ class TripsScreen extends StatefulWidget {
 }
 
 class _TripsScreenState extends State<TripsScreen> {
-  
-  List<Trip> trips ;
+  List<Trip> trips;
 
   @override
   void initState() {
     trips = List();
 
-    getTrips("","");
+    getTrips("", "");
   }
 
-  String fromDate="" , toDate="" ;
-  void getTrips(String from , String to){
+  String fromDate = "", toDate = "";
 
-    (){
-
-      if(from.isEmpty && to.isNotEmpty)
-    return  FirebaseFirestore.instance
-          .collection("Trips")
-          .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
-          .where('date' , isEqualTo: to)
-          .get();
-      else if (to.isEmpty&& from.isNotEmpty)
-        return  FirebaseFirestore.instance
+  void getTrips(String from, String to) {
+    () {
+      if (from.isEmpty && to.isNotEmpty)
+        return FirebaseFirestore.instance
             .collection("Trips")
-            .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
-            .where('date' , isEqualTo: from)
+            .where(
+                widget.typeAccount == TypeAccount.driver
+                    ? "idDriver"
+                    : "idCustomer",
+                isEqualTo: auth.currentUser.uid)
+            .where('state', isNotEqualTo: StateTrip.active.toString())
+            .where('date', isEqualTo: to)
             .get();
-      else if (to.isNotEmpty&& from.isNotEmpty)
-        return  FirebaseFirestore.instance
+      else if (to.isEmpty && from.isNotEmpty)
+        return FirebaseFirestore.instance
             .collection("Trips")
-            .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
-            .where('date' , isGreaterThanOrEqualTo: from)
-            .where('date' , isLessThanOrEqualTo: to)
+            .where(
+                widget.typeAccount == TypeAccount.driver
+                    ? "idDriver"
+                    : "idCustomer",
+                isEqualTo: auth.currentUser.uid)
+            .where('state', isNotEqualTo: StateTrip.active.toString())
+            .where('date', isEqualTo: from)
+            .get();
+      else if (to.isNotEmpty && from.isNotEmpty)
+        return FirebaseFirestore.instance
+            .collection("Trips")
+            .where(
+                widget.typeAccount == TypeAccount.driver
+                    ? "idDriver"
+                    : "idCustomer",
+                isEqualTo: auth.currentUser.uid)
+            .where('state', isNotEqualTo: StateTrip.active.toString())
+            .where('date', isGreaterThanOrEqualTo: from)
+            .where('date', isLessThanOrEqualTo: to)
             .get();
       else
-        return  FirebaseFirestore.instance
+        return FirebaseFirestore.instance
             .collection("Trips")
-            .where( widget.typeAccount == TypeAccount.driver ? "idDriver" :"idCustomer" , isEqualTo: auth.currentUser.uid)
+            .where('state', isNotEqualTo: StateTrip.active.toString())
+            .where(
+                widget.typeAccount == TypeAccount.driver
+                    ? "idDriver"
+                    : "idCustomer",
+                isEqualTo: auth.currentUser.uid)
             .get();
-    }().then((list) {
-
-      if(this.mounted)
+    }()
+        .then((list) {
+      if (this.mounted)
         this.setState(() {
           trips.clear();
           list.docs.forEach((trip) {
-
-            Trip item  =new Trip(
-                locationDriver: LatLng(trip.get("locationDriver.lat") , trip.get("locationDriver.lng")),
-                locationCustomer: LatLng(trip.get("locationCustomer.lat") , trip.get("locationCustomer.lng")),
-                totalPrice: trip.get('totalPrice'),
-                startDate: DateTime.parse(trip.get('dateStart').toDate().toString()) ,
+            Trip item = new Trip(
+                locationDriver: LatLng(trip.get("locationDriver.lat"),
+                    trip.get("locationDriver.lng")),
+                locationCustomer: LatLng(trip.get("locationCustomer.lat"),
+                    trip.get("locationCustomer.lng")),
+                totalPrice: double.parse('${trip.get('totalPrice')}'),
+                startDate:
+                    DateTime.parse(trip.get('dateStart').toDate().toString()),
                 idCustomer: trip.get("idCustomer"),
                 idDriver: trip.get("idDriver"),
-              hourTrip: trip.get("hours"),
-              typeTrip: trip.get("typeTrip") == TypeTrip.distance.toString() ? TypeTrip.distance : TypeTrip.hours
-              
+                hourTrip: trip.get("hours"),
+                typeTrip: trip.get("typeTrip") == TypeTrip.distance.toString()
+                    ? TypeTrip.distance
+                    : TypeTrip.hours,
+                stateTrip: () {
+                  final state = trip.get("state");
 
-            );
+                  if (state == StateTrip.active.toString())
+                    return StateTrip.active;
+                  else if (state == StateTrip.started.toString())
+                    return StateTrip.started;
+                  else if (state == StateTrip.done.toString())
+                    return StateTrip.done;
+                  else if (state == StateTrip.cancelByCustomer.toString())
+                    return StateTrip.cancelByCustomer;
+                  else
+                    return StateTrip.cancelByDriver;
+                }());
 
-            trips.add(item);
-
-            _getAddressFromLatLng( trip.get("locationCustomer.lat") , trip.get("locationCustomer.lng")).then((value) {
+            _getAddressFromLatLng(trip.get("locationCustomer.lat"),
+                    trip.get("locationCustomer.lng"))
+                .then((value) {
               item.addressStart = value;
             });
-            _getAddressFromLatLng( trip.get("locationDriver.lat") , trip.get("locationDriver.lng")).then((value) {
+            _getAddressFromLatLng(trip.get("locationDriver.lat"),
+                    trip.get("locationDriver.lng"))
+                .then((value) {
               item.addressEnd = value;
             });
 
-
+            trips.add(item);
           });
         });
-
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       appBar: AppBar(
         backgroundColor: DataProvider().baseColor,
         title: Text("Your trips"),
       ),
-
-
       body: SingleChildScrollView(
-
         physics: ScrollPhysics(),
         child: Column(
-
           children: [
-
             Padding(
-              padding: EdgeInsets.only(left: 20.0  ,right: 20.0 , top: 30),
+              padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30),
               child: DateTimePicker(
                 decoration: InputDecoration(
                   labelText: "From",
                   border: new OutlineInputBorder(
-                      borderSide: new BorderSide(color: Colors.teal)
-                  ),
+                      borderSide: new BorderSide(color: Colors.teal)),
                 ),
                 initialValue: '',
                 firstDate: DateTime(2000),
                 lastDate: DateTime(2100),
                 dateLabelText: 'Date',
-                onChanged: (val)  {
-
+                onChanged: (val) {
                   print(val);
                   fromDate = val.replaceAll("-", "/");
                   getTrips(fromDate, toDate);
-
                 },
                 validator: (val) {
                   print(val);
@@ -145,23 +167,22 @@ class _TripsScreenState extends State<TripsScreen> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 20.0  ,right: 20.0 , top: 20 , bottom: 20),
+              padding:
+                  EdgeInsets.only(left: 20.0, right: 20.0, top: 20, bottom: 20),
               child: DateTimePicker(
                 decoration: InputDecoration(
                   labelText: "To",
                   border: new OutlineInputBorder(
-                      borderSide: new BorderSide(color: Colors.teal)
-                  ),
+                      borderSide: new BorderSide(color: Colors.teal)),
                 ),
                 initialValue: '',
                 firstDate: DateTime(2000),
                 lastDate: DateTime(2100),
                 dateLabelText: 'Date',
-                onChanged: (val)  {
+                onChanged: (val) {
                   print(val);
                   toDate = val.replaceAll("-", "/");
                   getTrips(fromDate, toDate);
-
                 },
                 validator: (val) {
                   print(val);
@@ -170,93 +191,116 @@ class _TripsScreenState extends State<TripsScreen> {
                 onSaved: (val) => print(val),
               ),
             ),
-
             ListView.builder(
                 shrinkWrap: true,
-                itemCount: trips.length,itemBuilder: (context, index) =>
-
-                InkWell(
-                  onTap: ()=>Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                      TripInfoScreen(trips[index] , typeAccount: widget.typeAccount,))),
-
-                  child: Padding(
-                    padding: EdgeInsets.all(20.0),
-                    child: Column(
-
-                      children: [
-
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                itemCount: trips.length,
+                itemBuilder: (context, index) => InkWell(
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => TripInfoScreen(
+                                    trips[index],
+                                    typeAccount: widget.typeAccount,
+                                  ))),
+                      child: Padding(
+                        padding: EdgeInsets.all(20.0),
+                        child: Column(
                           children: [
-
-                            Text("${trips[index].totalPrice}" , style: TextStyle(color: Colors.green , fontWeight: FontWeight.bold),),
-                            Text("${trips[index].startDate.toString()}" ,style: TextStyle(color: Colors.black , fontWeight: FontWeight.bold),),
-
-                          ],
-                        ),
-                        SizedBox(height: 20.0,),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-
-                            Column(
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Icon(Icons.circle , size: 15, color: DataProvider().baseColor,)  ,
-                                Text("|"),
-                                Icon(Icons.circle , size: 25, color: DataProvider().baseColor,)  ,
+                                Text(
+                                  () {
+                                    // "${trips[index].totalPrice}"
+
+                                    if (trips[index].stateTrip ==
+                                        StateTrip.cancelByCustomer)
+                                      return "قمت بالغاء الرحلة";
+                                    else
+                                      return "${trips[index].totalPrice}";
+                                  }(),
+                                  style: TextStyle(
+                                      color: trips[index].stateTrip ==
+                                                  StateTrip.cancelByCustomer ||
+                                              trips[index].stateTrip ==
+                                                  StateTrip.cancelByDriver
+                                          ? Colors.red
+                                          : Colors.green,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  "${DateFormat('yyyy/MM/dd hh:mm').format(trips[index].startDate)}",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ],
                             ),
-                            Column(
-
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text("${trips[index].addressStart}" ,),
-                                Text(""),
-                                Text("${trips[index].addressEnd}"),
+                                Column(
+                                  children: [
+                                    Icon(
+                                      Icons.circle,
+                                      size: 15,
+                                      color: DataProvider().baseColor,
+                                    ),
+                                    Text("|"),
+                                    Icon(
+                                      Icons.circle,
+                                      size: 25,
+                                      color: DataProvider().baseColor,
+                                    ),
+                                  ],
+                                ),
+                                Flexible(
+                                    child: Column(
+                                  children: [
+                                    Text(
+                                      "${trips[index].addressStart}",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(""),
+                                    Text(
+                                      "${trips[index].addressEnd}",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                )),
                               ],
                             ),
-
-
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Divider()
                           ],
                         ),
-
-                        SizedBox(height: 10.0,),
-                        Divider()
-
-                      ],
-
-                    ),
-                  ),
-                )
-
-            )
+                      ),
+                    ))
           ],
         ),
       ),
-
     );
   }
 
-
-  Future<String> _getAddressFromLatLng(double lat , double lng) async {
-
-    String address ="";
+  Future<String> _getAddressFromLatLng(double lat, double lng) async {
+    String address = "";
 
     try {
-
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
 
       Placemark place = placemarks[0];
 
-      address =  "${place.street} ${place.locality}, ${place.name}, ${place.country}";
-
-
-
+      address =
+          "${place.street} ${place.locality}, ${place.name}, ${place.country}";
     } catch (e) {
       print("EEEEE $e");
     }
 
     return address;
   }
-
 }

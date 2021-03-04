@@ -10,9 +10,11 @@ class Trip {
       idDriver , state  , nameDriver
   , arriveTime , carType , carModel , idTrip , nameCustomer , carColor;
 
-  LatLng locationDriver , locationCustomer ;
+  LatLng locationDriver , locationCustomer , accessPointLatLng ;
 
   double ratingDriver  , rotateDriver , ratingCustomer;
+
+
 
   StateTrip stateTrip ;
 
@@ -26,7 +28,6 @@ class Trip {
   double km = 0.0 , totalPrice;
 
   int discount = 0 ;
-
 
   String addressStart , addressEnd ;
 
@@ -54,6 +55,10 @@ class Trip {
     this.totalPrice,
     this.carColor = "",
     this.nameCustomer = "",
+    this.accessPointLatLng,
+    this.addressEnd,
+    this.addressStart,
+    this.arriveTime
   });
 
 }

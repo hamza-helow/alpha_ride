@@ -88,11 +88,12 @@ class _MyHomePageState extends State<HomeDriver> {
 
   @override
   void initState() {
+
+    print("intit");
+
     super.initState();
 
     currentTrip = Trip();
-
-
 
     initImageCar();
     listenCurrentTrip();
@@ -139,7 +140,6 @@ class _MyHomePageState extends State<HomeDriver> {
         this.setState(() {
           if(event.docs.length > 0) {
             exitTrip = true ;
-
             setupCurrentTrip(event);
           }// trip exit
           else
@@ -156,7 +156,6 @@ class _MyHomePageState extends State<HomeDriver> {
       return 0.0 ;
 
     return   Geolocator.distanceBetween(customer.latitude, customer.longitude, driver.latitude, driver.longitude);
-
   }
 
   @override
@@ -204,6 +203,11 @@ class _MyHomePageState extends State<HomeDriver> {
                  this.setState(() {
                    exitTrip = false ;
                    showResultTrip = false ;
+                   currentTrip = null ;
+
+                   polylineCoordinates.clear();
+                   polylines.clear();
+
                  });
                } ,currentTrip  ,typeUser: TypeAccount.driver,),
 
@@ -705,7 +709,6 @@ class _MyHomePageState extends State<HomeDriver> {
         this.position = position;
       });
 
-
       geoMyLocation = geo.point(latitude: position.latitude, longitude:position.longitude);
 
       DataProvider().userLocation = UserLocation(latitude: position.latitude , longitude:position.longitude  );
@@ -744,8 +747,6 @@ class _MyHomePageState extends State<HomeDriver> {
   int points = 0 ;
   double rating=0.0 ;
   void loadInfoUser(){
-
-
 
     FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
         .snapshots().listen((event) {
@@ -904,6 +905,9 @@ class _MyHomePageState extends State<HomeDriver> {
 
   void setupCurrentTrip(QuerySnapshot event) {
 
+    if(currentTrip == null)
+      currentTrip = Trip();
+
     FirebaseHelper().loadUserInfo(event.docs.first.get("idCustomer")).then((value) {
 
       this.setState(() {
@@ -940,6 +944,14 @@ class _MyHomePageState extends State<HomeDriver> {
           currentTrip.km =  event.docs.first.get("km");
 
           currentTrip.discount = event.docs.first.get("discount");
+
+          if(currentTrip.typeTrip == TypeTrip.distance){
+            currentTrip.addressStart = event.docs.first.get("accessPoint.addressTo");
+            currentTrip.accessPointLatLng = LatLng(event.docs.first.get("accessPoint.lat"), event.docs.first.get("accessPoint.lng"));
+
+            _getPolyline(currentTrip.locationDriver,  currentTrip.accessPointLatLng);
+          }
+
         }
 
 
@@ -947,7 +959,6 @@ class _MyHomePageState extends State<HomeDriver> {
 
         if(currentTrip.stateTrip == StateTrip.active){
           _getPolyline(currentTrip.locationCustomer,  currentTrip.locationDriver);
-
 
          // zoomBetweenTwoPoints(currentTrip.locationCustomer, currentTrip.locationDriver);
 

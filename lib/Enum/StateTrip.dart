@@ -2,12 +2,15 @@
 
 enum StateTrip {
 
-
+ none ,
   active ,
   rejected ,
 
   started ,
 
-  done
+  done ,
+
+  cancelByDriver ,
+  cancelByCustomer
 
 }

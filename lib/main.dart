@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
+import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/UI/widgets/SplashScreen.dart';
+import 'package:alpha_ride/services/location_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -15,13 +17,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'Helper/AppLanguage.dart';
 import 'Helper/AppLocalizations.dart';
-import 'Models/user_location.dart';
-import 'services/location_service.dart';
 
 var flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
 
-void main() async{
-
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   AppLanguage appLanguage = AppLanguage();
@@ -31,155 +30,72 @@ void main() async{
 
   setFirebase();
 
-
-  runApp(EntryPoint(appLanguage,));
+  runApp(EntryPoint(
+    appLanguage,
+  ));
 }
 
-
- class EntryPoint extends StatefulWidget {
-
-   final AppLanguage appLanguage;
-
-
-   EntryPoint(this.appLanguage);
-
-  @override
-
-   _EntryPointState createState() => _EntryPointState();
- }
-
- class _EntryPointState extends State<EntryPoint> {
-
-
-  Widget mainScreen = SplashScreen();
-
-
-  @override
-  void initState() {
-
-
-
-
-    sleep(const Duration(seconds:2));
-
-    this.setState(() {
-
-      if(auth.currentUser != null)
-        SharedPreferencesHelper().getTypeAccount().then((typeAccount)  {
-
-          print("TTTTTT${typeAccount}");
-
-          this.setState(() {
-            if(typeAccount == TypeAccount.customer)
-              mainScreen = Home();
-            else
-              mainScreen = HomeDriver();
-          });
-
-        });
-
-      else
-      mainScreen = Login();
-
-    });
-
-
-  }
-
-
-
-
-
-  @override
-   Widget build(BuildContext context) {
-     return StreamProvider<UserLocation>(
-
-       create: (context) => LocationService().locationStream,
-
-       child: ChangeNotifierProvider<AppLanguage>(
-
-         create: (context) =>  widget.appLanguage,
-
-         builder: (context, child) => Consumer<AppLanguage>(
-
-             builder: (context, value, child) =>MaterialApp(
-
-               locale: value.appLocal,
-               supportedLocales: [
-                 Locale('en', 'US'),
-                 Locale('ar', ''),
-               ],
-               localizationsDelegates: [
-                 AppLocalizations.delegate,
-                 GlobalMaterialLocalizations.delegate,
-                 GlobalWidgetsLocalizations.delegate,
-               ],
-
-               debugShowCheckedModeBanner: false,
-               home: mainScreen,
-             )
-
-         ),
-
-       ),
-     );
-   }
- }
-
-
-
-class MyApp extends StatelessWidget {
-
+class EntryPoint extends StatefulWidget {
   final AppLanguage appLanguage;
 
-  MyApp({this.appLanguage});
-  // This widget is the root of your application.
+  EntryPoint(this.appLanguage);
+
+  @override
+  _EntryPointState createState() => _EntryPointState();
+}
+
+class _EntryPointState extends State<EntryPoint> {
+
   @override
   Widget build(BuildContext context) {
     return StreamProvider<UserLocation>(
 
-        create: (context) => LocationService().locationStream,
+      create: (context) => LocationService().locationStream,
+      child: FutureBuilder<TypeAccount>(
+        future: SharedPreferencesHelper().getTypeAccount() ,
 
-    child: ChangeNotifierProvider<AppLanguage>(
+        builder: (context, snapshot) => ChangeNotifierProvider<AppLanguage>(
+          create: (context) => widget.appLanguage,
+          builder: (context, child) => Consumer<AppLanguage>(
+              builder: (context, value, child) => MaterialApp(
+                locale: value.appLocal,
+                supportedLocales: [
+                  Locale('en', 'US'),
+                  Locale('ar', ''),
+                ],
+                localizationsDelegates: [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                ],
+                debugShowCheckedModeBanner: false,
+                home:  () {
+                  if (auth.currentUser != null)
+                    if (snapshot.data == TypeAccount.customer)
+                      return Home();
+                    else
+                      return  HomeDriver();
 
-      create: (context) =>  appLanguage,
-
-      builder: (context, child) => Consumer<AppLanguage>(
-
-          builder: (context, value, child) =>MaterialApp(
-
-            locale: value.appLocal,
-            supportedLocales: [
-              Locale('en', 'US'),
-              Locale('ar', ''),
-            ],
-            localizationsDelegates: [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-            ],
-
-            debugShowCheckedModeBanner: false,
-            home: SplashScreen(),
-          )
-
-      ),
-
-    ),
+                  return Login();
+                  // SharedPreferencesHelper().getTypeAccount();
+                  //return Login();
+                }(),
+              )),
+        ),),
     );
   }
 }
 
 void setFirebase() async {
-  var initializationSettingsAndroid =
-  new AndroidInitializationSettings('@mipmap/ic_launcher');
+final initializationSettingsAndroid =
+      new AndroidInitializationSettings('@mipmap/ic_launcher');
 
-  var initializationSettingsIOS = IOSInitializationSettings();
+  final initializationSettingsIOS = IOSInitializationSettings();
 
-  var initializationSettings = InitializationSettings(
+  final initializationSettings = InitializationSettings(
       initializationSettingsAndroid, initializationSettingsIOS);
 
-  flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
       onSelectNotification: onSelect);
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
@@ -194,14 +110,13 @@ void setFirebase() async {
     onMessage: (message) async {
       print("onMessage...: $message");
 
-      String title =message["notification"]["title"].toString();
+      String title = message["notification"]["title"].toString();
 
-      String body =message["notification"]["body"].toString();
+      String body = message["notification"]["body"].toString();
 
       print("onMessage...: $title  $body");
 
-      displayNotification(title , body);
-
+      displayNotification(title, body);
     },
     onLaunch: (message) async {
       print("onLaunch: $message");
@@ -214,45 +129,34 @@ void setFirebase() async {
   _firebaseMessaging.getToken().then((String token) {
     print("Push Messaging token: $token");
 
-    if(auth.currentUser != null)
+    if (auth.currentUser != null)
       FirebaseDatabase.instance
-        .reference().child("TokensDevices")
-        .child(auth.currentUser.uid)
-        .set({"$token":"true"});
-
-
+          .reference()
+          .child("TokensDevices")
+          .child(auth.currentUser.uid)
+          .set({"$token": "true"});
   });
 }
 
-
 Future<String> onSelect(String data) async {
   print("onSelectNotification $data");
-
-
 }
-
 
 Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
   print("myBackgroundMessageHandler message: $message");
 
-  String title =message["notification"]["title"].toString();
+  String title = message["notification"]["title"].toString();
 
-  String body =message["notification"]["body"].toString();
+  String body = message["notification"]["body"].toString();
 
   print("onMessage...: $title  $body");
 
-  displayNotification(title , body);
-
+  displayNotification(title, body);
 
   return Future<void>.value();
-
 }
 
-
-
-
-
-Future displayNotification(String title , String body) async{
+Future displayNotification(String title, String body) async {
   var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
       'channelid', 'flutterfcm', 'your channel description',
       importance: Importance.Max, priority: Priority.High);
@@ -264,9 +168,6 @@ Future displayNotification(String title , String body) async{
     title,
     body,
     platformChannelSpecifics,
-    payload: 'hello',);
-
+    payload: 'hello',
+  );
 }
-
-
-

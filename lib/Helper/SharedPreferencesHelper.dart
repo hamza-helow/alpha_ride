@@ -50,9 +50,9 @@ class SharedPreferencesHelper {
     await prefs.setInt(points,point);
   }
 
-  Future<int > getPoints() async{
+  Future<dynamic> getPoints() async{
     prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(points) ;
+    return prefs.get(points) ;
   }
 
 

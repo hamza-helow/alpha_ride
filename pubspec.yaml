@@ -44,13 +44,13 @@ dependencies:
   date_time_picker: ^1.1.1
 
   flutter_webview_plugin: ^0.3.10+1
-  geoflutterfire: ^2.2.1
+
   cloud_firestore:
   firebase_auth:
   firebase_core :
-  flutter_compass: ^0.4.2+1
   geolocator: ^6.2.1
-  flutter_google_places: ^0.2.6
+
+  geoflutterfire: ^2.2.1
   geocoder: ^0.2.1
   geocoding: ^1.0.5
   image_picker: ^0.6.7+22
@@ -64,6 +64,8 @@ dependencies:
   firebase_database: ^4.0.0
   flutter_local_notifications: ^1.4.4+4
   flutter_facebook_auth: ^2.0.2
+  rxdart: ^0.25.0
+  flutter_google_places: ^0.2.8
 
 
 

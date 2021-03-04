@@ -14,8 +14,6 @@ class LocationService {
 
   LocationService() {
 
-
-
     location.changeSettings(accuracy: LocationAccuracy.powerSave , distanceFilter: 10 );
 
 
@@ -34,18 +32,6 @@ class LocationService {
         });
 
 
-        // location.onLocationChanged.listen((locationData) {
-        //   if (locationData != null) {
-        //     _locationController.add(UserLocation(
-        //       longitude: locationData.longitude,
-        //       latitude: locationData.latitude,
-        //
-        //     ));
-        //
-        //     print(" Current location ${locationData.longitude}");
-        //
-        //   }
-        // });
       }
     });
   }

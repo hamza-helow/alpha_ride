@@ -59,7 +59,8 @@ class FirebaseHelper {
           'points' : 0 ,
           'emailVerified' : user.emailVerified ,
           'emailFacebook' :user.emailFacebook ,
-          'imageProfile' : user.imageProfile == null ? "" : user.imageProfile
+          'imageProfile' : user.imageProfile == null ? "" : user.imageProfile ,
+          'balance' :0.0
         });
       }
     });
@@ -111,11 +112,13 @@ class FirebaseHelper {
         'discount': DataProvider().promoCodePercentage,
         'typeTrip': tripCustomer.tripType.toString(),
         'hours' : tripCustomer.hours,
-        if(DataProvider().accessPointLatLng != null)
+        if(tripCustomer.accessPoint != null)
+        'currentAddress' : tripCustomer.currentAddress,
+        if(tripCustomer.accessPoint != null)
           "accessPoint" : {
-            'lat' : DataProvider().accessPointLatLng.latitude,
-            'lng' : DataProvider().accessPointLatLng.longitude,
-            'addressName' : DataProvider().accessPointAddress
+            'lat' : tripCustomer.accessPoint.latitude,
+            'lng' : tripCustomer.accessPoint.longitude,
+            'addressName' : tripCustomer.goingTo
           }
       });
   }
@@ -138,7 +141,14 @@ class FirebaseHelper {
        'hours' :trip.hourTrip,
        'typeTrip' : trip.typeTrip.toString(),
        'discount' :trip.discount,
+       'addressCurrent' :trip.addressStart,
 
+      if(trip.typeTrip == TypeTrip.distance)
+        'accessPoint' : {
+          'lat' : trip.accessPointLatLng.latitude,
+          'lng' : trip.accessPointLatLng.longitude,
+          'addressTo' : trip.addressEnd ,
+        },
 
       'locationCustomer' :{
         'lat' : trip.locationCustomer.latitude,
@@ -219,7 +229,7 @@ class FirebaseHelper {
   }
 
 
-  void sendNotification(String idSender , String idReceiver , String title , String body){
+  void sendNotification({String idSender , String idReceiver , String title , String body}){
 
 
     String idNotification =   FirebaseDatabase
@@ -240,6 +250,15 @@ class FirebaseHelper {
       "createdAt" : DateTime.now().toString()
 
     });
+
+    FirebaseDatabase
+        .instance
+        .reference()
+        .child("UsersNotification/$idReceiver").set({
+         '$idSender' :'$idNotification'
+          });
+
+
 
 
   }
@@ -361,8 +380,11 @@ class FirebaseHelper {
 
   Future<User> loadUserInfo(String idUser , {TypeAccount typeAccount =TypeAccount.customer }){
 
-
     return _fireStore.collection("Users").doc(idUser).get().then((value) async {
+
+      if(!value.exists)
+        return null ;
+
       return User(
         idUser: value.id ,
         typeAccount: value.data()['typeUser'] == TypeAccount.customer.toString() ? TypeAccount.customer : TypeAccount.driver,
@@ -373,6 +395,7 @@ class FirebaseHelper {
         carModel: typeAccount == TypeAccount.driver ? value.data()['carModel']  :"",
         carType: typeAccount == TypeAccount.driver ? value.data()['carType']  :"",
         carColor: typeAccount == TypeAccount.driver ? value.data()['carColor']  :"",
+        numberCar: typeAccount == TypeAccount.driver ? value.data()['numberCar'] :""
 
       ) ;
     }) ;

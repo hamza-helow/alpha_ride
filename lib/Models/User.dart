@@ -3,7 +3,7 @@ import 'package:alpha_ride/Enum/TypeAccount.dart';
 
 class User {
 
-  String fullName , email , idUser ,  carType , carModel, carColor
+  String fullName , email , idUser ,  carType , carModel, carColor , numberCar
   , emailFacebook  , imageProfile;
 
   TypeAccount typeAccount ;
@@ -33,6 +33,7 @@ class User {
     this.emailVerified = false ,
     this.emailFacebook,
     this.imageProfile ,
-    this.carColor
+    this.carColor ,
+    this.numberCar
   });
 }

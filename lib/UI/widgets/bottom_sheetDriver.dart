@@ -198,11 +198,17 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
                 lng: event.get("lng"),
                 lat: event.get("lat"),
                 discount:event.get("discount") ,
-                goingTo: "",
                 tripType: event.get("typeTrip") == TypeTrip.hours.toString() ? TypeTrip.hours :TypeTrip.distance ,
                 hours: event.get("hours") ,
                 stateRequest:
-                event.get(FirebaseConstant().stateRequest));
+                event.get(FirebaseConstant().stateRequest),
+                accessPoint:
+                event.get("typeTrip") ==  TypeTrip.distance.toString() ?
+                LatLng(event.get('accessPoint.lat') , event.get('accessPoint.lng')) : null ,
+                goingTo: event.get("typeTrip") ==  TypeTrip.distance.toString() ? event.get('accessPoint.addressName')  :  "",
+                currentAddress: event.get("typeTrip") ==  TypeTrip.distance.toString() ? event.get('currentAddress'):""
+
+            );
 
             if (currentTrip.stateRequest == FirebaseConstant().pending)
               exitTrip = true;
@@ -230,7 +236,10 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           rotateDriver: DataProvider().rotateCar,
          typeTrip:  currentTrip.tripType,
          hourTrip: currentTrip.hours ,
-        discount: currentTrip.discount
+        discount: currentTrip.discount,
+       accessPointLatLng: currentTrip.accessPoint,
+      addressStart: currentTrip.currentAddress,
+      addressEnd: currentTrip.goingTo
         ))
         .then((value) {
 
@@ -238,6 +247,12 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           .collection(FirebaseConstant().driverRequests)
           .doc(auth.currentUser.uid)
           .delete();
+      FirebaseHelper().sendNotification(
+        idSender: currentTrip.idCustomer ,
+        idReceiver: auth.currentUser.uid ,
+        title: "الكابتن" + "${auth.currentUser.displayName}" +"في الطريق اليك" ,
+        body: ""
+      );
     });
   }
 
@@ -252,7 +267,6 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           .update({FirebaseConstant().available: true});
     });
   }
-
 }
 
 class StateDriver extends StatefulWidget {
