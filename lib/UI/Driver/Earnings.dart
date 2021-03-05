@@ -32,7 +32,6 @@ class _EarningsState extends State<Earnings> {
 
    CollectionReference reference = FirebaseFirestore.instance.collection("Trips") ;
 
-
    (){
      if(to.isEmpty && from.isEmpty)
        return reference.where('idDriver' , isEqualTo: auth.currentUser.uid);

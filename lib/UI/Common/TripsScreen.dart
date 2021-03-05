@@ -90,7 +90,7 @@ class _TripsScreenState extends State<TripsScreen> {
                     trip.get("locationDriver.lng")),
                 locationCustomer: LatLng(trip.get("locationCustomer.lat"),
                     trip.get("locationCustomer.lng")),
-                totalPrice: double.parse('${trip.get('totalPrice')}'),
+                totalPrice: double.parse('${trip.get('totalPrice')??0}'),
                 startDate:
                     DateTime.parse(trip.get('dateStart').toDate().toString()),
                 idCustomer: trip.get("idCustomer"),

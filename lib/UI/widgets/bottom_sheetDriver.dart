@@ -30,19 +30,19 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
         expand: true,
-        initialChildSize: 0.19,
+        initialChildSize: 0.29,
         minChildSize: 0.19,
-        maxChildSize: 0.27,
+        maxChildSize: 0.5,
         builder: (context, scrollController) {
           return NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (overscroll) {
-              overscroll.disallowGlow();
               return true;
             },
             child: SingleChildScrollView(
               controller: scrollController,
               physics: ClampingScrollPhysics(),
               child: Container(
+                height: 400,
                 color: Color(0xF2FFFFFF),
                 child: Column(
                   children: <Widget>[
