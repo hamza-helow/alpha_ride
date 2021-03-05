@@ -248,8 +248,8 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           .doc(auth.currentUser.uid)
           .delete();
       FirebaseHelper().sendNotification(
-        idSender: currentTrip.idCustomer ,
-        idReceiver: auth.currentUser.uid ,
+        idSender: auth.currentUser.uid ,
+        idReceiver: currentTrip.idCustomer ,
         title: "الكابتن" + "${auth.currentUser.displayName}" +"في الطريق اليك" ,
         body: ""
       );

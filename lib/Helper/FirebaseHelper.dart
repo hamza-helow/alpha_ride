@@ -6,6 +6,7 @@ import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
+import 'package:alpha_ride/Models/SettingApp.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -84,6 +85,15 @@ class FirebaseHelper {
   }
 
 
+  Future<SettingApp> getSettingApp()async{
+
+
+   final DocumentSnapshot doc = await FirebaseFirestore.instance.collection("admin").doc("settings").get();
+
+  return new SettingApp(hours: doc.get('hours') , km: doc.get('km') ,min: doc.get('min') , percentageDriver: doc.get('percentageDriver') , startPrice: doc.get('startPrice'));
+  }
+
+
   Future <void > updateCustomerPoint(String idUser) async{
 
    return FirebaseFirestore
@@ -133,7 +143,7 @@ class FirebaseHelper {
       'date' : DateFormat("yyyy/MM/dd").format(DateTime.now()),
       'idCustomer' : trip.idCustomer ,
       'idDriver': trip.idDriver ,
-      'dateStart' : '',
+      'dateStart' : FieldValue.serverTimestamp(),
       'dateAcceptRequest' : FieldValue.serverTimestamp(),
       'state' :StateTrip.active.toString() ,
       'km' : 0.0,

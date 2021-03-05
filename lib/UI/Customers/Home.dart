@@ -10,6 +10,7 @@ import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/UI/Common/ResultTrip.dart';
 import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
@@ -73,7 +74,7 @@ class _HomeState extends State<Home> {
 
   int points = 0;
 
-  double balance =0.0 ;
+  double balance = 0.0;
 
   UserLocation userLocation;
 
@@ -176,8 +177,7 @@ class _HomeState extends State<Home> {
             title: "لديك طلب جديد من :",
             body: '${auth.currentUser.displayName}',
             idReceiver: idDriver,
-            idSender: auth.currentUser.uid
-        );
+            idSender: auth.currentUser.uid);
       });
   }
 
@@ -243,7 +243,7 @@ class _HomeState extends State<Home> {
           _fullName = event.get("fullName");
           rating = event.get("rating") / event.get('countRating');
           points = int.parse('${event.get("points")}');
-          balance = event.get('balance') ;
+          balance = event.get('balance');
         });
     });
 
@@ -281,7 +281,8 @@ class _HomeState extends State<Home> {
           .collection("Trips")
           .where("state", whereIn: [
             StateTrip.active.toString(),
-            StateTrip.started.toString()
+            StateTrip.started.toString(),
+            StateTrip.needRatingByCustomer.toString()
           ])
           .where("idCustomer", isEqualTo: auth.currentUser.uid)
           .snapshots(),
@@ -341,11 +342,26 @@ class _HomeState extends State<Home> {
 
               buildAppBar(),
 
+              if (snapshot.data.docs.length>0  && snapshot.data.docs.first.get("state") == StateTrip.needRatingByCustomer.toString())
+                ResultTrip(
+                  typeUser: TypeAccount.customer,
+                  idUser: snapshot.data.docs.first.get("idDriver"),
+                  name: "",
+                  totalTrip: snapshot.data.docs.first.get("totalPrice"),
+                  typeTrip: snapshot.data.docs.first.get('typeTrip') ==
+                      TypeTrip.distance.toString() ? TypeTrip.distance : TypeTrip.hours,
+                  idTrip: snapshot.data.docs.first.id
+                  ,
+                ),
+
               // if((confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated)
 
-              if ((snapshot.hasData && snapshot.data.docs.length > 0))
+              if ((snapshot.hasData && snapshot.data.docs.length > 0) && snapshot.data.docs.first.get("state") != StateTrip.needRatingByCustomer.toString())
                 CustomerBottomSheet(
-                  dateAccept: DateTime.parse(snapshot.data.docs.first.get("dateAcceptRequest").toDate().toString()),
+                  dateAccept: DateTime.parse(snapshot.data.docs.first
+                      .get("dateAcceptRequest")
+                      .toDate()
+                      .toString()),
                   idTrip: snapshot.data.docs.first.id,
                   locationCustomer: LatLng(
                       snapshot.data.docs.first.get("locationCustomer.lat"),
@@ -386,9 +402,9 @@ class _HomeState extends State<Home> {
                   },
                 ),
 
-              if (confirmPickup && !(snapshot.hasData && snapshot.data.docs.length > 0))
+              if (confirmPickup &&
+                  !(snapshot.hasData && snapshot.data.docs.length > 0))
                 CustomerBottomSheet(
-
                   stateTrip: StateTrip.none,
                   findDriver: findDriver,
                   getDriver: () {
@@ -772,7 +788,11 @@ class _HomeState extends State<Home> {
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("$balance JD" , style: TextStyle(color: balance<0 ? Colors.red : Colors.green ),),
+                        label: Text(
+                          "$balance JD",
+                          style: TextStyle(
+                              color: balance < 0 ? Colors.red : Colors.green),
+                        ),
                       ),
                     ),
                   ),

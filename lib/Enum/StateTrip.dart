@@ -1,16 +1,11 @@
-
-
 enum StateTrip {
-
- none ,
-  active ,
-  rejected ,
-
-  started ,
-
-  done ,
-
-  cancelByDriver ,
+  none,
+  active,
+  rejected,
+  started,
+  needRatingByCustomer,
+  needRatingByDriver ,
+  done,
+  cancelByDriver,
   cancelByCustomer
-
 }

@@ -1,6 +1,11 @@
 import 'package:alpha_ride/Enum/TypeTrip.dart';
+import 'package:alpha_ride/Helper/FirebaseHelper.dart';
+import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/DriverRequest.dart';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/Models/SettingApp.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -64,40 +69,52 @@ class DataProvider{
 
 
 
-  double calcPriceTotal(currentTrip){
+  Future<double> calcPriceTotal({TypeTrip typeTrip , discountTrip = 0 , minTrip =0, kmTrip=0 ,DateTime startDate})async{
+
+  final SettingApp settingApp  =   await FirebaseHelper().getSettingApp();
 
     double totalPrice ;
-    if(currentTrip.typeTrip == TypeTrip.distance){
-      double startPrice = 0.55 ;
+    if(typeTrip == TypeTrip.distance){
+      double startPrice = settingApp.startPrice ;
 
-      double totalPriceMin = currentTrip.minTrip * 0.03;
+      double totalPriceMin = minTrip * settingApp.min;
 
-      double totalKmPrice = currentTrip.km * 0.17;
+      double totalKmPrice = kmTrip * settingApp.km;
 
       totalPrice =  startPrice + totalKmPrice + totalPriceMin ;
 
       if(totalPrice < 1.15)
         totalPrice = 1.15 ;
 
-      double discount = double.parse("0.${currentTrip.discount}");
+      double discount = double.parse("0.$discountTrip");
 
       totalPrice = totalPrice  -  (totalPrice * discount);
 
       if(totalPrice < 0)
         totalPrice = 0.0 ;
-
     }
 
     else {
 
-      int min =   currentTrip.startDate.difference(DateTime.now()).inMinutes;
+      int min =  startDate.difference(DateTime.now()).inMinutes;
 
-      totalPrice =  double.parse(DataProvider().getHoursFromMin(min).replaceAll(":", ".")) * 10.0;
+      totalPrice =  double.parse(DataProvider().getHoursFromMin(min).replaceAll(":", ".")) * settingApp.hours;
 
-      if(totalPrice < 5)
-        totalPrice = 5 ;
+      if(totalPrice < settingApp.hours/2)
+        totalPrice = settingApp.hours/2 ;
 
     }
+
+
+
+double percentageDriver = (double.parse(totalPrice.toStringAsFixed(2)) * double.parse('0.${settingApp.percentageDriver}')) ;
+
+
+        FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
+      .update({
+       'balance' : FieldValue.increment((percentageDriver *-1))
+          });
+
 
     return double.parse(totalPrice.toStringAsFixed(2));
 
