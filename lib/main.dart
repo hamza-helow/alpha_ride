@@ -55,8 +55,8 @@ class _EntryPointState extends State<EntryPoint> {
 
   @override
   Widget build(BuildContext context) {
-    final pushNotificationService = PushNotificationService(_firebaseMessaging);
-    pushNotificationService.initialise();
+    // final pushNotificationService = PushNotificationService(_firebaseMessaging);
+    // pushNotificationService.initialise();
 
     return StreamProvider<UserLocation>(
 

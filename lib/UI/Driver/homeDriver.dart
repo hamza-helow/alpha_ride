@@ -5,11 +5,11 @@ import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/UI/Driver/Earnings.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
-import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
@@ -49,8 +49,6 @@ class _MyHomePageState extends State<HomeDriver> {
   BitmapDescriptor carIcon;
   Set<Marker> markers = Set();
 
-  double ratingCustomer = 3.0;
-
   UserLocation userLocation;
 
   final geo = Geoflutterfire();
@@ -73,17 +71,6 @@ class _MyHomePageState extends State<HomeDriver> {
 
   GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey();
 
-  bool  showResultTrip = false;
-  bool exitTrip=false;
-
-  StateTrip stateTrip;
-
-  TypeTrip typeTrip ;
-
-  String idTrip ;
-
- // Trip currentTrip;
-
   //32.5661186,35.8420676
   static final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(32.5661186, 35.8420676),
@@ -96,13 +83,49 @@ class _MyHomePageState extends State<HomeDriver> {
 
     super.initState();
 
-   // currentTrip = Trip();
-
+    getCurrentTrip();
     initImageCar();
-   // listenCurrentTrip();
     loadInfoUser();
-
     getAarningsDay();
+  }
+
+
+  Trip currentTrip ;
+  void getCurrentTrip(){
+    FirebaseFirestore.instance
+        .collection("Trips")
+        .where("state", whereIn: [
+      StateTrip.active.toString(),
+      StateTrip.started.toString(),
+      StateTrip.needRatingByDriver.toString()
+    ])
+        .where("idDriver", isEqualTo: auth.currentUser.uid)
+        .snapshots().listen((event) {
+
+      this.setState(() {
+
+        polylineCoordinates.clear();
+        polylines.clear();
+
+
+        if(event.size ==0)
+        {
+          currentTrip = null;
+        }else
+         {
+           currentTrip  = Trip.fromJson(event.docs.first);
+
+
+           if(currentTrip.stateTrip == StateTrip.active)
+             drawDriverToCustomerLine();
+           else if(currentTrip.stateTrip == StateTrip.started  && currentTrip.accessPointLatLng !=null)
+             _getPolyline(currentTrip.locationDriver, currentTrip.accessPointLatLng);
+         }
+      });
+
+    });
+
+
   }
 
   double aarningsDay = 0.0;
@@ -148,97 +171,53 @@ class _MyHomePageState extends State<HomeDriver> {
           )
         : null;
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection("Trips")
-          .where("state", whereIn: [
-            StateTrip.active.toString(),
-            StateTrip.started.toString(),
-            StateTrip.needRatingByDriver.toString()
-          ])
-          .where("idDriver", isEqualTo: auth.currentUser.uid)
-          .snapshots(),
-      builder: (context, snapshot) {
+    return  Scaffold(
+      key: _scaffoldKey,
+      drawer: buildDrawer(),
+      body: Stack(
+        children: [
+          GoogleMap(
+            onMapCreated: onMapCreated,
+            markers: markers,
+            initialCameraPosition: cameraPosition ?? _kGooglePlex,
+            compassEnabled: false,
+            myLocationEnabled: true,
+            zoomControlsEnabled: false,
+            buildingsEnabled: true,
+            myLocationButtonEnabled: false,
+            minMaxZoomPreference: MinMaxZoomPreference(12, 20),
+            mapToolbarEnabled: false,
+            rotateGesturesEnabled: false,
+            polylines: Set<Polyline>.of(polylines.values),
+          ),
+          if (currentTrip ==null)
+            DriverBottomSheet(),
 
-         exitTrip =snapshot.hasData && snapshot.data.docs.length > 0 ;
+          buildAppBar(),
 
-         idTrip =  exitTrip ? snapshot.data.docs.first.id : "";
-
-         stateTrip = (){
-
-          if(!exitTrip )
-            return StateTrip.none;
-
-          final state = snapshot.data.docs.first.get("state") ;
-
-          if (state == StateTrip.active.toString())
-            return StateTrip.active;
-          else if (state == StateTrip.started.toString())
-            return StateTrip.started;
-          else
-            return StateTrip.done;
-        }();
-
-
-         print("_getPolyline");
-
-         final locationCustomer = !exitTrip ? null : LatLng(snapshot.data.docs.first.get("locationCustomer.lat") , snapshot.data.docs.first.get("locationCustomer.lng") );
-
-         final locationDriver = !exitTrip ? null : LatLng(snapshot.data.docs.first.get("locationDriver.lat") , snapshot.data.docs.first.get("locationDriver.lng") );
-
-          if(stateTrip == StateTrip.active && polylineCoordinates.isEmpty)
-            _getPolyline(locationDriver , locationCustomer);
-
-         typeTrip = (){
-
-           if(!exitTrip)
-             return null ;
-           else if(snapshot.data.docs.first.get("typeTrip")  == TypeTrip.distance.toString())
-             return TypeTrip.distance;
-           else
-             return TypeTrip.hours;
-         }();
-
-
-
-       return  Scaffold(
-         key: _scaffoldKey,
-         drawer: buildDrawer(),
-         body: Stack(
-           children: [
-             GoogleMap(
-               onMapCreated: onMapCreated,
-               markers: markers,
-               initialCameraPosition: cameraPosition ?? _kGooglePlex,
-               compassEnabled: false,
-               myLocationEnabled: true,
-               zoomControlsEnabled: false,
-               buildingsEnabled: true,
-               myLocationButtonEnabled: false,
-               minMaxZoomPreference: MinMaxZoomPreference(12, 20),
-               mapToolbarEnabled: false,
-               rotateGesturesEnabled: false,
-               polylines: Set<Polyline>.of(polylines.values),
-             ),
-             if (!exitTrip)
-               DriverBottomSheet(),
-
-             buildAppBar( !exitTrip ?null  :snapshot.data.docs.first),
-             if ( exitTrip && snapshot.data.docs.first.get("state") ==
-                 StateTrip.needRatingByDriver.toString())
-               ResultTrip(
-                 idTrip: snapshot.data.docs.first.id,
-                 typeUser: TypeAccount.driver,
-                 totalTrip: snapshot.data.docs.first.get("totalPrice"),
-                 name: "",
-                 idUser: snapshot.data.docs.first.get("idCustomer"),
-                 typeTrip:snapshot.data.docs.first.get("typeTrip") == TypeTrip.distance.toString() ? TypeTrip.distance : TypeTrip.hours,
-               ),
-           ],
-         ),
-       );
-      },
+          if ( currentTrip !=null  && currentTrip.stateTrip == StateTrip.needRatingByDriver)
+            ResultTrip(
+              idTrip: currentTrip.idTrip,
+              typeUser: TypeAccount.driver,
+              totalTrip: currentTrip.totalPrice,
+              name: "",
+              idUser: currentTrip.idCustomer,
+              typeTrip:currentTrip.typeTrip,
+            ),
+        ],
+      ),
     );
+  }
+
+
+  void drawDriverToCustomerLine(){
+
+    if(currentTrip.locationCustomer == null || currentTrip.locationDriver==null)
+      return;
+
+    if(currentTrip.stateTrip == StateTrip.active && polylineCoordinates.isEmpty)
+      _getPolyline(currentTrip.locationCustomer , currentTrip.locationDriver);
+
   }
 
   void updateKm(double meter , idTrip) {
@@ -297,15 +276,12 @@ class _MyHomePageState extends State<HomeDriver> {
             IconButton(
                 icon: Icon(Icons.add),
                 onPressed: () {
-                  changeZoom(currentZoomLevel, _controller, userLocation,
-                      typeZoom: 0);
+                  changeZoom(typeZoom: 0);
                 }),
             SizedBox(height: 2),
             IconButton(
               icon: Icon(Icons.remove),
-              onPressed: () => changeZoom(
-                  currentZoomLevel, _controller, userLocation,
-                  typeZoom: 1),
+              onPressed: () => changeZoom(typeZoom: 1),
             )
           ],
         ),
@@ -313,23 +289,22 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-  void changeZoom(currentZoomLevel, _controller, userLocation,
-      {int typeZoom = 0}) async {
-    currentZoomLevel = await _controller.getZoomLevel();
 
-    currentZoomLevel =
-        typeZoom == 0 ? currentZoomLevel + 2 : currentZoomLevel - 2;
+  void changeZoom({int typeZoom = 0}) async {
     _controller.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: LatLng(userLocation.latitude, userLocation.longitude),
-          zoom: currentZoomLevel,
+          target: LatLng(position.latitude, position.longitude),
+          zoom: typeZoom == 0
+              ? await _controller.getZoomLevel() + 1
+              : await _controller.getZoomLevel() - 1,
         ),
       ),
     );
   }
 
-  Positioned buildAppBar(QueryDocumentSnapshot document) {
+
+  Positioned buildAppBar() {
     return Positioned(
       top: 20,
       left: 0,
@@ -351,22 +326,22 @@ class _MyHomePageState extends State<HomeDriver> {
               SizedBox(
                 width: 10.0,
               ),
-              if (document == null)
+              if (currentTrip == null)
                 PriceWidget(
-                  price: "$aarningsDay",
+                  price: "${aarningsDay.toStringAsFixed(2)}",
                   onPressed: () {},
                 ),
-              if (document == null)
+              if (currentTrip == null)
                 SizedBox(
                   width: 10.0,
                 ),
-              if (document == null) ProfileWidget(),
-              if (document == null)
+              if (currentTrip == null) ProfileWidget(),
+              if (currentTrip == null)
                 SizedBox(
                   width: 10.0,
                 ),
-              if (document == null) NotificationWidget(),
-              if (document != null) controlTrip(document)
+              if (currentTrip == null) NotificationWidget(),
+              if (currentTrip != null) controlTrip()
             ],
           ),
         ),
@@ -374,19 +349,7 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-  Padding controlTrip(DocumentSnapshot doc) {
-    final locationCustomer = LatLng(
-        doc.get("locationCustomer.lat"), doc.get("locationCustomer.lng"));
-
-    final locationDriver =
-        LatLng(doc.get("locationDriver.lat"), doc.get("locationDriver.lng"));
-
-    final stateTrip = () {
-      final state = doc.get("state");
-      if (state == StateTrip.started.toString())
-        return StateTrip.started;
-      else if (state == StateTrip.active.toString()) return StateTrip.active;
-    }();
+  Padding controlTrip() {
 
     return Padding(
       padding: EdgeInsets.only(top: 30.0),
@@ -407,19 +370,16 @@ class _MyHomePageState extends State<HomeDriver> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            infoCustomer(doc.get("idCustomer")),
+            infoCustomer(currentTrip.idCustomer),
             timeAndDistanceWidget(
-                doc.get("km"),
-                DateTime.now()
-                    .difference(DateTime.parse(
-                        doc.get("dateStart").toDate().toString()))
-                    .inMinutes),
-            if (distanceBetweenTwoLocation(locationCustomer, locationDriver) <=
+                currentTrip.km,
+                currentTrip.minTrip),
+            if (distanceBetweenTwoLocation(currentTrip.locationCustomer, currentTrip.locationDriver) <=
                     100 &&
-                stateTrip == StateTrip.active)
-              buttonStartTrip(doc.id),
-            if (stateTrip == StateTrip.started) buttonFinishTrip(doc),
-            if (stateTrip == StateTrip.active) rejectTrip(),
+                currentTrip.stateTrip == StateTrip.active)
+              buttonStartTrip(currentTrip.idTrip),
+            if (currentTrip.stateTrip == StateTrip.started) buttonFinishTrip(),
+            if (currentTrip.stateTrip == StateTrip.active) rejectTrip(),
             Container(
               height: 10,
               color: Colors.white,
@@ -495,7 +455,12 @@ class _MyHomePageState extends State<HomeDriver> {
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    FirebaseFirestore.instance
+                        .collection("Trips")
+                        .doc(currentTrip.idTrip)
+                         .update({'state' : StateTrip.cancelByDriver.toString()});
+                  },
                 )),
           ),
         ),
@@ -561,7 +526,7 @@ class _MyHomePageState extends State<HomeDriver> {
     );
   }
 
-  Row buttonFinishTrip(DocumentSnapshot doc) {
+  Row buttonFinishTrip() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -581,23 +546,18 @@ class _MyHomePageState extends State<HomeDriver> {
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () {
-                    this.setState(() {
-                      showResultTrip = true;
-                    });
-
-
 
                     FirebaseHelper()
-                        .updateCustomerPoint(doc.get("idCustomer"));
+                        .updateCustomerPoint(currentTrip.idCustomer);
 
                     FirebaseHelper().resetRequestDriver().then((_) async {
 
                   final price =  await  DataProvider().calcPriceTotal(
-                        discountTrip: doc.get("discount"),
-                        kmTrip: doc.get("km"),
-                        minTrip: DateTime.now().difference(DateTime.parse(doc.get("dateStart").toDate().toString())).inMinutes,
-                        startDate: DateTime.parse(doc.get("dateStart").toDate().toString()),
-                        typeTrip: doc.get("typeTrip")== TypeTrip.distance.toString() ? TypeTrip.distance : TypeTrip.hours,
+                        discountTrip: currentTrip.discount,
+                        kmTrip: currentTrip.km,
+                        minTrip: currentTrip.minTrip,
+                        startDate: currentTrip.startDate,
+                        typeTrip: currentTrip.typeTrip,
                         );
 
 
@@ -605,12 +565,12 @@ class _MyHomePageState extends State<HomeDriver> {
                       title: "تم انهاء الرحلة" ,
                       body: "المبلغ المطلوب :" + "$price" ,
                       idSender: auth.currentUser.uid,
-                    idReceiver: doc.get("idCustomer")
+                    idReceiver: currentTrip.idCustomer
                   );
 
                           _firestore
                           .collection("Trips")
-                          .doc(doc.id)
+                          .doc(currentTrip.idTrip)
                           .update({
                           'totalPrice': price,
                            'state': StateTrip.needRatingByDriver.toString() });
@@ -622,8 +582,6 @@ class _MyHomePageState extends State<HomeDriver> {
       ],
     );
   }
-
-
   Drawer buildDrawer() {
     return Drawer(
       child: Container(
@@ -752,16 +710,26 @@ class _MyHomePageState extends State<HomeDriver> {
 
   onMapCreated(controller) {
 
+    print("onMapCreated");
+
+    if(_controller  != null  || _completer.isCompleted)
+      return;
+
     _completer.complete(controller);
 
     _controller = controller;
 
-    var options =
-        LocationOptions(accuracy: LocationAccuracy.low, distanceFilter: 20);
+    onLocationChanged();
+
+  }
+
+
+  void onLocationChanged(){
+  final  options = LocationOptions(accuracy: LocationAccuracy.low, distanceFilter: 20);
 
     Geolocator.getPositionStream(
-            desiredAccuracy: options.accuracy,
-            distanceFilter: options.distanceFilter)
+        desiredAccuracy: options.accuracy,
+        distanceFilter: options.distanceFilter)
         .listen((position) {
       this.setState(() {
         this.position = position;
@@ -781,26 +749,29 @@ class _MyHomePageState extends State<HomeDriver> {
             rotation: _direction),
       ]);
 
-      updateDriverInfo();
 
-      calcKmCurrentTrip(  stateTrip ,  typeTrip , idTrip );
+      if(currentTrip == null)
+        updateDriverInfo();
+
+      if(currentTrip != null)
+       {
+         calcKmCurrentTrip(  currentTrip.stateTrip ,  currentTrip.typeTrip , currentTrip.idTrip );
+
+         if (currentTrip.stateTrip == StateTrip.started || currentTrip.stateTrip == StateTrip.active)
+           updateLocationDriverInTrip(currentTrip.idTrip);
+       }
 
       animateTo(position.latitude, position.longitude);
 
 
-      print("StaTECCCCC  ${stateTrip.toString()}");
 
-      print("StaTECCCCC  $idTrip");
-
-
-      if (stateTrip == StateTrip.started || stateTrip == StateTrip.active)
-        updateLocationDriverInTrip(idTrip);
     });
+
   }
 
   Future<void> animateTo(double lat, double lng) async {
     final c = await _completer.future;
-    final p = CameraPosition(target: LatLng(lat, lng), zoom: 17.0);
+    final p = CameraPosition(target: LatLng(lat, lng), zoom:17 );
     c.animateCamera(CameraUpdate.newCameraPosition(p));
   }
 
@@ -928,7 +899,6 @@ class _MyHomePageState extends State<HomeDriver> {
 
     markers.add(marker);
   }
-
 
   void updateDriverInfo() {
     FirebaseHelper().checkLocationExit(auth.currentUser.uid).then((isExit) => {

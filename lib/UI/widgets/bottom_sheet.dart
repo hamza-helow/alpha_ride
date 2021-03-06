@@ -12,7 +12,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class CustomerBottomSheet extends StatefulWidget {
   final Function callBack , showPromoCodeWidget;
 
-
   final Function(StateTrip stateTrip) onStateTripChanged;
 
   final Function getDriver , deleteRequest;
@@ -77,9 +76,9 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
         return DraggableScrollableSheet(
             expand: true,
-            initialChildSize: 0.37,
+            initialChildSize: 0.42,
             minChildSize: 0.2,
-            maxChildSize: 0.38,
+            maxChildSize: 0.50,
             builder: (context, scrollController) {
               return NotificationListener<OverscrollIndicatorNotification>(
                 onNotification: (overscroll) {
@@ -90,6 +89,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                   controller: scrollController,
                   physics: ClampingScrollPhysics(),
                   child: Container(
+                    height: MediaQuery.of(context).size.height / 2,
                     color: Color(0xF2FFFFFF),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -202,24 +202,20 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.all(10.0),
-
+          padding: EdgeInsets.all(5.0),
           child:  ListTile(
 
             leading: Image.asset("Assets/enconomy.png"),
             title: Text("Enconomy"),
             trailing: Text("$closerTimeTrip"),
             subtitle: Text( widget.numberHours == 0 ? "":  "${widget.numberHours * 10} JD" , style: TextStyle(color: Colors.green),),
-
           ),
 
         ),
 
         Divider(),
-
         Padding(
-          padding: EdgeInsets.all(10.0),
-
+          padding: EdgeInsets.all(5.0),
           child:  ListTile(
 
             leading: CircleAvatar(
@@ -337,7 +333,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
             subtitle: Row(
 
               children: [
-                Icon(Icons.star  ,color: DataProvider().baseColor,) , Text("${rating??"-"}"),
+                Icon(Icons.star  ,color: DataProvider().baseColor,) , Text("${rating.toStringAsFixed(2)??"-"}"),
               ],
 
             ),

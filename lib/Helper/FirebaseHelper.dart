@@ -41,7 +41,8 @@ class FirebaseHelper {
           if(user.emailFacebook  != null)
           'emailFacebook' :user.emailFacebook,
           'phoneNumber' : user.phoneNumber ,
-          'imageProfile' : user.imageProfile == null ? "" : user.imageProfile
+          'imageProfile' : user.imageProfile == null ? "" : user.imageProfile ,
+
         });
 
        }
@@ -49,6 +50,7 @@ class FirebaseHelper {
 
         return _fireStore.collection("Users").doc(user.idUser).set({
 
+          'usePassword': user.usePassword,
           'fullName' : user.fullName ,
           'email': user.email ,
           'typeUser' : user.typeAccount.toString() ,
@@ -65,22 +67,6 @@ class FirebaseHelper {
         });
       }
     });
-
-
-    // return _fireStore.collection("Users").doc(user.idUser).set({
-    //
-    //   'fullName' : user.fullName ,
-    //   'email': user.email ,
-    //   'typeUser' : user.typeAccount.toString() ,
-    //   'countRating'  : 1 ,
-    //   'rating' :5.0  ,
-    //   'countTrips' : 0 ,
-    //   'stateAccount' : user.stateAccount.toString() ,
-    //   'phoneNumber' : user.phoneNumber ,
-    //   'points' : 0 ,
-    //   'emailVerified' : user.emailVerified ,
-    //   'emailFacebook' :user.emailFacebook
-    // });
 
   }
 
@@ -397,6 +383,7 @@ class FirebaseHelper {
 
       return User(
         idUser: value.id ,
+        phoneNumber: value.data()['phoneNumber'] ,
         typeAccount: value.data()['typeUser'] == TypeAccount.customer.toString() ? TypeAccount.customer : TypeAccount.driver,
         fullName: value.data()['fullName'] ,
         email: value.data()['email'] ,
@@ -406,7 +393,6 @@ class FirebaseHelper {
         carType: typeAccount == TypeAccount.driver ? value.data()['carType']  :"",
         carColor: typeAccount == TypeAccount.driver ? value.data()['carColor']  :"",
         numberCar: typeAccount == TypeAccount.driver ? value.data()['numberCar'] :""
-
       ) ;
     }) ;
   }

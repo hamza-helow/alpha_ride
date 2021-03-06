@@ -276,6 +276,7 @@ class _LoginState extends State<Login> {
    return FirebaseFirestore.instance
         .collection("Users")
         .where("phoneNumber", isEqualTo: phoneNumber)
+        .where('usePassword' , isEqualTo: true)
         .get()
         .then((value) {
 

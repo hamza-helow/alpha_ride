@@ -67,6 +67,11 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                     Padding(
                       padding: EdgeInsets.all(20.0),
                       child:  new TextField(
+                        onChanged: (value) {
+                          if (code.text != value.toUpperCase())
+                            code.value = code.value.copyWith(text: value.toUpperCase());
+
+                        },
                         controller: code,
                         decoration: new InputDecoration(
                             border: new OutlineInputBorder(

@@ -16,7 +16,7 @@ class User {
 
   String phoneNumber;
 
-  bool emailVerified   ;
+  bool emailVerified  , usePassword ;
 
 
   User({
@@ -34,6 +34,7 @@ class User {
     this.emailFacebook,
     this.imageProfile ,
     this.carColor ,
-    this.numberCar
+    this.numberCar,
+    this.usePassword = false
   });
 }

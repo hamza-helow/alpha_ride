@@ -27,6 +27,14 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 apply plugin: 'com.google.gms.google-services'
 
 android {
+    signingConfigs {
+        releas {
+            storeFile file('C:\\Users\\hamzi\\AndroidStudioProjects\\alpha_ride\\alpha_ride.jks')
+            storePassword 'hh0788051422**@@'
+            keyAlias 'key0'
+            keyPassword 'hh0788051422**@@'
+        }
+    }
     compileSdkVersion 30
 
     sourceSets {
@@ -41,13 +49,14 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+        signingConfig signingConfigs.releas
     }
 
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.releas
         }
     }
 }

@@ -28,6 +28,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart' as w;
 import 'package:provider/provider.dart';
 
+//key0
 // key password : hh0788051422**@@
 class Home extends StatefulWidget {
   @override
@@ -107,6 +108,7 @@ class _HomeState extends State<Home> {
     this.setState(() {
       findDriver = true;
     });
+    print("getDriver");
 
     if (DataProvider().userLocation != null) {
       geoFirePoint = geo.point(
@@ -198,8 +200,9 @@ class _HomeState extends State<Home> {
         .doc(idDriver)
         .snapshots()
         .listen((event) {
-      print("event Lis");
-      if (event.exists) if (event.data()['stateRequest'] == "rejected") {
+      print("listenRequestDriver");
+      if (event.exists)
+        if (event.data()['stateRequest'] == "rejected") {
         radius = 1;
         rejected.add(idDriver);
         getDriver();
@@ -287,8 +290,12 @@ class _HomeState extends State<Home> {
           .where("idCustomer", isEqualTo: auth.currentUser.uid)
           .snapshots(),
       builder: (context, snapshot) {
-        if (snapshot.hasData &&
-            snapshot.data.docs.length > 0 &&
+
+       final exitTrip =snapshot.hasData && snapshot.data.docs.length > 0 ;
+
+       findDriver = findDriver?!exitTrip : false ;
+
+        if (exitTrip &&
             snapshot.data.docs.first.get("state") ==
                 StateTrip.started.toString())
           animateTo(snapshot.data.docs.first.get('locationDriver.lat'),
@@ -301,8 +308,7 @@ class _HomeState extends State<Home> {
             children: [
               GoogleMap(
                 initialCameraPosition: () {
-                  if (snapshot.hasData &&
-                      snapshot.data.docs.length > 0 &&
+                  if (exitTrip &&
                       snapshot.data.docs.first.get("state") ==
                           StateTrip.started.toString())
                     return CameraPosition(
@@ -342,7 +348,7 @@ class _HomeState extends State<Home> {
 
               buildAppBar(),
 
-              if (snapshot.data.docs.length>0  && snapshot.data.docs.first.get("state") == StateTrip.needRatingByCustomer.toString())
+              if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.needRatingByCustomer.toString())
                 ResultTrip(
                   typeUser: TypeAccount.customer,
                   idUser: snapshot.data.docs.first.get("idDriver"),
@@ -378,7 +384,7 @@ class _HomeState extends State<Home> {
                     else
                       return StateTrip.started;
                   }(),
-                  findDriver: findDriver,
+                  findDriver: exitTrip ?  false : findDriver,
                   getDriver: () {
                     getDriver();
                   },
@@ -406,7 +412,7 @@ class _HomeState extends State<Home> {
                   !(snapshot.hasData && snapshot.data.docs.length > 0))
                 CustomerBottomSheet(
                   stateTrip: StateTrip.none,
-                  findDriver: findDriver,
+                  findDriver: exitTrip ?  false : findDriver,
                   getDriver: () {
                     getDriver();
                   },
@@ -1020,7 +1026,7 @@ class _HomeState extends State<Home> {
   Future<void> animateTo(double lat, double lng) async {
     final c = await _completer.future;
     final p = CameraPosition(
-        target: LatLng(lat, lng), zoom: await _controller.getZoomLevel());
+        target: LatLng(lat, lng), zoom: 17);
     c.animateCamera(CameraUpdate.newCameraPosition(p));
   }
 

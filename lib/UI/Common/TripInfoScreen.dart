@@ -3,6 +3,7 @@ import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/Trip.dart';
+import 'package:alpha_ride/Models/User.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
@@ -154,19 +155,22 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
 
             Divider(),
 
-            Padding(padding: EdgeInsets.all(10.0) ,
+            FutureBuilder<User>(
+              future: FirebaseHelper().loadUserInfo(
+                  widget.typeAccount == TypeAccount.customer ? widget.trip.idCustomer : widget.trip.idDriver , typeAccount: widget.typeAccount),
+              builder: (context, user) => Padding(padding: EdgeInsets.all(10.0) ,
 
               child:   ListTile(
                 leading: CircleAvatar(
                   child: Icon(Icons.person_outline),
                 ),
 
-                title: Text( widget.typeAccount == TypeAccount.customer ?   currentTrip.nameDriver : currentTrip.nameCustomer),
+                title: Text(user.data == null ? "": user.data.fullName),
                 subtitle: Text(
                     widget.typeAccount == TypeAccount.customer ?
                     "Economy ${currentTrip.carColor} ${currentTrip.carType} ${currentTrip.carModel} 2568794"
                         :
-                       "${widget.trip.typeTrip == TypeTrip.hours ? "For ${widget.trip.hourTrip} hours": ""}"),
+                    "${widget.trip.typeTrip == TypeTrip.hours ? "For ${widget.trip.hourTrip} hours": ""}"),
 
                 trailing: Chip(
                   avatar: Icon(
@@ -175,12 +179,12 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
                     size: 21,
                   ),
                   backgroundColor: Colors.grey[200],
-                  label: Text("${widget.typeAccount == TypeAccount.customer ? currentTrip.ratingDriver : currentTrip.ratingCustomer }"),
+                  label: Text("${user.data == null ? 0.0: (user.data.rating/user.data.countRating).toStringAsFixed(2)}"),
                 ),
 
               ),
 
-            ) ,
+            ),) ,
 
           ],
         ),

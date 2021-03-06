@@ -1,13 +1,16 @@
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Helper/MapUtils.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
+import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DriverBottomSheet extends StatefulWidget {
   @override
@@ -42,7 +45,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
               controller: scrollController,
               physics: ClampingScrollPhysics(),
               child: Container(
-                height: 400,
+                height: MediaQuery.of(context).size.height/2,
                 color: Color(0xF2FFFFFF),
                 child: Column(
                   children: <Widget>[
@@ -104,8 +107,12 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
     );
   }
 
-  Column requestWidget() {
-    return Column(
+  FutureBuilder requestWidget() {
+    return FutureBuilder<User>(
+
+      future: FirebaseHelper().loadUserInfo(currentTrip.idCustomer),
+
+      builder: (context, snapshot) => Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -115,7 +122,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           children: [
             InkWell(
               onTap: () {
-               cancelTrip();
+                cancelTrip();
               },
               child: CircleAvatar(
                 backgroundColor: Colors.red,
@@ -137,7 +144,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
               ),
             ),
             SizedBox(
-              width: 200,
+              width: 220,
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: DataProvider().baseColor,
@@ -146,37 +153,64 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
                     color: Colors.white,
                   ),
                 ),
-                title: Text(currentTrip.nameCustomer),
-                subtitle: Text(currentTrip.phoneCustomer),
+                title: Text(snapshot.data== null ? "" :"${snapshot.data.fullName}"),
+                subtitle: Text(snapshot.data== null ? "" : '${snapshot.data.phoneNumber}'),
               ),
             ),
-            CircleAvatar(
-              backgroundColor: DataProvider().baseColor,
-              child: Icon(
-                Icons.phone,
-                color: Colors.white,
-              ),
-            ),
+
           ],
         ),
 
-         Padding(padding: EdgeInsets.only(left: 10.0 ,  right: 10.0)
-         ,
-           child:  ListTile(
-             leading: Icon(Icons.info),
-             title: Text("Other information"),
-             subtitle: Text(currentTrip.tripType == TypeTrip.distance ?"going to ${currentTrip.goingTo}" : "For ${currentTrip.hours} Hours" ),
-             trailing: InkWell(
-               onTap: () {
+        Padding(padding: EdgeInsets.only(left: 10.0 ,  right: 10.0)
+          ,
+          child:  ListTile(
+            leading: Icon(Icons.info),
+            title: Text("Other information"),
+            subtitle: Text(currentTrip.tripType == TypeTrip.distance ?"going to ${currentTrip.goingTo}" : "For ${currentTrip.hours} Hours" ),
+            trailing: Wrap(
 
-               },
-               child: Text("Show location" ,style: TextStyle(fontWeight: FontWeight.bold),),
-             ),
-           ),
-         )
+              spacing: 10.0,
+              children: [
+
+
+                InkWell(
+
+                  child:  CircleAvatar(
+                    backgroundColor: DataProvider().baseColor,
+                    child: Icon(
+                      Icons.location_pin,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  onTap: () {
+
+                    MapUtils.openMap(currentTrip.lat,currentTrip.lng);
+                  },
+                ),
+
+
+                InkWell(
+                  onTap: () {
+                    launch("tel://${snapshot.data.phoneNumber}");
+                  },
+
+                  child: CircleAvatar(
+                    backgroundColor: DataProvider().baseColor,
+                    child: Icon(
+                      Icons.phone,
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+
+              ],
+            ),
+          ),
+        )
 
       ],
-    );
+    ),);
   }
 
   checkExitRequest() {
