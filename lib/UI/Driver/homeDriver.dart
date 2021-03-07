@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/UI/Driver/Earnings.dart';
@@ -451,7 +452,7 @@ class _MyHomePageState extends State<HomeDriver> {
                 child: MaterialButton(
                   color: Colors.red,
                   child: Text(
-                    "Cancel",
+                    "${AppLocalizations.of(context).translate('cancel')}",
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -505,7 +506,7 @@ class _MyHomePageState extends State<HomeDriver> {
                 child: MaterialButton(
                   color: DataProvider().baseColor,
                   child: Text(
-                    "Start trip",
+                    "${AppLocalizations.of(context).translate('startTrip')}",
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -541,7 +542,7 @@ class _MyHomePageState extends State<HomeDriver> {
                 child: MaterialButton(
                   color: DataProvider().baseColor,
                   child: Text(
-                    "Finish trip",
+                    "${AppLocalizations.of(context).translate('finishTrip')}",
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -622,7 +623,7 @@ class _MyHomePageState extends State<HomeDriver> {
                         ),
                         backgroundColor: Colors.grey[200],
                         label: Text(
-                          "${balance.toStringAsFixed(2)} JD",
+                          "${balance.toStringAsFixed(2)} ${AppLocalizations.of(context).translate('jd')}",
                           style:
                               TextStyle(color: balance < 0 ? Colors.red : null),
                         ),
@@ -661,7 +662,7 @@ class _MyHomePageState extends State<HomeDriver> {
                   )),
               leading: Icon(Icons.time_to_leave_sharp),
               title: Text(
-                "You trips",
+                "${AppLocalizations.of(context).translate('yourTrips')}",
               ),
 
             ),
@@ -674,14 +675,14 @@ class _MyHomePageState extends State<HomeDriver> {
                   )),
               leading: Icon(Icons.time_to_leave_sharp),
               title: Text(
-                "Earnings",
+                "${AppLocalizations.of(context).translate('earnings')}",
               ),
 
             ),
             ListTile(
               leading: Icon(Icons.settings),
               title: Text(
-                "Settings",
+                "${AppLocalizations.of(context).translate('setting')}",
               ),
             ),
             Divider(),
@@ -697,7 +698,7 @@ class _MyHomePageState extends State<HomeDriver> {
               },
               leading: Icon(Icons.logout),
               title: Text(
-                "Log out",
+                "${AppLocalizations.of(context).translate('logout')}",
               ),
             ),
           ],

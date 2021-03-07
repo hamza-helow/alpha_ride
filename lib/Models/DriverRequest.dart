@@ -2,7 +2,7 @@
 
 class DriverRequest {
 
-  String yourPhoto ,drivingLicense , driverLicense , frontCar , endCar , insideCar;
+  String yourPhoto ,drivingLicense , driverLicense , frontCar , endCar , insideCar , numberCar;
 
   String fullName ,  email , modelCar , typeCar, colorCar ;
 
@@ -17,5 +17,5 @@ class DriverRequest {
     this.email,
     this.modelCar,
     this.typeCar,
-    this.colorCar});
+    this.colorCar , this.numberCar});
 }

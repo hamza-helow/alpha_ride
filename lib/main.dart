@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:alpha_ride/Enum/TypeAccount.dart';
@@ -8,6 +9,8 @@ import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/services/PushNotificationService.dart';
 import 'package:alpha_ride/services/location_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -47,12 +50,29 @@ class EntryPoint extends StatefulWidget {
 class _EntryPointState extends State<EntryPoint> {
 
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-  // @override
-  // void initState() {
-  //   setFirebase();
-  //   super.initState();
-  // }
 
+  //StreamSubscription<ConnectivityResult> subscriptionConnectivity;
+
+  @override
+  void initState() {
+
+
+    // subscriptionConnectivity = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+    //
+    //   if(result == ConnectivityResult.none )
+    //     dialogInternetNotConnect();
+    //
+    //
+    // });
+
+    super.initState();
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+  //  subscriptionConnectivity.cancel();
+  }
   @override
   Widget build(BuildContext context) {
     // final pushNotificationService = PushNotificationService(_firebaseMessaging);
@@ -94,90 +114,13 @@ class _EntryPointState extends State<EntryPoint> {
         ),),
     );
   }
+
+  dialogInternetNotConnect() async {
+    await showDialog<String>(
+        context: context,
+        builder: (context) => new AlertDialog(
+            content: Text("لا يوجد اتصال بالانترنت") ,
+            actions: []));
+  }
 }
 
-// void setFirebase() async {
-// final initializationSettingsAndroid =
-//       new AndroidInitializationSettings('@mipmap/ic_launcher');
-//
-//   final initializationSettingsIOS = IOSInitializationSettings();
-//
-//   final initializationSettings = InitializationSettings(
-//       initializationSettingsAndroid, initializationSettingsIOS);
-//
-//     flutterLocalNotificationsPlugin.initialize(initializationSettings,
-//       onSelectNotification: onSelect);
-//
-//   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
-//
-//   await _firebaseMessaging.requestNotificationPermissions(
-//     const IosNotificationSettings(
-//         sound: true, badge: true, alert: true, provisional: false),
-//   );
-//
-//   _firebaseMessaging.configure(
-//     onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
-//     onMessage: (message) async {
-//       print("onMessage...: $message");
-//
-//       String title = message["notification"]["title"].toString();
-//
-//       String body = message["notification"]["body"].toString();
-//
-//       print("onMessage...: $title  $body");
-//
-//       displayNotification(title, body);
-//     },
-//     onLaunch: (message) async {
-//       print("onLaunch: $message");
-//     },
-//     onResume: (message) async {
-//       print("onResume: $message");
-//     },
-//   );
-//
-//   _firebaseMessaging.getToken().then((String token) {
-//     print("Push Messaging token: $token");
-//
-//     if (auth.currentUser != null)
-//       FirebaseDatabase.instance
-//           .reference()
-//           .child("TokensDevices")
-//           .child(auth.currentUser.uid)
-//           .set({"$token": "true"});
-//   });
-// }
-//
-// Future<String> onSelect(String data) async {
-//   print("onSelectNotification $data");
-// }
-//
-// Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
-//   print("myBackgroundMessageHandler message: $message");
-//
-//   String title = message["notification"]["title"].toString();
-//
-//   String body = message["notification"]["body"].toString();
-//
-//   print("onMessage...: $title  $body");
-//
-//   displayNotification(title, body);
-//
-//   return Future<void>.value();
-// }
-//
-// Future displayNotification(String title, String body) async {
-//   var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-//       'channelid', 'flutterfcm', 'your channel description',
-//       importance: Importance.Max, priority: Priority.High);
-//   var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-//   var platformChannelSpecifics = new NotificationDetails(
-//       androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-//   await flutterLocalNotificationsPlugin.show(
-//     1,
-//     title,
-//     body,
-//     platformChannelSpecifics,
-//     payload: 'hello',
-//   );
-// }

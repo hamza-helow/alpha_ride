@@ -10,7 +10,186 @@
 
   "english" : "انجليزي",
 
-  "arabic" : "عربي"
+  "arabic" : "عربي",
+
+  "yourEarningsTrip" : "ارباحك من المشوار",
+
+  "price" : "السعر",
+
+  "jd" : "د.أ",
+
+  "rate" : "تقييم",
+
+  "done" : "تم",
+
+  "fullName" : "الاسم" ,
+
+  "numberPhone" : "رقم الهاتف",
+
+  "email" : "البريد الاكتروني",
+
+  "changePassword" : "تغيير كلمة المرور",
+
+  "language" : "اللغة",
+
+  "cash" : "نقدا",
+
+  "for" : "ل",
+
+  "hours" : "ساعات",
+
+  "yourTrips" : "رحلاتك",
+
+  "from" : "من",
+  "to" : "الى",
+
+  "youCanceledTrip": "قمت بالغاء الرحلة",
+
+  "heCanceledTrip" : "قام بالغاء الرحلة",
+
+  "confirm" : "تاكيد",
+
+  "enterPassword" : "ادخل كلمة المرور",
+  "enterName" : "ادخل الاسم",
+  "enterEmail" : "ادخل البريد الالكتروني",
+
+  "confirmPickup" : "تاكيد نقطة الوصول",
+
+  "whereTo" : "الى اين ؟",
+
+  "now" : "الان",
+
+  "point" : "نقطة",
+
+  "reserveHours" : "حجز الساعات",
+
+  "setting" : "الاعدادت",
+
+  "logout" : "تسجيل الخروج",
+
+  "selectNumberHours" : "حدد عدد الساعات",
+
+  "enterCorrectNumber" : "الرجاء ادخل رقم صحيح",
+
+  "cancel" : "الغاء",
+
+  "earnings" : "الارباح",
+
+  "numberTrips" : "عدد الرحلات",
+
+  "totalTrips" : "اجمالي الرحلات",
+
+  "earningsTrips" : "اجمالي الربح",
+
+  "startTrip" : "بدء الرحلة",
+
+  "finishTrip" : "انهاء الرحلة",
+
+  "typeCar" : "نوع السيارة",
+
+  "carModel" : "موديل السيارة",
+
+  "numberCar" : "رقم السيارة",
+
+  "carColor" : "لون السيارة",
+
+  "yourPhoto" : "صورتك",
+
+  "drivingLicense" : "رخصة السيارة",
+
+  "driverLicense" : "رخصة السائق",
+
+  "frontViewCar" : "صورة امامية للسيارة",
+
+  "photoBackCar" : "صورة خلفية للسيارة",
+
+  "photoInsideCar" : "صورة من الداخل للسيارة",
+
+  "send" : "ارسال",
+
+  "findingDriver" : "جاري البحث.. ",
+
+  "discount" : "خصم",
+
+  "addPromoCode": "اضافة بروموكود",
+
+  "tripStarted": "الرحلة بدات",
+
+  "noRequest" : "لا يوجد طلبات",
+
+  "goingTo" : "ذاهب الى",
+
+  "online" : "متاح",
+
+  "offline" : "غير متاح",
+
+  "enterCodeVerification" : "ادخل رمز التحقق",
+
+  "verification" : "تحقق",
+
+  "enterPromoCode" : "ادخل البروموكود",
+
+  "notFound" : "غير موجود",
+
+  "add" : "اضافة",
+
+  "blockMessage" : "تم بحظرك بشكل مؤقت لانك تجاوزت الحد المسمحوح من الغاء الرحلات يرجى المحاولة بعد 24 ساعة",
+
+  "noInternetConnection": "لايوجد اتصال بالانترنت"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

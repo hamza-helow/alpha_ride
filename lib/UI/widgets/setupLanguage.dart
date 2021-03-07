@@ -24,6 +24,7 @@ class _SetupLanguageState extends State<SetupLanguage> {
   @override
   void initState() {
     selectedRadio = widget.lang == "en" ?1 : 2;
+
     super.initState();
   }
 
@@ -85,6 +86,8 @@ class _SetupLanguageState extends State<SetupLanguage> {
         lang = "en";
       else
         lang = "ar";
+
+      print(lang);
 
       DataProvider().currentLanguage = lang ;
 

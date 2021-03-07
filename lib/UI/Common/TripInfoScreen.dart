@@ -1,5 +1,6 @@
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/Trip.dart';
@@ -143,11 +144,11 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
 
                 Icon(Icons.monetization_on , size: 40.0, color: DataProvider().baseColor,),
                 SizedBox(width: 20.0,),
-                Text("cash" , style: TextStyle( fontWeight: FontWeight.bold , fontSize: 17.0),)
+                Text("${AppLocalizations.of(context).translate('cash')}" , style: TextStyle( fontWeight: FontWeight.bold , fontSize: 17.0),)
               ],
             ) ,
 
-            Text("${widget.trip.totalPrice} JD" ,style: TextStyle( color: Colors.green.shade900,fontWeight: FontWeight.bold , fontSize: 17.0),),
+            Text("${widget.trip.totalPrice} ${AppLocalizations.of(context).translate('jd')}" ,style: TextStyle( color: Colors.green.shade900,fontWeight: FontWeight.bold , fontSize: 17.0),),
 
 
           ],
@@ -170,7 +171,7 @@ class _TripInfoScreenState extends State<TripInfoScreen> {
                     widget.typeAccount == TypeAccount.customer ?
                     "Economy ${currentTrip.carColor} ${currentTrip.carType} ${currentTrip.carModel} 2568794"
                         :
-                    "${widget.trip.typeTrip == TypeTrip.hours ? "For ${widget.trip.hourTrip} hours": ""}"),
+                    "${widget.trip.typeTrip == TypeTrip.hours ? "${AppLocalizations.of(context).translate('for')} ${widget.trip.hourTrip} ${AppLocalizations.of(context).translate('hours')}": ""}"),
 
                 trailing: Chip(
                   avatar: Icon(

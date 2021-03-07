@@ -1,4 +1,5 @@
 import 'package:alpha_ride/Enum/TypeTrip.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/MapUtils.dart';
@@ -100,7 +101,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           width: 10,
         ),
         Text(
-          "There is no request",
+          "${AppLocalizations.of(context).translate('noRequest')}",
           style: TextStyle(fontSize: 20.0),
         ),
       ],
@@ -166,7 +167,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           child:  ListTile(
             leading: Icon(Icons.info),
             title: Text("Other information"),
-            subtitle: Text(currentTrip.tripType == TypeTrip.distance ?"going to ${currentTrip.goingTo}" : "For ${currentTrip.hours} Hours" ),
+            subtitle: Text(currentTrip.tripType == TypeTrip.distance ?"${AppLocalizations.of(context).translate('goingTo')} ${currentTrip.goingTo}" : "${AppLocalizations.of(context).translate('for')} ${currentTrip.hours} ${AppLocalizations.of(context).translate('hours')}" ),
             trailing: Wrap(
 
               spacing: 10.0,
@@ -340,7 +341,7 @@ class _StateDriverState extends State<StateDriver> {
                     child: Align(
                       alignment: Alignment.center,
                       child: Text(
-                        isOnline ? "You're online" : "You're offline",
+                        isOnline ? "${AppLocalizations.of(context).translate('online')}" : "${AppLocalizations.of(context).translate('offline')}",
                         style: TextStyle(
                           color: isOnline
                               ? Colors.green.shade700

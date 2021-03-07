@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
@@ -15,6 +16,7 @@ import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
@@ -38,7 +40,9 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   GeoFirePoint geoFirePoint;
 
-  StreamSubscription<DocumentSnapshot> subscription;
+  StreamSubscription<DocumentSnapshot> subscriptionRequestDriver ;
+  StreamSubscription<ConnectivityResult> subscriptionConnectivity;
+
 
   var locationReference;
   var _controller;
@@ -195,7 +199,7 @@ class _HomeState extends State<Home> {
   }
 
   void listenRequestDriver(String idDriver) async {
-    subscription = FirebaseFirestore.instance
+    subscriptionRequestDriver = FirebaseFirestore.instance
         .collection(FirebaseConstant().driverRequests)
         .doc(idDriver)
         .snapshots()
@@ -207,23 +211,63 @@ class _HomeState extends State<Home> {
         rejected.add(idDriver);
         getDriver();
       } else {
-        subscription.cancel();
+        subscriptionRequestDriver.cancel();
         return;
       }
     });
   }
 
+  dialogInternetNotConnect() async {
+
+    internetNotConnect = true;
+
+    await showDialog<String>(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) => WillPopScope(
+            child: new AlertDialog(
+            content: Text("${AppLocalizations.of(context).translate('noInternetConnection')}") ,
+            actions: []),
+             onWillPop:(){},)
+    );
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    subscriptionConnectivity.cancel();
+  }
+
+
+  bool internetNotConnect= false ;
   @override
   void initState() {
-    loadInfoUser();
-    //listenCurrentTrip();
 
-    BitmapDescriptor.fromAssetImage(
-            ImageConfiguration(platform: TargetPlatform.android),
-            "Assets/car.png")
-        .then((onValue) {
-      carIcon = onValue;
+    subscriptionConnectivity = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+
+      if(result == ConnectivityResult.none )
+        dialogInternetNotConnect();
+      else
+        {
+          if(internetNotConnect)
+            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Home(),), (route) => false);
+          else{
+            loadInfoUser();
+            //listenCurrentTrip();
+
+            BitmapDescriptor.fromAssetImage(
+                ImageConfiguration(platform: TargetPlatform.android),
+                "Assets/car.png")
+                .then((onValue) {
+              carIcon = onValue;
+            });
+          }
+        }
+
+
     });
+
+
 
     super.initState();
   }
@@ -265,6 +309,8 @@ class _HomeState extends State<Home> {
       //   });
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -534,7 +580,7 @@ class _HomeState extends State<Home> {
             });
           },
           child: Text(
-            "Confirm pickup",
+            "${AppLocalizations.of(context).translate('confirmPickup')}",
             style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -597,9 +643,11 @@ class _HomeState extends State<Home> {
                               // show input autocomplete with selected mode
                               // then get the Prediction selected
                               Prediction p = await PlacesAutocomplete.show(
+
+                                   mode: Mode.overlay,
                                   context: context,
                                   apiKey: DataProvider().mapKey,
-                                  logo: Text(""));
+                                  logo: Text("") );
                               displayPrediction(p);
                             },
                             child: Row(
@@ -614,7 +662,7 @@ class _HomeState extends State<Home> {
                                       child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          'Where to?',
+                                          '${AppLocalizations.of(context).translate('whereTo')}',
                                           style: TextStyle(
                                             fontSize: 22,
                                           ),
@@ -643,7 +691,7 @@ class _HomeState extends State<Home> {
                                               children: <InlineSpan>[
                                                 TextSpan(
                                                   text: numberHours == 0.0
-                                                      ? 'Now'
+                                                      ? '${AppLocalizations.of(context).translate('now')}'
                                                       : '$numberHours',
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.w400,
@@ -752,7 +800,7 @@ class _HomeState extends State<Home> {
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("$points point"),
+                        label: Text("$points ${AppLocalizations.of(context).translate('point')}"),
                       ),
                     ),
                   ),
@@ -795,7 +843,7 @@ class _HomeState extends State<Home> {
                         ),
                         backgroundColor: Colors.grey[200],
                         label: Text(
-                          "$balance JD",
+                          "$balance ${AppLocalizations.of(context).translate('jd')}",
                           style: TextStyle(
                               color: balance < 0 ? Colors.red : Colors.green),
                         ),
@@ -813,15 +861,9 @@ class _HomeState extends State<Home> {
                   )),
               leading: Icon(Icons.time_to_leave_sharp),
               title: Text(
-                "You trips",
+                "${AppLocalizations.of(context).translate('yourTrips')}",
               ),
-              trailing: Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: Text(
-                  "10+",
-                  style: TextStyle(color: DataProvider().baseColor),
-                ),
-              ),
+
             ),
             ListTile(
               onTap: () {
@@ -830,7 +872,7 @@ class _HomeState extends State<Home> {
               },
               leading: Icon(Icons.access_time),
               title: Text(
-                "Reserve hours",
+                "${AppLocalizations.of(context).translate('reserveHours')}",
               ),
               trailing: Padding(
                 padding: EdgeInsets.only(right: 10),
@@ -846,7 +888,7 @@ class _HomeState extends State<Home> {
               },
               leading: Icon(Icons.settings),
               title: Text(
-                "Settings",
+                "${AppLocalizations.of(context).translate('setting')}",
               ),
             ),
             Divider(),
@@ -862,7 +904,7 @@ class _HomeState extends State<Home> {
               },
               leading: Icon(Icons.logout),
               title: Text(
-                "Log out",
+                "${AppLocalizations.of(context).translate('logout')}",
               ),
             ),
           ],
@@ -968,7 +1010,7 @@ class _HomeState extends State<Home> {
         builder: (context) => StatefulBuilder(
               builder: (context, setState) => new AlertDialog(
                   contentPadding: EdgeInsets.all(20.0),
-                  title: Text("Reserve hours"),
+                  title: Text("${AppLocalizations.of(context).translate('reserveHours')}"),
                   content: TextField(
                     controller: hours,
                     onChanged: (value) {
@@ -981,7 +1023,7 @@ class _HomeState extends State<Home> {
                     },
                     decoration: InputDecoration(
                       errorText: err,
-                      labelText: "Select number of hours",
+                      labelText: "${AppLocalizations.of(context).translate('selectNumberHours')}",
                       border: new OutlineInputBorder(),
                     ),
                   ),
@@ -990,7 +1032,7 @@ class _HomeState extends State<Home> {
                       onPressed: () {
                         setState(() {
                           if (hours.text.isEmpty)
-                            err = "please enter correct number";
+                            err = "${AppLocalizations.of(context).translate('enterCorrectNumber')}";
                           return;
                         });
 
@@ -1004,7 +1046,7 @@ class _HomeState extends State<Home> {
                         Navigator.pop(context);
                       },
                       child: Text(
-                        "Confirm",
+                        "${AppLocalizations.of(context).translate('confirm')}",
                         style: TextStyle(
                             color: DataProvider().baseColor,
                             fontWeight: FontWeight.bold),
@@ -1014,7 +1056,7 @@ class _HomeState extends State<Home> {
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: Text("cancel",
+                      child: Text("${AppLocalizations.of(context).translate('cancel')}",
                           style: TextStyle(
                               color: DataProvider().baseColor,
                               fontWeight: FontWeight.bold)),
@@ -1116,4 +1158,7 @@ class _HomeState extends State<Home> {
       ]);
     });
   }
+
+
+
 }

@@ -13,10 +13,132 @@
 
   "english" : "English",
 
-  "arabic" : "Arabic"
+  "arabic" : "Arabic",
+
+  "yourEarningsTrip" : "Your earnings for this trip",
+
+  "price" : "price",
+
+  "jd" : "JD" ,
+
+  "rate" : "Rate",
+
+  "done" : "Done",
+
+  "fullName" : "Full name",
+
+  "numberPhone" : "Phone number",
+
+  "email" : "Email",
+
+  "changePassword" : "change password",
+
+  "language" : "language",
+  "cash" : "cash",
+
+  "for" : "For",
+
+  "hours" : "hours",
+
+  "yourTrips" : "Your trips",
+
+  "from" : "From",
+  "to" : "To",
+
+  "youCanceledTrip": "You canceled the trip",
+
+  "heCanceledTrip" : "He canceled the trip",
 
 
+  "confirm" : "CONFIRM",
 
+  "enterPassword" : "Enter password",
+  "enterName" : "Enter full name",
+  "enterEmail" : "Enter email",
+
+  "confirmPickup" : "Confirm pickup",
+
+  "whereTo" : "Where to?",
+
+  "now" : "Now",
+
+  "point" : "point",
+
+  "reserveHours" : "Reserve hours",
+
+  "setting" : "Setting",
+
+  "logout" : "logout",
+
+  "selectNumberHours" : "Select number of hours",
+
+  "enterCorrectNumber" : "please enter correct number",
+
+  "cancel" : "Cancel",
+
+  "earnings" : "Earnings",
+
+  "numberTrips" : "Number of trips",
+
+  "totalTrips" : "total trips",
+
+  "earningsTrips" : "Earnings trips",
+
+  "startTrip" : "Start trip",
+
+  "finishTrip" : "Finish trip",
+
+  "typeCar" : "Type car",
+
+  "carModel" : "Car model",
+
+  "numberCar" : "Number car",
+
+  "carColor" : "Car color",
+
+  "yourPhoto" : "Your photo",
+
+  "drivingLicense" : "driving license",
+
+  "driverLicense" : "driver's license",
+
+  "frontViewCar" : "A front view of the car",
+
+  "photoBackCar" : "A photo from the back of the car",
+
+  "photoInsideCar" : "photo from inside the car",
+
+  "send" : "Send",
+
+  "findingDriver" : "Finding driver",
+
+  "discount" : "Discount",
+
+  "addPromoCode": "Add promo code",
+
+  "tripStarted": "Trip started",
+
+  "noRequest" : "There is no request",
+
+  "goingTo" : "going to",
+
+  "online" : "You're online",
+
+  "offline" : "You're offline",
+
+  "enterCodeVerification" : "Enter code Verification",
+
+  "verification" : "VERIFICATION",
+
+  "enterPromoCode" : "Enter promo code",
+
+  "notFound" : "Not found",
+
+  "add" : "Add",
+
+  "blockMessage" : "You have been blocked banned because you exceeded the limit for cancellation, please try after 24 hours",
+
+  "noInternetConnection": "There is no internet connection"
 
 
 }

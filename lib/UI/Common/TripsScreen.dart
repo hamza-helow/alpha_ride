@@ -1,6 +1,7 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
@@ -107,7 +108,7 @@ class _TripsScreenState extends State<TripsScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: DataProvider().baseColor,
-        title: Text("Your trips"),
+        title: Text("${AppLocalizations.of(context).translate('yourTrips')}"),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -116,14 +117,13 @@ class _TripsScreenState extends State<TripsScreen> {
               padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 30),
               child: DateTimePicker(
                 decoration: InputDecoration(
-                  labelText: "From",
+                  labelText: "${AppLocalizations.of(context).translate('from')}",
                   border: new OutlineInputBorder(
                       borderSide: new BorderSide(color: Colors.teal)),
                 ),
                 initialValue: '',
                 firstDate: DateTime(2000),
                 lastDate: DateTime(2100),
-                dateLabelText: 'Date',
                 onChanged: (val) {
                   print(val);
                   fromDate = val.replaceAll("-", "/");
@@ -141,7 +141,7 @@ class _TripsScreenState extends State<TripsScreen> {
                   EdgeInsets.only(left: 20.0, right: 20.0, top: 20, bottom: 20),
               child: DateTimePicker(
                 decoration: InputDecoration(
-                  labelText: "To",
+                  labelText: "${AppLocalizations.of(context).translate('to')}",
                   border: new OutlineInputBorder(
                       borderSide: new BorderSide(color: Colors.teal)),
                 ),
@@ -185,19 +185,19 @@ class _TripsScreenState extends State<TripsScreen> {
                                   () {
                                     if (trips[index].stateTrip ==
                                         StateTrip.cancelByCustomer  && widget.typeAccount == TypeAccount.customer)
-                                      return "قمت بالغاء الرحلة";
+                                      return "${AppLocalizations.of(context).translate('youCanceledTrip')}";
 
                                    else if (trips[index].stateTrip ==
                                         StateTrip.cancelByCustomer  && widget.typeAccount == TypeAccount.driver)
-                                      return "قام بالغاء الرحلة";
+                                      return "${AppLocalizations.of(context).translate('heCanceledTrip')}";
 
                                    else if (trips[index].stateTrip ==
                                         StateTrip.cancelByDriver  && widget.typeAccount == TypeAccount.customer)
-                                      return "قام بالغاء الرحلة";
+                                      return "${AppLocalizations.of(context).translate('heCanceledTrip')}";
 
                                     else if (trips[index].stateTrip ==
                                         StateTrip.cancelByDriver  && widget.typeAccount == TypeAccount.driver)
-                                      return "قمت بالغاء الرحلة";
+                                      return "${AppLocalizations.of(context).translate('youCanceledTrip')}";
 
                                     else
                                       return "${trips[index].totalPrice}";

@@ -1,6 +1,7 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/User.dart';
@@ -68,8 +69,8 @@ class ResultTrip extends StatelessWidget {
                         ),
                         Text(
                           typeUser == TypeAccount.driver
-                              ? "Your earnings for this trip"
-                              : "price",
+                              ? "${AppLocalizations.of(context).translate('yourEarningsTrip')}"
+                              : "${AppLocalizations.of(context).translate('price')}",
                           style: TextStyle(
                               fontSize: 22.0, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
@@ -78,7 +79,7 @@ class ResultTrip extends StatelessWidget {
                           height: 10,
                         ),
                         Text(
-                          "$totalTrip JD",
+                          "$totalTrip ${AppLocalizations.of(context).translate('jd')}",
                           style: TextStyle(
                               color: Colors.green,
                               fontSize: 22.0,
@@ -122,7 +123,7 @@ class ResultTrip extends StatelessWidget {
                           height: 20,
                         ),
                         Text(
-                          "Rate ${user.data==null ? "": user.data.fullName}",
+                          "${AppLocalizations.of(context).translate('rate')} ${user.data==null ? "": user.data.fullName}",
                           style: TextStyle(
                               fontSize: 22.0, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
@@ -177,7 +178,7 @@ class ResultTrip extends StatelessWidget {
                     });
                   },
                   child: Text(
-                    "DONE",
+                    "${AppLocalizations.of(context).translate('done')}",
                     style: TextStyle(color: Colors.white),
                   ),
                 ),

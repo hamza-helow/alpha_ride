@@ -1,6 +1,7 @@
 
 import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
@@ -66,10 +67,10 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
                     buildThemeTextField(
                       fullName,
-                        helperText: "Full name",
-                        hintText: "enter your name",
+                        helperText: "${AppLocalizations.of(context).translate('fullName')}",
+                        hintText: "${AppLocalizations.of(context).translate('enterName')}",
                         icon: Icon(Icons.person),
-                        labelText: "Full name"
+                        labelText: "${AppLocalizations.of(context).translate('fullName')}"
 
                     ),
 
@@ -78,10 +79,10 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
                     buildThemeTextField(
                       email,
-                        helperText: "Email",
-                        hintText: "enter your email",
+                        helperText: "${AppLocalizations.of(context).translate('email')}",
+                        hintText: "${AppLocalizations.of(context).translate('enterEmail')}",
                         icon: Icon(Icons.email),
-                        labelText: "Email"
+                        labelText: "${AppLocalizations.of(context).translate('email')}"
 
                     ),
 
@@ -90,10 +91,10 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
                     buildThemeTextField(
                         password,
-                        helperText: "Password",
-                        hintText: "enter password",
+                        helperText: "${AppLocalizations.of(context).translate('password')}",
+                        hintText: "${AppLocalizations.of(context).translate('enterPassword')}",
                         icon: Icon(Icons.lock),
-                        labelText: "Password"
+                        labelText: "${AppLocalizations.of(context).translate('password')}",
 
                     ),
 
@@ -109,7 +110,7 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
                           addUserInfo();
 
                           },//since this is only a UI app
-                        child: Text('CONFIRM',
+                        child: Text('${AppLocalizations.of(context).translate('confirm')}',
                           style: TextStyle(
                             fontSize: 15,
                             fontFamily: 'SFUIDisplay',

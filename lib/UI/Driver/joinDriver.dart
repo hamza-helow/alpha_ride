@@ -27,6 +27,7 @@ class _JoinDriverState extends State<JoinDriver> {
   final modelCar = TextEditingController();
   final typeCar = TextEditingController();
   final colorCar = TextEditingController();
+  final numberCar = TextEditingController();
 
   String phoneNumber ="";
 
@@ -73,7 +74,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                 buildThemeTextField(
                   fullName,
-                  hintText: "full name",
+                  hintText: "${AppLocalizations.of(context).translate('fullName')}",
                   icon: Icon(Icons.person),
 
                 ),
@@ -83,7 +84,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                 buildThemeTextField(
                   typeCar,
-                  hintText: "type car",
+                  hintText: "${AppLocalizations.of(context).translate('typeCar')}",
                   icon: Icon(Icons.local_taxi_sharp),
 
                 ),
@@ -93,7 +94,16 @@ class _JoinDriverState extends State<JoinDriver> {
 
                 buildThemeTextField(
                   modelCar,
-                  hintText: "car model",
+                  hintText: "${AppLocalizations.of(context).translate('carModel')}",
+                  icon: Icon(Icons.local_taxi_sharp),
+
+                ),
+
+                SizedBox(height: 15.0,),
+
+                buildThemeTextField(
+                  numberCar,
+                  hintText: "${AppLocalizations.of(context).translate('numberCar')}",
                   icon: Icon(Icons.local_taxi_sharp),
 
                 ),
@@ -103,7 +113,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                 buildThemeTextField(
                   colorCar,
-                  hintText: "car color",
+                  hintText: "${AppLocalizations.of(context).translate('carColor')}",
                   icon: Icon(Icons.color_lens_outlined),
                 ),
 
@@ -124,7 +134,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                   },
                   leading: yourPhoto != null ? Icon(Icons.done)  : Icon(Icons.add),
-                  title: Text("Your photo"),
+                  title: Text("${AppLocalizations.of(context).translate('yourPhoto')}"),
                 ),
 
                 ListTile(
@@ -147,7 +157,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                   leading: drivingLicense != null ? Icon(Icons.done)  : Icon(Icons.add),
 
-                  title: Text("driving license"),
+                  title: Text("${AppLocalizations.of(context).translate('drivingLicense')}"),
                 ),
 
                 ListTile(
@@ -164,7 +174,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                   },
                   leading: driverLicense != null ? Icon(Icons.done)  : Icon(Icons.add),
-                  title: Text("driver's license"),
+                  title: Text("${AppLocalizations.of(context).translate('driverLicense')}"),
                 ),
 
                 ListTile(
@@ -181,7 +191,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                   },
                   leading: frontCar != null ? Icon(Icons.done)  : Icon(Icons.add),
-                  title: Text("A front view of the car"),
+                  title: Text("${AppLocalizations.of(context).translate('frontViewCar')}"),
                 ),
 
                 ListTile(
@@ -199,7 +209,7 @@ class _JoinDriverState extends State<JoinDriver> {
                   },
                   leading: endCar != null ? Icon(Icons.done)  : Icon(Icons.add),
 
-                  title: Text("A photo from the back of the car"),
+                  title: Text("${AppLocalizations.of(context).translate('photoBackCar')}"),
                 ),
 
                 ListTile(
@@ -216,7 +226,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                   },
                   leading: insideCar != null ? Icon(Icons.done)  : Icon(Icons.add),
-                  title: Text("A picture from inside the car"),
+                  title: Text("${AppLocalizations.of(context).translate('photoInsideCar')}"),
                 ),
 
 
@@ -245,7 +255,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
                       ],
 
-                    )    :  Text('send',
+                    )    :  Text('${AppLocalizations.of(context).translate('send')}',
                       style: TextStyle(
                         fontSize: 15,
                         fontFamily: 'SFUIDisplay',
@@ -346,7 +356,8 @@ class _JoinDriverState extends State<JoinDriver> {
                   insideCar: insideCar ,
                   modelCar: modelCar.text ,
                   typeCar: typeCar.text ,
-                  yourPhoto: yourPhoto
+                  yourPhoto: yourPhoto ,
+                  numberCar: numberCar.text
                 );
 
                 this.setState(() {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Login.dart';
@@ -155,7 +156,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Finding driver.." , style: TextStyle(fontSize: 20.0),) ,
+            Text("${AppLocalizations.of(context).translate('findingDriver')}" , style: TextStyle(fontSize: 20.0),) ,
             SizedBox(height: 15.0,),
             CircularProgressIndicator() ,
 
@@ -222,8 +223,8 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
               backgroundColor: DataProvider().baseColor,
               child: Text("%" , style: TextStyle(color: Colors.white),),
             ),
-            title: Text("Discount"),
-            trailing: Text(DataProvider().promoCode.isNotEmpty ?"${DataProvider().promoCode}" :"Add promo code"),
+            title: Text("${AppLocalizations.of(context).translate('discount')}"),
+            trailing: Text(DataProvider().promoCode.isNotEmpty ?"${DataProvider().promoCode}" :"${AppLocalizations.of(context).translate('addPromoCode')}"),
             onTap: () {
               widget.showPromoCodeWidget();
             },
@@ -293,7 +294,17 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
                     onPressed: () {
 
-                      widget.getDriver();
+                      FirebaseHelper().checkIsUserBlocked().then((value) {
+
+
+                        if(!value)
+                          widget.getDriver();
+                        else
+                          dialog();
+
+                      });
+
+
 
                     },
                     height: 50.0,
@@ -400,7 +411,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
                     },
                     height: 50.0,
-                    child: Text( widget.stateTrip == StateTrip.active ?  "Cancel" : "Trip started", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
+                    child: Text( widget.stateTrip == StateTrip.active ?  "${AppLocalizations.of(context).translate('cancel')}" : "${AppLocalizations.of(context).translate('tripStarted')}", style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold ,fontSize: 22.0)),
 
                   ),
                 ),
@@ -418,7 +429,19 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   }
 
-  void cancelTrip() {
+  void cancelTrip() async {
+
+    FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid).update({
+      'countCancelTrip' : FieldValue.increment(1)
+    });
+
+    final userInfo =await FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid).get();
+
+    if(userInfo.get("countCancelTrip") >=3)
+      FirebaseFirestore.instance.collection("BlockUsers").doc().set({
+        'idUser' :auth.currentUser.uid,
+        'date' : FieldValue.serverTimestamp()
+      });
 
 
     FirebaseFirestore.instance
@@ -448,6 +471,15 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   }
 
+
+
+   dialog() async {
+     await showDialog<String>(
+         context: context,
+         builder: (context) => new AlertDialog(
+             content: Text("${AppLocalizations.of(context).translate('blockMessage')}") ,
+             actions: []));
+   }
 
 }
 

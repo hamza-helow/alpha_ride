@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Login.dart';
@@ -73,7 +74,7 @@ class _EarningsState extends State<Earnings> {
 
       appBar: AppBar(
         backgroundColor: DataProvider().baseColor,
-        title: Text("Earnings"),
+        title: Text("${AppLocalizations.of(context).translate('earnings')}"),
       ),
 
       body: SingleChildScrollView(
@@ -84,8 +85,6 @@ class _EarningsState extends State<Earnings> {
 
             SizedBox(height: 40.0,),
 
-            Text("Enter the date you want to search for"),
-            SizedBox(height: 20.0,),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -98,7 +97,7 @@ class _EarningsState extends State<Earnings> {
 
                     decoration: InputDecoration(
                       suffixIcon: Icon(Icons.date_range_outlined),
-                      labelText: "From",
+                      labelText: "${AppLocalizations.of(context).translate('from')}",
                       border: new OutlineInputBorder(
                           borderSide: new BorderSide(color: Colors.teal)),
                     ),
@@ -131,7 +130,7 @@ class _EarningsState extends State<Earnings> {
 
                     decoration: InputDecoration(
                       suffixIcon: Icon(Icons.date_range_outlined),
-                      labelText: "to",
+                      labelText: "${AppLocalizations.of(context).translate('to')}",
                       border: new OutlineInputBorder(
                           borderSide: new BorderSide(color: Colors.teal)),
                     ),
@@ -160,19 +159,19 @@ class _EarningsState extends State<Earnings> {
             SizedBox(height: 20.0,),
 
             ListTile(
-              title: Text("Number of trips"),
+              title: Text("${AppLocalizations.of(context).translate('numberTrips')}"),
               leading: Icon(Icons.format_list_numbered),
               subtitle: Text("${numberOfTrips == 0 ? '-' : numberOfTrips}"),
             ) ,
             SizedBox(height: 10.0,),
             ListTile(
-              title: Text("total trips"),
+              title: Text("${AppLocalizations.of(context).translate('totalTrips')}"),
               leading: Icon(Icons.monetization_on_rounded),
               subtitle: Text("${totalTrips == 0 ? '-' : totalTrips.toStringAsFixed(2)}"),
             ) ,
             SizedBox(height: 10.0,),
             ListTile(
-              title: Text("Earnings trips"),
+              title: Text("${AppLocalizations.of(context).translate('earningsTrips')}"),
               leading: Icon(Icons.monetization_on_rounded),
               subtitle: Text("${earningsTotal == 0 ? '-' : earningsTotal.toStringAsFixed(2)}"),
             ) ,

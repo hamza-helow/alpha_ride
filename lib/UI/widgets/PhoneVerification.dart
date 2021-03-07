@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
@@ -114,7 +115,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                   ),
 
 
-                  Text("Enter code Verification" ,
+                  Text("${AppLocalizations.of(context).translate('enterCodeVerification')}" ,
                     style: TextStyle(
 
                         fontWeight: FontWeight.bold ,
@@ -142,7 +143,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
                         verification();
                       },//since this is only a UI app
-                      child: Text('VERIFICATION',
+                      child: Text('${AppLocalizations.of(context).translate('verification')}',
                         style: TextStyle(
                           fontSize: 15,
                           fontFamily: 'SFUIDisplay',
@@ -363,9 +364,15 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       'modelCar' : DataProvider().driverRequest.modelCar ,
       'colorCar' :DataProvider().driverRequest.colorCar ,
       'phoneNumber' : '+962788051422' ,
-      'idUser' : idUser
+      'idUser' : idUser ,
+       'numberCar' : DataProvider().driverRequest.numberCar
+        }).then((value) {
 
-        });
+
+
+            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Login(),), (route) => false);
+
+         });
 
   }
 

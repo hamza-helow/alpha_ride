@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:flutter/material.dart';
@@ -76,7 +77,7 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                         decoration: new InputDecoration(
                             border: new OutlineInputBorder(
                                 borderSide: new BorderSide(color: DataProvider().baseColor)),
-                            hintText: 'Enter promo code',
+                            hintText: '${AppLocalizations.of(context).translate('enterPromoCode')}',
                             labelText: 'promo code',
                             errorText:errText ,
                             suffixStyle:  TextStyle(color: DataProvider().baseColor)),
@@ -125,7 +126,7 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
 
                                 if(value == 0)
                                  this.setState(() {
-                                   errText = "Not found";
+                                   errText = "${AppLocalizations.of(context).translate('notFound')}";
                                  });
                                 else{
 
@@ -143,7 +144,7 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
 
                             },
                             color: DataProvider().baseColor,
-                            child: Text("ADD" , style: TextStyle(color: Colors.white),),
+                            child: Text("${AppLocalizations.of(context).translate('add')}" , style: TextStyle(color: Colors.white),),
                           ),
                         ),
 

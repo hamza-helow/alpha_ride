@@ -50,6 +50,8 @@ class FirebaseHelper {
 
         return _fireStore.collection("Users").doc(user.idUser).set({
 
+          'countCancelTrip' :0,
+
           'usePassword': user.usePassword,
           'fullName' : user.fullName ,
           'email': user.email ,
@@ -299,7 +301,11 @@ class FirebaseHelper {
   }
 
 
-  Future<int> checkPromoCode(String code){
+  Future<int> checkPromoCode(String code) async{
+
+    final userInfo = await FirebaseHelper().loadUserInfo(auth.currentUser.uid , typeAccount: TypeAccount.customer);
+
+
 
     return  _fireStore
         .collection(FirebaseConstant().promoCode)
@@ -311,6 +317,14 @@ class FirebaseHelper {
 
       if(value.docs.length == 0 )
         return 0;
+
+      if( !(value.docs.first.get("lessPoint") <= userInfo.points) )
+        {
+          print("LEEEES");
+          return 0 ;
+        }
+
+      print("${value.docs.first.get("lessPoint")} < ${userInfo.points }");
 
       return value.docs.first.get(FirebaseConstant().percentagePromoCode);
     });
@@ -392,9 +406,44 @@ class FirebaseHelper {
         carModel: typeAccount == TypeAccount.driver ? value.data()['carModel']  :"",
         carType: typeAccount == TypeAccount.driver ? value.data()['carType']  :"",
         carColor: typeAccount == TypeAccount.driver ? value.data()['carColor']  :"",
-        numberCar: typeAccount == TypeAccount.driver ? value.data()['numberCar'] :""
+        numberCar: typeAccount == TypeAccount.driver ? value.data()['numberCar'] :"",
+        points: value.get('points')
       ) ;
     }) ;
+  }
+
+
+  Future<bool> checkIsUserBlocked()async{
+
+    return FirebaseFirestore
+        .instance
+        .collection("BlockUsers")
+        .where("idUser" , isEqualTo: auth.currentUser.uid)
+        .get()
+        .then((value)async
+    {
+
+
+      if(value.docs.isEmpty)
+        return false ;
+      else {
+        final dateBlock = DateTime.parse(value.docs.first.get("date").toDate().toString());
+
+        if(DateTime.now().difference(dateBlock).inHours <24)
+          return true ;
+        else
+        {
+          FirebaseFirestore
+              .instance
+              .collection("BlockUsers")
+              .doc(value.docs.first.id).delete();
+          return false ;
+        }
+
+      }
+    }
+    );
+
   }
 
 }

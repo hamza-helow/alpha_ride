@@ -18,6 +18,7 @@ class User {
 
   bool emailVerified  , usePassword ;
 
+  int points ;
 
   User({
     this.fullName,
@@ -35,6 +36,7 @@ class User {
     this.imageProfile ,
     this.carColor ,
     this.numberCar,
-    this.usePassword = false
+    this.usePassword = false,
+    this.points =0
   });
 }

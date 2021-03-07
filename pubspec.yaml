@@ -66,6 +66,7 @@ dependencies:
   flutter_facebook_auth: ^2.0.2
   rxdart: ^0.25.0
   flutter_google_places: ^0.2.8
+  connectivity: ^3.0.2
 
   url_launcher: ^5.4.11
 
