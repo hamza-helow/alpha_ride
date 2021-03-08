@@ -437,6 +437,9 @@ class FirebaseHelper {
               .instance
               .collection("BlockUsers")
               .doc(value.docs.first.id).delete();
+
+           FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid).update({'countCancelTrip':0});
+
           return false ;
         }
 

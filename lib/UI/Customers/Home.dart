@@ -13,6 +13,7 @@ import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
 import 'package:alpha_ride/UI/Common/TripsScreen.dart';
+import 'package:alpha_ride/UI/Common/ContactUs.dart';
 import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -339,6 +340,13 @@ class _HomeState extends State<Home> {
 
        final exitTrip =snapshot.hasData && snapshot.data.docs.length > 0 ;
 
+       if(!exitTrip){
+
+         markers.clear();
+         polylines.clear();
+         polylineCoordinates.clear();
+       }
+
        findDriver = findDriver?!exitTrip : false ;
 
         if (exitTrip &&
@@ -346,6 +354,21 @@ class _HomeState extends State<Home> {
                 StateTrip.started.toString())
           animateTo(snapshot.data.docs.first.get('locationDriver.lat'),
               snapshot.data.docs.first.get('locationDriver.lng'));
+
+
+
+       if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.active.toString()){
+         showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
+
+         if(polylineCoordinates.isEmpty)
+         _getPolyline(
+             LatLng(snapshot.data.docs.first.get('locationCustomer.lat'), snapshot.data.docs.first.get('locationCustomer.lng'))
+             ,  LatLng(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'))).then((value) {
+          _addPolyLine();
+         });
+
+
+       }
 
         return Scaffold(
           key: _scaffoldKey,
@@ -843,7 +866,7 @@ class _HomeState extends State<Home> {
                         ),
                         backgroundColor: Colors.grey[200],
                         label: Text(
-                          "$balance ${AppLocalizations.of(context).translate('jd')}",
+                          "${balance.toStringAsFixed(2)} ${AppLocalizations.of(context).translate('jd')}",
                           style: TextStyle(
                               color: balance < 0 ? Colors.red : Colors.green),
                         ),
@@ -892,6 +915,13 @@ class _HomeState extends State<Home> {
               ),
             ),
             Divider(),
+            ListTile(
+              onTap: () =>Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUs(),)),
+              leading: Icon(Icons.contact_support),
+              title: Text(
+                "${AppLocalizations.of(context).translate('contactUs')}",
+              ),
+            ),
             ListTile(
               onTap: () {
                 auth
@@ -953,12 +983,14 @@ class _HomeState extends State<Home> {
         polylineId: id,
         color: DataProvider().baseColor,
         points: polylineCoordinates);
+       polylines[id] = polyline;
 
-    polylines[id] = polyline;
-    setState(() {});
+
+
+   // setState(() {});
   }
 
-  _getPolyline(LatLng origin, LatLng dest) async {
+Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
     poly.PolylineResult result =
         await polylinePoints.getRouteBetweenCoordinates(
       DataProvider().mapKey,
@@ -968,10 +1000,11 @@ class _HomeState extends State<Home> {
     );
     if (result.points.isNotEmpty) {
       result.points.forEach((poly.PointLatLng point) {
+        if(polylines.isEmpty)
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       });
     }
-    _addPolyLine();
+
   }
 
   void zoomBetweenTwoPoints(LatLng customerLocation, LatLng driverLocation) {
@@ -1148,15 +1181,17 @@ class _HomeState extends State<Home> {
   }
 
   void showMarkerDriver(double lat, double lng, double rotateDriver) {
-    this.setState(() {
-      markers.addAll([
-        Marker(
-            markerId: MarkerId('value'),
-            position: LatLng(lat, lng),
-            icon: carIcon,
-            rotation: rotateDriver),
-      ]);
-    });
+    // this.setState(() {
+    //
+    // });
+
+    markers.addAll([
+      Marker(
+          markerId: MarkerId('value'),
+          position: LatLng(lat, lng),
+          icon: carIcon,
+          rotation: rotateDriver),
+    ]);
   }
 
 

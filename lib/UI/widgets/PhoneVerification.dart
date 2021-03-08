@@ -21,6 +21,8 @@ import 'autoFill_sms.dart';
 
 class PhoneVerification extends StatefulWidget {
 
+  bool updateNumberPhone ;
+
   String phoneNumber  ;
 
   TypeAccount typeAccount ;
@@ -31,7 +33,7 @@ class PhoneVerification extends StatefulWidget {
 
   int flag ;
 
-  PhoneVerification(this.phoneNumber , { this.imageProfile,this.email,this.typeAccount = TypeAccount.customer ,  this.credential , this.fullName , this.flag });
+  PhoneVerification(this.phoneNumber , {this.updateNumberPhone=false ,  this.imageProfile,this.email,this.typeAccount = TypeAccount.customer ,  this.credential , this.fullName , this.flag });
 
   @override
   _PhoneVerificationState createState() => _PhoneVerificationState();
@@ -66,10 +68,19 @@ class _PhoneVerificationState extends State<PhoneVerification> {
   }
 
 
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  void showInSnackBar(String value ) {
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(value) , backgroundColor: Colors.red,));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
 
+      key: _scaffoldKey,
 
 
       body: SafeArea(
@@ -101,12 +112,6 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                   if(inProgress)
                   SizedBox(
                     height: 35.0,
-                  ),
-
-                  if(inProgress)
-                    LinearProgressIndicator(
-                    backgroundColor: DataProvider().baseColor,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber,),
                   ),
 
 
@@ -191,6 +196,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                 autofocus: true,
                 onCodeChanged: (txt)  {
 
+                  smsCode = txt;
                   print(txt);
                 },
                 codeLength:  6 , //code length, default 6
@@ -204,12 +210,26 @@ class _PhoneVerificationState extends State<PhoneVerification> {
  bool inProgress = false ;
   void verification (){
 
-    this.setState(() {
-      inProgress = true ;
-    });
+    print(smsCode);
 
     AuthCredential phoneAuthCredential =
-        PhoneAuthProvider.credential(verificationId: actualCode , smsCode: "123456");
+        PhoneAuthProvider.credential(verificationId: actualCode , smsCode: smsCode);
+
+    if(widget.updateNumberPhone)
+   {
+     FirebaseAuth.instance.currentUser.updatePhoneNumber(phoneAuthCredential).then((value) {
+
+       FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid).update({'phoneNumber':widget.phoneNumber});
+
+       Navigator.pop(context);
+       Navigator.pop(context);
+
+     }).catchError((err){
+       showInSnackBar("The code is incorrect ");
+     });
+     return;
+   }
+
 
 
     if(phoneAuthCredential == null)
@@ -223,9 +243,9 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       FirebaseHelper().infoUserExit(c.user.uid).then((value) => {
 
         if(value){
-
           FirebaseHelper().loadUserInfo(c.user.uid).then((user) => {
 
+            auth.currentUser.updateProfile(displayName: "${user.fullName}" , photoURL: ''),
             SharedPreferencesHelper().setFullName(user.fullName),
             SharedPreferencesHelper().setEmail(user.email),
             SharedPreferencesHelper().setSetTypeAccount(user.typeAccount),
@@ -283,9 +303,10 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
     }).catchError((err){
 
-      this.setState(() {
-        inProgress = false ;
-      });
+
+      print(err);
+
+      showInSnackBar("The code is incorrect ");
 
     });
 

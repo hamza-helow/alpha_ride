@@ -138,7 +138,9 @@
 
   "blockMessage" : "You have been blocked banned because you exceeded the limit for cancellation, please try after 24 hours",
 
-  "noInternetConnection": "There is no internet connection"
+  "noInternetConnection": "There is no internet connection",
+
+  "contactUs" : "contact us"
 
 
 }

@@ -1,12 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/UI/Common/ContactUs.dart';
 import 'package:alpha_ride/Models/Trip.dart';
+import 'package:alpha_ride/UI/Common/Settings.dart' as screen;
+import 'package:alpha_ride/UI/Common/Notification.dart' as screen;
 import 'package:alpha_ride/UI/Driver/Earnings.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
@@ -23,7 +25,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
-
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
@@ -61,7 +62,6 @@ class _MyHomePageState extends State<HomeDriver> {
 
   var currentZoomLevel;
   var _controller;
-
   double km = 0.0 , balance=0.0;
 
   LatLng last;
@@ -596,7 +596,7 @@ class _MyHomePageState extends State<HomeDriver> {
               accountName: Text("${auth.currentUser.displayName}",
                   style: TextStyle(
                       color: Colors.black, fontWeight: FontWeight.bold)),
-              accountEmail: Text("${auth.currentUser.email}",
+              accountEmail: Text("$_email",
                   style: TextStyle(color: Colors.black54)),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: DataProvider().baseColor,
@@ -680,12 +680,20 @@ class _MyHomePageState extends State<HomeDriver> {
 
             ),
             ListTile(
+              onTap: () =>Navigator.push(context, MaterialPageRoute(builder: (context) => screen.Settings(),)),
               leading: Icon(Icons.settings),
               title: Text(
                 "${AppLocalizations.of(context).translate('setting')}",
               ),
             ),
             Divider(),
+            ListTile(
+              onTap: () =>Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUs(),)),
+              leading: Icon(Icons.contact_support),
+              title: Text(
+                "${AppLocalizations.of(context).translate('contactUs')}",
+              ),
+            ),
             ListTile(
               onTap: () {
                 auth
@@ -979,7 +987,9 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onPressed,
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => screen.Settings(),));
+      },
       child: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -1019,7 +1029,9 @@ class _NotificationWidgetState extends State<NotificationWidget> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onPressed,
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => screen.Notification(),));
+      },
       child: Container(
         decoration: BoxDecoration(
           boxShadow: [

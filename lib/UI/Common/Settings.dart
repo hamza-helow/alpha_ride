@@ -2,6 +2,7 @@ import 'package:alpha_ride/Helper/AppLanguage.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Login.dart';
+import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
 import 'package:alpha_ride/UI/widgets/setupLanguage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -59,6 +60,10 @@ class _SettingsState extends State<Settings> {
 
             ListTile(
 
+              onTap: () {
+                updateInfo(flag: 0 , controller: TextEditingController(text: auth.currentUser.displayName) , title: "${AppLocalizations.of(context).translate('fullName')}");
+              },
+
               leading: Icon(Icons.person  ),
               title: Text("${AppLocalizations.of(context).translate('fullName')}" , ),
               subtitle: Text("${auth.currentUser.displayName}" ,style: TextStyle(fontSize: 17.0 ),),
@@ -69,6 +74,9 @@ class _SettingsState extends State<Settings> {
             SizedBox(height: 10.0,),
 
             ListTile(
+              onTap: () {
+                updateInfo(flag: 1 , controller: TextEditingController(text: auth.currentUser.phoneNumber) , title: "${AppLocalizations.of(context).translate('numberPhone')}");
+              },
 
               leading: Icon(Icons.phone ,),
               title: Text("${AppLocalizations.of(context).translate('numberPhone')}" ),
@@ -88,6 +96,9 @@ class _SettingsState extends State<Settings> {
             SizedBox(height: 10.0,),
 
             ListTile(
+              onTap: () {
+                updateInfo(flag: 3 , controller: TextEditingController() , title: "${AppLocalizations.of(context).translate('changePassword')}");
+              },
 
               leading: Icon(Icons.lock  ),
               title: Text("${AppLocalizations.of(context).translate('changePassword')}" ),
@@ -169,6 +180,53 @@ dialog(Widget child,context,
             actions: widgets),
       ));
 }
+
+
+  updateInfo({String title , TextEditingController controller , flag = 0 }) async {
+    await showDialog<String>(
+        context: context,
+        builder: (context) => StatefulBuilder(
+          builder: (context, setState) => new AlertDialog(
+              title: Text(title),
+              content: TextField(
+                controller: controller,
+              ),
+              actions: [
+
+                MaterialButton(onPressed: () {
+
+                  if(controller.text.isEmpty)
+                    return;
+
+                  FirebaseFirestore.instance
+                      .collection("Users")
+                      .doc(auth.currentUser.uid)
+                      .update({
+                        if(flag == 0)
+                          'fullName' : controller.text
+                       });
+
+                  if(flag == 0)
+                    auth.currentUser.updateProfile(displayName: controller.text  , photoURL: "");
+
+                  if(flag == 1)
+                    {
+
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => PhoneVerification(controller.text , updateNumberPhone: true,),));
+                    }
+
+                  if(flag == 3)
+                    auth.currentUser.updatePassword(controller.text);
+
+                  Navigator.pop(context);
+
+                },
+                child: Text("حفظ"),
+                )
+
+              ]),
+        ));
+  }
 
 }
 

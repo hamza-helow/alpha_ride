@@ -36,7 +36,7 @@ class _LoginState extends State<Login> {
 
   final passwordController = TextEditingController();
 
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   void showInSnackBar(String value ) {
     _scaffoldKey.currentState.showSnackBar(new SnackBar(
@@ -45,7 +45,6 @@ class _LoginState extends State<Login> {
 
   @override
   void initState() {}
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -365,6 +364,8 @@ class _LoginState extends State<Login> {
 
     final GoogleSignIn googleSignIn = GoogleSignIn();
 
+    googleSignIn.signOut();
+
     final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
     final GoogleSignInAuthentication googleSignInAuthentication = await googleSignInAccount.authentication;
 
@@ -379,23 +380,6 @@ class _LoginState extends State<Login> {
   }
 
   Future<QuerySnapshot> getPhoneFromEmail(String email , int flag ) async{
-
-      // if(flag == 0 )
-      //   return FirebaseFirestore.instance
-      //   .collection("Users")
-      //   .where("email" ,isEqualTo: email)
-      //   .get()
-      //   .then((user) async {
-      //    return user;
-      //  });
-      // else
-      //   return FirebaseFirestore.instance
-      //       .collection("Users")
-      //       .where('emailFacebook' ,isEqualTo: email)
-      //       .get()
-      //       .then((user) async {
-      //     return user;
-      //   });
 
 
       return FirebaseFirestore.instance
