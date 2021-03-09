@@ -25,143 +25,129 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-   return  DraggableScrollableSheet(
-        expand: true,
-        initialChildSize: 0.26,
-        minChildSize: 0.25,
-        maxChildSize: 0.26,
-        builder: (context, scrollController) {
-          return NotificationListener<OverscrollIndicatorNotification>(
-            onNotification: (overscroll) {
-              overscroll.disallowGlow();
-              return true;
-            },
-            child: SingleChildScrollView(
-              controller: scrollController,
-              physics: ClampingScrollPhysics(),
-              child: Container(
-                color: Color(0xF2FFFFFF),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
+   return SingleChildScrollView(
+     physics: ClampingScrollPhysics(),
+     child: Container(
+       color: Color(0xF2FFFFFF),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.center,
+         mainAxisAlignment: MainAxisAlignment.center,
+         children: <Widget>[
 
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Center(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.grey[300],
-                              ),
-                              height: 5,
-                              width: 40,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+           Padding(
+             padding: const EdgeInsets.all(10.0),
+             child: Row(
+               mainAxisAlignment: MainAxisAlignment.center,
+               children: <Widget>[
+                 Center(
+                   child: Container(
+                     decoration: BoxDecoration(
+                       borderRadius: BorderRadius.circular(5),
+                       color: Colors.grey[300],
+                     ),
+                     height: 5,
+                     width: 40,
+                   ),
+                 ),
+               ],
+             ),
+           ),
 
-                    Padding(
-                      padding: EdgeInsets.all(20.0),
-                      child:  new TextField(
-                        onChanged: (value) {
-                          if (code.text != value.toUpperCase())
-                            code.value = code.value.copyWith(text: value.toUpperCase());
+           Padding(
+             padding: EdgeInsets.all(20.0),
+             child:  new TextField(
+               onChanged: (value) {
+                 if (code.text != value.toUpperCase())
+                   code.value = code.value.copyWith(text: value.toUpperCase());
 
-                        },
-                        controller: code,
-                        decoration: new InputDecoration(
-                            border: new OutlineInputBorder(
-                                borderSide: new BorderSide(color: DataProvider().baseColor)),
-                            hintText: '${AppLocalizations.of(context).translate('enterPromoCode')}',
-                            labelText: 'promo code',
-                            errorText:errText ,
-                            suffixStyle:  TextStyle(color: DataProvider().baseColor)),
-                      ),
-                    ),
+               },
+               controller: code,
+               decoration: new InputDecoration(
+                   border: new OutlineInputBorder(
+                       borderSide: new BorderSide(color: DataProvider().baseColor)),
+                   hintText: '${AppLocalizations.of(context).translate('enterPromoCode')}',
+                   labelText: 'promo code',
+                   errorText:errText ,
+                   suffixStyle:  TextStyle(color: DataProvider().baseColor)),
+             ),
+           ),
 
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
+           Row(
+             crossAxisAlignment: CrossAxisAlignment.center,
+             mainAxisAlignment: MainAxisAlignment.center,
 
-                      children: [
+             children: [
 
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.20,
+               SizedBox(
+                 width: MediaQuery.of(context).size.width * 0.20,
 
-                          child:  MaterialButton(
-                            height: 50.0,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                                side: BorderSide(color: Colors.red)
-                            ),
-                            onPressed: () {
+                 child:  MaterialButton(
+                   height: 50.0,
+                   shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(25.0),
+                       side: BorderSide(color: Colors.red)
+                   ),
+                   onPressed: () {
 
-                              widget.hide();
+                     widget.hide();
 
-                            },
-                            color: DataProvider().baseColor,
-                            child: Icon(Icons.clear , color: Colors.white,),
-                          ),
-                        ),
+                   },
+                   color: DataProvider().baseColor,
+                   child: Icon(Icons.clear , color: Colors.white,),
+                 ),
+               ),
 
-                        SizedBox(width: 20.0, ),
+               SizedBox(width: 20.0, ),
 
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.60,
+               SizedBox(
+                 width: MediaQuery.of(context).size.width * 0.30,
 
-                          child:  MaterialButton(
-                            height: 50.0,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25.0),
-                                side: BorderSide(color: Colors.red)
-                            ),
-                            onPressed: () {
+                 child:  MaterialButton(
+                   height: 50.0,
+                   shape: RoundedRectangleBorder(
+                       borderRadius: BorderRadius.circular(25.0),
+                       side: BorderSide(color: Colors.red)
+                   ),
+                   onPressed: () {
 
-                              FirebaseHelper().checkPromoCode(code.text).then((value){
+                     FirebaseHelper().checkPromoCode(code.text).then((value){
 
-                                if(value == 0)
-                                 this.setState(() {
-                                   errText = "${AppLocalizations.of(context).translate('notFound')}";
-                                 });
-                                else{
+                       if(value == 0)
+                         this.setState(() {
+                           errText = "${AppLocalizations.of(context).translate('notFound')}";
+                         });
+                       else{
 
-                                  DataProvider().promoCodePercentage = value;
+                         DataProvider().promoCodePercentage = value;
 
-                                  DataProvider().promoCode = code.text;
+                         DataProvider().promoCode = code.text;
 
-                                  widget.hide();
+                         widget.hide();
 
-                                }
+                       }
 
-                                print("$value");
+                       print("$value");
 
-                              });
+                     });
 
-                            },
-                            color: DataProvider().baseColor,
-                            child: Text("${AppLocalizations.of(context).translate('add')}" , style: TextStyle(color: Colors.white),),
-                          ),
-                        ),
+                   },
+                   color: DataProvider().baseColor,
+                   child: Text("${AppLocalizations.of(context).translate('add')}" , style: TextStyle(color: Colors.white),),
+                 ),
+               ),
 
 
 
 
 
-                      ],
-                    ),
+             ],
+           ),
 
 
-                    SizedBox(height: 20.0, )
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
+           SizedBox(height: 20.0, )
+         ],
+       ),
+     ),
+   );
   }
 }

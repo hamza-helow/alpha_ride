@@ -33,7 +33,7 @@ class _SettingsState extends State<Settings> {
     var prefs = await SharedPreferences.getInstance();
 
      this.setState(() {
-       lang = prefs.getString("LANG");
+       lang = prefs.getString("LANG")??"en";
      });
 
      print(lang);
@@ -132,7 +132,7 @@ class _SettingsState extends State<Settings> {
             ListTile(
 
               leading: Icon(Icons.star  ),
-              title: Text("Rating application" ),
+              title: Text("${AppLocalizations.of(context).translate('ratingApplication')}" ),
 
             ),
 
@@ -157,12 +157,12 @@ class _SettingsState extends State<Settings> {
       height: 135,
       child: SetupLanguage(lang),
 
-    ), context ,title: Text("Change Language") ,
+    ), context ,title: Text("${AppLocalizations.of(context).translate('changeLanguage')}") ,
         padding: EdgeInsets.all(5),
         
         widgets: [
 
-      MaterialButton(onPressed: () => Navigator.pop(context), child: Text("Done" , style: TextStyle(fontWeight: FontWeight.bold , color: DataProvider().baseColor),),)
+      MaterialButton(onPressed: () => Navigator.pop(context), child: Text("${AppLocalizations.of(context).translate('done')}" , style: TextStyle(fontWeight: FontWeight.bold , color: DataProvider().baseColor),),)
     ]);
 
   }
@@ -221,7 +221,7 @@ dialog(Widget child,context,
                   Navigator.pop(context);
 
                 },
-                child: Text("حفظ"),
+                child: Text("${AppLocalizations.of(context).translate('save')}"),
                 )
 
               ]),

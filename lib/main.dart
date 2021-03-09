@@ -5,6 +5,7 @@ import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/user_location.dart';
+import 'package:alpha_ride/UI/Customers/CompleteCreateAccount.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/services/PushNotificationService.dart';
@@ -17,6 +18,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:location_permissions/location_permissions.dart';
 import 'package:provider/provider.dart';
 import 'Helper/AppLanguage.dart';
 import 'Helper/AppLocalizations.dart';
@@ -54,17 +56,10 @@ class _EntryPointState extends State<EntryPoint> {
   @override
   void initState() {
 
-
-    // subscriptionConnectivity = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-    //
-    //   if(result == ConnectivityResult.none )
-    //     dialogInternetNotConnect();
-    //
-    //
-    // });
-
     super.initState();
   }
+
+
 
   @override
   dispose() {
@@ -98,6 +93,8 @@ class _EntryPointState extends State<EntryPoint> {
                 ],
                 debugShowCheckedModeBanner: false,
                 home:  () {
+
+                  //return CompleteCreateAccount(null);
                   if (auth.currentUser != null)
                     if (snapshot.data == TypeAccount.customer)
                       return Home();
@@ -105,8 +102,8 @@ class _EntryPointState extends State<EntryPoint> {
                       return  HomeDriver();
 
                   return Login();
-                  // SharedPreferencesHelper().getTypeAccount();
-                  //return Login();
+                  SharedPreferencesHelper().getTypeAccount();
+                  return Login();
                 }(),
               )),
         ),),

@@ -376,7 +376,7 @@ class _MyHomePageState extends State<HomeDriver> {
                 currentTrip.km,
                 currentTrip.minTrip),
             if (distanceBetweenTwoLocation(currentTrip.locationCustomer, currentTrip.locationDriver) <=
-                    100 &&
+                    20 &&
                 currentTrip.stateTrip == StateTrip.active)
               buttonStartTrip(currentTrip.idTrip),
             if (currentTrip.stateTrip == StateTrip.started) buttonFinishTrip(),

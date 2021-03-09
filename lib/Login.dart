@@ -44,7 +44,9 @@ class _LoginState extends State<Login> {
   }
 
   @override
-  void initState() {}
+  void initState() {
+   DataProvider().checkLocationPermission();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -320,36 +322,37 @@ class _LoginState extends State<Login> {
 
   void login() {
 
-    this.setState(() {
-      onLogin = true ;
-    });
+    // this.setState(() {
+    //   onLogin = true ;
+    // });
+    // if(currentUser != null)
+    // auth
+    //     .signInWithEmailAndPassword(
+    //     email: currentUser.email, password: passwordController.text)
+    //     .then((result) {
+    //
+    //       this.setState(() {
+    //         onLogin = false ;
+    //       });
+    //
+    //   if (result.user != null) {
+    //     if (currentUser.typeAccount == TypeAccount.customer)
+    //
+    //       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);
+    //     else
+    //       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
+    //
+    //
+    //     auth.currentUser.updateProfile(displayName: "${currentUser.fullName}" , photoURL: "");
+    //     SharedPreferencesHelper()
+    //         .setFullName(currentUser.fullName);
+    //     SharedPreferencesHelper().setEmail(currentUser.email);
+    //     SharedPreferencesHelper().setSetTypeAccount(currentUser.typeAccount);
+    //   }
+    // });
+    // else
 
-    if(currentUser != null)
-    auth
-        .signInWithEmailAndPassword(
-        email: currentUser.email, password: passwordController.text)
-        .then((result) {
 
-          this.setState(() {
-            onLogin = false ;
-          });
-
-      if (result.user != null) {
-        if (currentUser.typeAccount == TypeAccount.customer)
-          
-          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);
-        else
-          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
-
-
-        auth.currentUser.updateProfile(displayName: "${currentUser.fullName}" , photoURL: "");
-        SharedPreferencesHelper()
-            .setFullName(currentUser.fullName);
-        SharedPreferencesHelper().setEmail(currentUser.email);
-        SharedPreferencesHelper().setSetTypeAccount(currentUser.typeAccount);
-      }
-    });
-    else
       phoneVerification(phoneNumber , typeAccount: TypeAccount.customer);
 
 

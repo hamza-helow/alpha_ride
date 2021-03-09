@@ -92,7 +92,7 @@ class _TripsScreenState extends State<TripsScreen> {
             _getAddressFromLatLng(trip.get("locationDriver.lat"),
                 trip.get("locationDriver.lng"))
                 .then((value) {
-              item.addressEnd = value;
+                // item.addressEnd = value;
 
               trips.add(item);
 
@@ -249,7 +249,7 @@ class _TripsScreenState extends State<TripsScreen> {
                                     ),
                                     Text(""),
                                     Text(
-                                      "${trips[index].addressEnd}",
+                                      "${trips[index].addressEnd.isEmpty ?"${AppLocalizations.of(context).translate('youDirectCaptain')}" : trips[index].addressEnd}",
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],

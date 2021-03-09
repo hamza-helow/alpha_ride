@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/User.dart';
+import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class CustomerBottomSheet extends StatefulWidget {
@@ -47,11 +50,18 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
    String  closerTimeTrip = "";
 
+   String promoCode="" ;
+
+
+   double priceByDistance  = 0.0;
+
   @override
   void initState() {
     init();
     super.initState();
+
   }
+
 
   void init(){
 
@@ -209,7 +219,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
             leading: Image.asset("Assets/enconomy.png"),
             title: Text("Enconomy"),
             trailing: Text("$closerTimeTrip"),
-            subtitle: Text( widget.numberHours == 0 ? "":  "${widget.numberHours * 10} JD" , style: TextStyle(color: Colors.green),),
+            subtitle: Text( widget.numberHours == 0 ?  DataProvider().priceByDistance==0 ?"" : "${DataProvider().priceByDistance} JD":  "${widget.numberHours * 10} JD" , style: TextStyle(color: Colors.green),),
           ),
 
         ),
@@ -224,9 +234,11 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
               child: Text("%" , style: TextStyle(color: Colors.white),),
             ),
             title: Text("${AppLocalizations.of(context).translate('discount')}"),
-            trailing: Text(DataProvider().promoCode.isNotEmpty ?"${DataProvider().promoCode}" :"${AppLocalizations.of(context).translate('addPromoCode')}"),
+            trailing: Text(promoCode.isNotEmpty ?"$promoCode" :"${AppLocalizations.of(context).translate('addPromoCode')}"),
             onTap: () {
-              widget.showPromoCodeWidget();
+             // widget.showPromoCodeWidget();
+
+              dialogPromoCode();
             },
 
           ),
@@ -451,14 +463,14 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
        'state' : StateTrip.cancelByCustomer.toString()
        }).then((value){
 
-         if(widget.dateAccept.difference(DateTime.now()).inSeconds *-1 > 30)
-         FirebaseFirestore
-             .instance
-             .collection("Users")
-             .doc(auth.currentUser.uid)
-             .update({
-              'balance' : FieldValue.increment(-1.15)
-             });
+         // if(widget.dateAccept != null &&  widget.dateAccept.difference(DateTime.now()).inSeconds *-1 > 30)
+         // FirebaseFirestore
+         //     .instance
+         //     .collection("Users")
+         //     .doc(auth.currentUser.uid)
+         //     .update({
+         //      'balance' : FieldValue.increment(-1.15)
+         //     });
 
          FirebaseHelper().sendNotification(
            idSender: auth.currentUser.uid,
@@ -471,8 +483,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   }
 
-
-
    dialog() async {
      await showDialog<String>(
          context: context,
@@ -480,6 +490,32 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
              content: Text("${AppLocalizations.of(context).translate('blockMessage')}") ,
              actions: []));
    }
+
+
+
+   dialogPromoCode() async {
+     await showDialog<String>(
+         context: context,
+         builder: (context) => new AlertDialog(
+             content: Container(
+               width: 400,
+               height: 180,
+
+               child: PromoCodeBottomSheet((){
+
+
+                 this.setState(() {
+                   promoCode =DataProvider().promoCode;
+                 });
+
+                 Navigator.pop(context);
+
+               }),
+             ) ,
+             actions: []));
+   }
+
+
 
 }
 

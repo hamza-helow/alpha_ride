@@ -5,6 +5,7 @@ import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
+import 'package:alpha_ride/Helper/MapHelpers.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Login.dart';
@@ -22,12 +23,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import 'package:alpha_ride/UI/Common/Settings.dart' as w;
 import 'package:provider/provider.dart';
 
@@ -44,10 +43,8 @@ class _HomeState extends State<Home> {
   StreamSubscription<DocumentSnapshot> subscriptionRequestDriver ;
   StreamSubscription<ConnectivityResult> subscriptionConnectivity;
 
-
   var locationReference;
   var _controller;
-
   final String field = 'position';
   final geo = Geoflutterfire();
   final _firestore = FirebaseFirestore.instance;
@@ -60,12 +57,9 @@ class _HomeState extends State<Home> {
       closerTimeTrip = "",
       addressTo = "",
       _currentAddress = "";
-
   double radius = 1, accessPointLat, accessPointLng, rating = 0;
-
-  List<String> rejected = List<String>.empty();
-
-  bool findDriver = false, tripActive = false;
+  List<String> rejected = List();
+  bool findDriver = false;
 
   final Trip currentTrip = Trip();
 
@@ -84,11 +78,9 @@ class _HomeState extends State<Home> {
 
   UserLocation userLocation;
 
+  bool internetNotConnect= false ;
   bool confirmPickup = false,
-      usePin = true,
-      showPromoCode = false,
-      mapIsCreated = false;
-
+      showPromoCode = false;
   Stream<List<DocumentSnapshot>> streamCloserDrivers;
 
   final CameraPosition defaultPosition = CameraPosition(
@@ -97,12 +89,10 @@ class _HomeState extends State<Home> {
   );
 
   void _onCameraMove(CameraPosition position) async {
-    if (usePin)
       DataProvider().userLocation = UserLocation(
           latitude: position.target.latitude,
           longitude: position.target.longitude);
 
-    // await _getAddressFromLatLng(position.target.latitude , position.target.longitude);
   }
 
   String _fullName = "", _email = "", selectedDriver = "";
@@ -233,44 +223,83 @@ class _HomeState extends State<Home> {
     );
   }
 
+  void getNearDrivers(){
+
+    if (userLocation != null) {
+      geoFirePoint = geo.point(
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude);
+      locationReference = _firestore
+          .collection('locations')
+          .where(FirebaseConstant().available, isEqualTo: true);
+
+      streamCloserDrivers = geo
+          .collection(collectionRef: locationReference)
+          .within(center: geoFirePoint, radius: 100, field: field);
+
+      streamCloserDrivers.listen((event) {
+
+
+
+        print("position.geopoint${event.length}");
+
+        event.forEach((element) {
+
+          print("position.geopoint${element.get("position.geopoint").latitude}");
+
+         this.setState(() {
+           showMarkerDriver(
+               element.get("position.geopoint").latitude ,
+               element.get("position.geopoint").longitude, 0 , id:element.id );
+         });
+        });
+
+      });
+    }
+  }
+
   @override
   dispose() {
     super.dispose();
     subscriptionConnectivity.cancel();
   }
 
-
-  bool internetNotConnect= false ;
   @override
   void initState() {
 
+    getCurrentLocation();
+
+    checkInternetExit();
+
+    super.initState();
+  }
+
+
+  void checkInternetExit(){
     subscriptionConnectivity = Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
 
       if(result == ConnectivityResult.none )
         dialogInternetNotConnect();
       else
-        {
-          if(internetNotConnect)
-            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Home(),), (route) => false);
-          else{
-            loadInfoUser();
-            //listenCurrentTrip();
+      {
+        if(internetNotConnect)
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Home(),), (route) => false);
+        else{
+          loadInfoUser();
+          //listenCurrentTrip();
 
-            BitmapDescriptor.fromAssetImage(
-                ImageConfiguration(platform: TargetPlatform.android),
-                "Assets/car.png")
-                .then((onValue) {
-              carIcon = onValue;
-            });
-          }
+          BitmapDescriptor.fromAssetImage(
+              ImageConfiguration(platform: TargetPlatform.android),
+              "Assets/car.png")
+              .then((onValue) {
+            carIcon = onValue;
+          });
         }
+      }
 
 
     });
 
-
-
-    super.initState();
   }
 
   void loadInfoUser() async {
@@ -311,8 +340,6 @@ class _HomeState extends State<Home> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     userLocation = Provider.of<UserLocation>(context);
@@ -323,8 +350,6 @@ class _HomeState extends State<Home> {
             zoom: 16.4,
           )
         : null;
-
-    print(' build(BuildContext context)');
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
@@ -355,8 +380,6 @@ class _HomeState extends State<Home> {
           animateTo(snapshot.data.docs.first.get('locationDriver.lat'),
               snapshot.data.docs.first.get('locationDriver.lng'));
 
-
-
        if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.active.toString()){
          showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
 
@@ -375,44 +398,14 @@ class _HomeState extends State<Home> {
           drawer: buildDrawer(),
           body: Stack(
             children: [
-              GoogleMap(
-                initialCameraPosition: () {
-                  if (exitTrip &&
-                      snapshot.data.docs.first.get("state") ==
-                          StateTrip.started.toString())
-                    return CameraPosition(
-                      target: LatLng(
-                          snapshot.data.docs.first.get('locationDriver.lat'),
-                          snapshot.data.docs.first.get('locationDriver.lng')),
-                      zoom: 16.4,
-                    );
-                  else {
-                    if (cameraPosition != null)
-                      return cameraPosition;
-                    else
-                      return defaultPosition;
-                  }
-                }(),
-                compassEnabled: false,
-                markers: markers,
-                myLocationEnabled: true,
-                zoomControlsEnabled: false,
-                buildingsEnabled: true,
-                myLocationButtonEnabled: false,
-                minMaxZoomPreference: MinMaxZoomPreference(12, 20),
-                mapToolbarEnabled: false,
-                rotateGesturesEnabled: true,
-                zoomGesturesEnabled: true,
-                onCameraMove: _onCameraMove,
-                onMapCreated: onMapCreated,
-                polylines: Set<Polyline>.of(polylines.values),
-              ),
+
+              googleMapBuilder(exitTrip, snapshot, cameraPosition),
 
               buttonsZoom(),
 
               buttonCurrentLocation(),
 
-              if (usePin) pin(context),
+               pin(context),
               startTrip(),
 
               buildAppBar(),
@@ -428,8 +421,6 @@ class _HomeState extends State<Home> {
                   idTrip: snapshot.data.docs.first.id
                   ,
                 ),
-
-              // if((confirmPickup || selectedDriver.isNotEmpty ) && mapIsCreated)
 
               if ((snapshot.hasData && snapshot.data.docs.length > 0) && snapshot.data.docs.first.get("state") != StateTrip.needRatingByCustomer.toString())
                 CustomerBottomSheet(
@@ -515,6 +506,59 @@ class _HomeState extends State<Home> {
     );
   }
 
+  StreamBuilder<List<DocumentSnapshot>> googleMapBuilder(bool exitTrip, AsyncSnapshot<QuerySnapshot> snapshot, CameraPosition cameraPosition) {
+    return StreamBuilder<List<DocumentSnapshot>>(
+              stream: geo
+                  .collection(collectionRef: _firestore.collection('locations').where(FirebaseConstant().available, isEqualTo: true))
+                  .within(center:userLocation ==null ? GeoFirePoint(0,0) : GeoFirePoint(userLocation.latitude, userLocation.longitude), radius: 100, field: field),
+
+              builder: (context, drivers) {
+
+                if(drivers.hasData)
+                drivers.data.forEach((element) {
+                  showMarkerDriver(
+                      element.get("position.geopoint").latitude ,
+                      element.get("position.geopoint").longitude, 0 , id:element.id );
+                });
+
+               return GoogleMap(
+                  initialCameraPosition: () {
+                    if (exitTrip &&
+                        snapshot.data.docs.first.get("state") ==
+                            StateTrip.started.toString())
+                      return CameraPosition(
+                        target: LatLng(
+                            snapshot.data.docs.first.get('locationDriver.lat'),
+                            snapshot.data.docs.first.get('locationDriver.lng')),
+                        zoom: 16.4,
+                      );
+                    else {
+                      if (cameraPosition != null)
+                        return cameraPosition;
+                      else
+                        return defaultPosition;
+                    }
+                  }(),
+                  compassEnabled: false,
+                  markers: markers,
+                  myLocationEnabled: true,
+                  zoomControlsEnabled: false,
+                  buildingsEnabled: true,
+                  myLocationButtonEnabled: false,
+                  minMaxZoomPreference: MinMaxZoomPreference(12, 20),
+                  mapToolbarEnabled: false,
+                  rotateGesturesEnabled: true,
+                  zoomGesturesEnabled: true,
+                  onCameraMove: _onCameraMove,
+                  onMapCreated: onMapCreated,
+                  polylines: Set<Polyline>.of(polylines.values),
+                );
+
+              },
+
+            );
+  }
+
   Positioned buttonsZoom() {
     return Positioned(
       top: 90,
@@ -530,12 +574,13 @@ class _HomeState extends State<Home> {
               IconButton(
                   icon: Icon(Icons.add),
                   onPressed: () {
-                    changeZoom(typeZoom: zoomIn);
+                   MapHelpers.getInstance().changeZoom(_controller , userLocation ,typeZoom: zoomIn);
                   }),
               SizedBox(height: 2),
               IconButton(
                   icon: Icon(Icons.remove),
-                  onPressed: () => changeZoom(typeZoom: zoomOut)),
+                  onPressed: () =>  MapHelpers.getInstance().changeZoom(_controller , userLocation ,typeZoom: zoomOut),
+              )
             ],
           ),
         ),
@@ -544,6 +589,7 @@ class _HomeState extends State<Home> {
   }
 
   Positioned buttonCurrentLocation() {
+
     return Positioned(
       top: 200,
       left: 10,
@@ -641,7 +687,6 @@ class _HomeState extends State<Home> {
               SizedBox(
                 width: 20,
               ),
-              if (usePin)
                 Expanded(
                   child: Container(
                       decoration: BoxDecoration(
@@ -661,22 +706,22 @@ class _HomeState extends State<Home> {
                       width: MediaQuery.of(context).size.width - 100,
                       child: Column(
                         children: [
-                          GestureDetector(
-                            onTap: () async {
-                              // show input autocomplete with selected mode
-                              // then get the Prediction selected
-                              Prediction p = await PlacesAutocomplete.show(
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    // show input autocomplete with selected mode
+                                    // then get the Prediction selected
+                                    Prediction p = await PlacesAutocomplete.show(
 
-                                   mode: Mode.overlay,
-                                  context: context,
-                                  apiKey: DataProvider().mapKey,
-                                  logo: Text("") );
-                              displayPrediction(p);
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Expanded(
+                                        mode: Mode.overlay,
+                                        context: context,
+                                        apiKey: DataProvider().mapKey,
+                                        logo: Text("") );
+                                    displayPrediction(p);
+                                  },
                                   child: Container(
                                     height: 60.5,
                                     color: Colors.white,
@@ -693,16 +738,20 @@ class _HomeState extends State<Home> {
                                       ),
                                     ),
                                   ),
+
                                 ),
-                                Expanded(
-                                  child: Container(
-                                    height: 60.5,
-                                    color: Colors.white,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(right: 14.0),
-                                      child: Align(
-                                        alignment: Alignment.centerRight,
-                                        child: Chip(
+                              ),
+                              Expanded(
+                                child: Container(
+                                  height: 60.5,
+                                  color: Colors.white,
+                                  child: Padding(
+                                    padding: EdgeInsets.only(right: 14.0),
+                                    child: Align(
+                                      alignment: Alignment.centerRight,
+                                      child:GestureDetector(
+                                        onTap: () => dialogReserveHours(),
+                                        child:  Chip(
                                           avatar: Icon(
                                             Icons.watch_later,
                                             color: DataProvider().baseColor,
@@ -728,8 +777,8 @@ class _HomeState extends State<Home> {
                                                 ),
                                                 WidgetSpan(
                                                   alignment:
-                                                      PlaceholderAlignment
-                                                          .middle,
+                                                  PlaceholderAlignment
+                                                      .middle,
                                                   child: Icon(Icons
                                                       .keyboard_arrow_down),
                                                 ),
@@ -740,9 +789,9 @@ class _HomeState extends State<Home> {
                                       ),
                                     ),
                                   ),
-                                )
-                              ],
-                            ),
+                                ),
+                              )
+                            ],
                           ),
                           if (_currentAddress.isNotEmpty)
                             Container(
@@ -760,6 +809,7 @@ class _HomeState extends State<Home> {
                                   onTap: () {
                                     this.setState(() {
                                       addressTo = "";
+                                      DataProvider().priceByDistance = 0.0 ;
                                     });
                                   },
                                   child: Icon(Icons.clear),
@@ -842,7 +892,7 @@ class _HomeState extends State<Home> {
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("${rating.toStringAsFixed(2)}"),
+                        label: Text("${ rating ==null || rating == 0 ? 0: rating.toStringAsFixed(2)}"),
                       ),
                     ),
                   ),
@@ -944,31 +994,29 @@ class _HomeState extends State<Home> {
   }
 
   onMapCreated(controller) {
+    if(!_completer.isCompleted)
     _completer.complete(controller);
     _controller = controller;
 
-    this.setState(() {
-      mapIsCreated = true;
-    });
-
-    getCurrentLocation();
   }
 
-  void getCurrentLocation() {
+  void getCurrentLocation() async{
+
+
     Geolocator.getCurrentPosition().then((value) => {
           this.setState(() {
             userLocation = UserLocation(
                 latitude: value.latitude, longitude: value.longitude);
 
+            print("UserLocation ${userLocation.longitude} ${userLocation.latitude} ");
+
             DataProvider().userLocation = userLocation;
 
-            _getAddressFromLatLng(userLocation.latitude, userLocation.longitude)
+            MapHelpers.getInstance().getAddressFromLatLng(userLocation.latitude, userLocation.longitude)
                 .then((address) => {
                       this.setState(() {
                         _currentAddress = address;
-
                         animateTo(value.latitude, value.longitude);
-
                         //showMarkerDriver(value.latitude , value.longitude);
                       })
                     });
@@ -1004,32 +1052,8 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
         polylineCoordinates.add(LatLng(point.latitude, point.longitude));
       });
     }
-
   }
 
-  void zoomBetweenTwoPoints(LatLng customerLocation, LatLng driverLocation) {
-    final LatLng offerLatLng = driverLocation;
-
-    LatLngBounds bound;
-    if (offerLatLng.latitude > customerLocation.latitude &&
-        offerLatLng.longitude > customerLocation.longitude) {
-      bound = LatLngBounds(southwest: customerLocation, northeast: offerLatLng);
-    } else if (offerLatLng.longitude > customerLocation.longitude) {
-      bound = LatLngBounds(
-          southwest: LatLng(offerLatLng.latitude, customerLocation.longitude),
-          northeast: LatLng(customerLocation.latitude, offerLatLng.longitude));
-    } else if (offerLatLng.latitude > customerLocation.latitude) {
-      bound = LatLngBounds(
-          southwest: LatLng(customerLocation.latitude, offerLatLng.longitude),
-          northeast: LatLng(offerLatLng.latitude, customerLocation.longitude));
-    } else {
-      bound = LatLngBounds(southwest: offerLatLng, northeast: customerLocation);
-    }
-
-    CameraUpdate u2 = CameraUpdate.newLatLngBounds(bound, 50);
-
-    this._controller.animateCamera(u2).then((void v) {});
-  }
 
   double numberHours = 0;
 
@@ -1105,19 +1129,6 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
     c.animateCamera(CameraUpdate.newCameraPosition(p));
   }
 
-  void changeZoom({int typeZoom = 0}) async {
-    _controller.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(userLocation.latitude, userLocation.longitude),
-          zoom: typeZoom == 0
-              ? await _controller.getZoomLevel() + 1
-              : await _controller.getZoomLevel() - 1,
-        ),
-      ),
-    );
-  }
-
   Future<Null> displayPrediction(Prediction p) async {
     if (p != null) {
       PlacesDetailsResponse detail =
@@ -1126,48 +1137,38 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
       double lat = detail.result.geometry.location.lat;
       double lng = detail.result.geometry.location.lng;
 
-      _getAddressFromLatLng(lat, lng).then((value) => {
+      MapHelpers.getInstance().getAddressFromLatLng(lat, lng).then((value) => {
             this.setState(() {
               addressTo = value;
               accessPointLat = lat;
               accessPointLng = lng;
 
-              //  DataProvider().accessPointAddress = value ;
+              DataProvider().accessPointAddress = value ;
+
+
+              DataProvider().calcApproximatePrice(LatLng(lat, lng), LatLng(userLocation.latitude, userLocation.longitude)).then((value) {
+
+                this.setState(() {
+                  DataProvider().priceByDistance = value;
+                });
+
+              });
+
             })
           });
     }
   }
 
-  Future<String> _getAddressFromLatLng(double lat, double lng) async {
-    String address = "";
-
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-
-      Placemark place = placemarks[0];
-
-      address = "${place.locality}, ${place.name}, ${place.country}";
-
-      print(place);
-    } catch (e) {
-      print("EEEEE $e");
-    }
-
-    return address;
-  }
 
   whenDriverComing(double lat, double lng, double latCustomer,
       double lngCustomer, double rotateDriver) {
-    this.setState(() {
-      usePin = false;
-    });
 
     print("whenDriverComing , $lat , $lng");
 
     if (polylines.isEmpty) {
       _getPolyline(LatLng(latCustomer, lngCustomer), LatLng(lat, lng));
 
-      zoomBetweenTwoPoints(LatLng(latCustomer, lngCustomer), LatLng(lat, lng));
+      MapHelpers.getInstance().zoomBetweenTwoPoints(LatLng(latCustomer, lngCustomer), LatLng(lat, lng) , _controller);
     }
 
     showMarkerDriver(lat, lng, rotateDriver);
@@ -1180,19 +1181,19 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
     });
   }
 
-  void showMarkerDriver(double lat, double lng, double rotateDriver) {
-    // this.setState(() {
-    //
-    // });
-
+  void showMarkerDriver(double lat, double lng, double rotateDriver , {String id= "current"}) {
     markers.addAll([
       Marker(
-          markerId: MarkerId('value'),
+          markerId: MarkerId(id),
           position: LatLng(lat, lng),
           icon: carIcon,
           rotation: rotateDriver),
     ]);
+
+    print("marker : ${markers.length}");
   }
+
+
 
 
 

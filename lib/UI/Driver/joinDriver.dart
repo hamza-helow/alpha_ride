@@ -324,9 +324,16 @@ class _JoinDriverState extends State<JoinDriver> {
 
   void sendInfoDriver(){
 
+    if(yourPhoto == null
+        ||drivingLicense == null ||
+        driverLicense == null   ||
+        frontCar == null  || endCar == null || insideCar==null || phoneNumber.isEmpty  )
+      return;
+
     this.setState(() {
       inProgress = true ;
     });
+
 
 
     String idRequest  =FirebaseFirestore.instance.collection("a").doc().id;
@@ -366,7 +373,7 @@ class _JoinDriverState extends State<JoinDriver> {
 
 
                 Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                    PhoneVerification(phoneNumber , typeAccount: TypeAccount.driver,),));
+                    PhoneVerification(phoneNumber , typeAccount: TypeAccount.driver ,isRequestDriver: true,),));
 
 
               });

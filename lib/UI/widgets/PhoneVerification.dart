@@ -33,7 +33,9 @@ class PhoneVerification extends StatefulWidget {
 
   int flag ;
 
-  PhoneVerification(this.phoneNumber , {this.updateNumberPhone=false ,  this.imageProfile,this.email,this.typeAccount = TypeAccount.customer ,  this.credential , this.fullName , this.flag });
+  final bool  isRequestDriver ;
+
+  PhoneVerification(this.phoneNumber , {this.isRequestDriver =false  ,this.updateNumberPhone=false ,  this.imageProfile,this.email,this.typeAccount = TypeAccount.customer ,  this.credential , this.fullName , this.flag });
 
   @override
   _PhoneVerificationState createState() => _PhoneVerificationState();
@@ -175,8 +177,6 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
                   SizedBox(height: 20.0,) ,
 
-
-
                 ],
 
               ),
@@ -190,9 +190,11 @@ class _PhoneVerificationState extends State<PhoneVerification> {
     );
   }
 
+  final codeController = TextEditingController();
   PinFieldAutoFill buildPinFieldAutoFill() {
     return  PinFieldAutoFill(
 
+                 controller: codeController,
                 autofocus: true,
                 onCodeChanged: (txt)  {
 
@@ -230,8 +232,6 @@ class _PhoneVerificationState extends State<PhoneVerification> {
      return;
    }
 
-
-
     if(phoneAuthCredential == null)
       return;
 
@@ -242,7 +242,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       if( widget.credential == null)
       FirebaseHelper().infoUserExit(c.user.uid).then((value) => {
 
-        if(value){
+        if(value &&  !widget.isRequestDriver){
           FirebaseHelper().loadUserInfo(c.user.uid).then((user) => {
 
             auth.currentUser.updateProfile(displayName: "${user.fullName}" , photoURL: ''),
@@ -257,13 +257,10 @@ class _PhoneVerificationState extends State<PhoneVerification> {
         }
         else
        {
-
          if(widget.typeAccount == TypeAccount.customer)
            Navigator.push(context, MaterialPageRoute(builder: (context) => CompleteCreateAccount(c)))
          else
            requestNewAccountDriver(c.user.uid)
-
-
        },
 
 
@@ -328,6 +325,9 @@ class _PhoneVerificationState extends State<PhoneVerification> {
 
         //verification();
 
+        codeController.text = credential.smsCode;
+
+
         String t = credential.toString().replaceAll("jsonObject", '"jsonObject"');
 
         var dt =   json.decode(t);
@@ -377,6 +377,7 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       'yourPhoto' : DataProvider().driverRequest.yourPhoto ,
       'drivingLicense' : DataProvider().driverRequest.drivingLicense ,
       'driverLicense' :DataProvider().driverRequest. driverLicense ,
+      'email' : DataProvider().driverRequest.email,
       'frontCar' : DataProvider().driverRequest.frontCar ,
       'endCar' : DataProvider().driverRequest.endCar ,
       'insideCar' : DataProvider().driverRequest.insideCar ,
@@ -384,17 +385,18 @@ class _PhoneVerificationState extends State<PhoneVerification> {
       'typeCar' : DataProvider().driverRequest.typeCar ,
       'modelCar' : DataProvider().driverRequest.modelCar ,
       'colorCar' :DataProvider().driverRequest.colorCar ,
-      'phoneNumber' : '+962788051422' ,
+      'phoneNumber' : '${widget.phoneNumber}' ,
       'idUser' : idUser ,
        'numberCar' : DataProvider().driverRequest.numberCar
         }).then((value) {
-
-
 
             Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Login(),), (route) => false);
 
          });
 
   }
+
+
+
 
 }

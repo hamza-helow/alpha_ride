@@ -8,9 +8,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location_permissions/location_permissions.dart';
 
 class DataProvider{
+
 
   DataProvider prefs ;
 
@@ -25,10 +29,10 @@ class DataProvider{
 
     // DataProvider().baseColor
 
-
   }
 
 
+  double priceByDistance = 0.0;
   double rotateCar = 0.0;
 
   DriverRequest driverRequest ;
@@ -53,7 +57,7 @@ class DataProvider{
     return '${hour.toString().padLeft(2, "0")}:${min.toString().padLeft(2, "0")}';
   }
 
-  Future<String> getArriveTime(LatLng from , LatLng to)async{
+  Future<String> getArriveTime(LatLng from , LatLng to , {int flag = 0} )async{
 
     if(from == null || to == null)
       return "";
@@ -63,11 +67,9 @@ class DataProvider{
     print("RESULT :  ${response.data}");
 
 
-    return response.data['rows'][0]['elements'][0]['duration']['text'] ;
+    return  flag == 0 ? response.data['rows'][0]['elements'][0]['duration']['text'] : '${response.data['rows'][0]['elements'][0]['duration']['value'] }' ;
 
   }
-
-
 
   Future<double> calcPriceTotal({TypeTrip typeTrip , discountTrip = 0 , minTrip =0, kmTrip=0 ,DateTime startDate})async{
 
@@ -119,6 +121,37 @@ double percentageDriver = (double.parse(totalPrice.toStringAsFixed(2)) * double.
     return double.parse(totalPrice.toStringAsFixed(2));
 
   }
+
+
+  void checkLocationPermission()async{
+    PermissionStatus permission = await LocationPermissions().requestPermissions();
+  }
+
+
+  Future<double> calcApproximatePrice(LatLng from , LatLng to ) async{
+
+    return DataProvider()
+        .getArriveTime( from,
+        to , flag: 1).then((value)async {
+
+      int min = int.parse(value)~/60;
+
+      double km =    Geolocator.distanceBetween
+        (from.latitude, from.longitude,
+          to.latitude, to.longitude) / 1000;
+
+      return DataProvider().calcPriceTotal(
+          minTrip: min ,typeTrip: TypeTrip.distance ,
+          kmTrip: km , discountTrip: DataProvider().promoCodePercentage
+      ).then((value)async {
+
+        return value;
+      });
+
+    });
+  }
+
+
 
 
 }

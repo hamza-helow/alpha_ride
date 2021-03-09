@@ -103,10 +103,12 @@ class Trip {
     locationCustomer: LatLng(doc.get("locationCustomer.lat") , doc.get("locationCustomer.lng") ),
     locationDriver: LatLng(doc.get("locationDriver.lat") , doc.get("locationDriver.lng") ),
     totalPrice: doc.get('totalPrice') == null ? 0.0 :doc.get('totalPrice') ,
-    accessPointLatLng: doc.get('accessPoint.lat') == 0.0 ? null:  LatLng(doc.get('accessPoint.lat') , doc.get('accessPoint.lng')) ,
+    accessPointLatLng:  !doc.data().containsKey("accessPoint") ? null  :  doc.get('accessPoint.lat') == 0.0 ? null:  LatLng(doc.get('accessPoint.lat') , doc.get('accessPoint.lng')) ,
     addressStart: doc.get('addressCurrent'),
-    addressEnd: doc.get('accessPoint.addressTo'),
+    addressEnd:  !doc.data().containsKey("accessPoint")  ? "" :  doc.get('accessPoint.addressTo'),
 
   );
 
 }
+
+//You direct the captain
