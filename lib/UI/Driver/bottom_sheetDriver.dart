@@ -29,17 +29,28 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
     super.initState();
   }
 
+  bool isExpanded =true ;
+
+  double  initialChildSize = 0.30 ,  minChildSize = 0.19 , maxChildSize = 0.5 ;
+
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
+    return DraggableScrollableActuator(
+        child: DraggableScrollableSheet(
         expand: true,
-        initialChildSize: 0.29,
-        minChildSize: 0.19,
-        maxChildSize: 0.5,
+        initialChildSize: initialChildSize,
+        minChildSize: minChildSize,
+        maxChildSize: maxChildSize,
         builder: (context, scrollController) {
+
+
+
           return NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (overscroll) {
+              print("overscroll");
+
+
               return true;
             },
             child: SingleChildScrollView(
@@ -52,20 +63,24 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
                   children: <Widget>[
                     Padding(
                       padding: const EdgeInsets.all(10.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Center(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.grey[300],
+                      child: GestureDetector(
+                        onTap: () {
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Center(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                  color: Colors.grey[300],
+                                ),
+                                height: 5,
+                                width: 30,
                               ),
-                              height: 5,
-                              width: 30,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     StateDriver(),
@@ -85,7 +100,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
               ),
             ),
           );
-        });
+        }));
   }
 
   Row noRequestWidget() {

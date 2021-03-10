@@ -145,7 +145,10 @@
 
   "ratingApplication": "تقييم التطبيق",
 
-  "changeLanguage" : "تغيير اللغة"
+  "changeLanguage" : "تغيير اللغة",
+
+  "pleaseEnterName" : "الرجاء ادخال الاسم"
+
 
 
 

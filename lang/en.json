@@ -148,7 +148,10 @@
 
   "ratingApplication": "Rating application",
 
-  "changeLanguage" : "Change Language"
+  "changeLanguage" : "Change Language",
+
+  "pleaseEnterName" : "Please enter full name"
+
 
 
 

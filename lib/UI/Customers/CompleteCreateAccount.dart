@@ -1,4 +1,3 @@
-
 import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
@@ -6,16 +5,13 @@ import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:alpha_ride/Models/User.dart' as model;
 
-
 class CompleteCreateAccount extends StatefulWidget {
 
-  UserCredential credential ;
-
+  final UserCredential credential ;
 
   CompleteCreateAccount(this.credential);
 
@@ -27,17 +23,25 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
   final fullName = TextEditingController();
   final email = TextEditingController();
-  final password = TextEditingController();
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+  void showInSnackBar(String value ) {
+    _scaffoldKey.currentState.showSnackBar(new SnackBar(
+      content: new Text(value) , backgroundColor: Colors.red,));
+  }
+
 
   @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     return SafeArea(child: Scaffold(
+      key: _scaffoldKey,
+
       resizeToAvoidBottomInset: false,
 
-
       body: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: bottom ,top: 10.0 , right: 10.0  , left: 10.0),
+        padding: EdgeInsets.only(bottom: bottom ,top: 10.0 , right: 15.0  , left: 15.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
 
@@ -68,18 +72,6 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
             SizedBox(height: 20.0,),
 
-
-            buildThemeTextField(
-              password,
-              helperText: "${AppLocalizations.of(context).translate('password')}",
-              hintText: "${AppLocalizations.of(context).translate('enterPassword')}",
-              icon: Icon(Icons.lock),
-              labelText: "${AppLocalizations.of(context).translate('password')}",
-
-            ),
-
-
-            SizedBox(height: 20.0,),
 
             Padding(
               padding: EdgeInsets.only(top: 20),
@@ -139,24 +131,11 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
   }
 
   void addUserInfo() {
+    if(fullName.text.isEmpty){
 
-    AuthCredential credential = EmailAuthProvider.credential(email: email.text , password: password.text);
-
-    widget.credential.user.linkWithCredential(credential);
-
-
-    // auth.createUserWithEmailAndPassword(email: "hamziHelow3@gmail.com", password: "123456789").then((value) => {
-    //
-    //
-    //   print(value.credential),
-    //
-    //   widget.credential.user.linkWithCredential(value.credential)
-    //
-    //
-    // });
-
-
-   // auth.c
+      showInSnackBar("${AppLocalizations.of(context).translate('pleaseEnterName')}");
+      return;
+    }
 
 
     SharedPreferencesHelper().setEmail(email.text);
@@ -164,7 +143,6 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
     SharedPreferencesHelper().setSetTypeAccount(TypeAccount.customer);
 
     FirebaseHelper().insertInformationUser(model.User(
-
       email: email.text ,
       fullName: fullName.text,
       typeAccount: TypeAccount.customer,
@@ -175,7 +153,6 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
     )).then((value) => {
       Navigator.push(context, MaterialPageRoute(builder: (context) => Home(),))
     });
-
 
   }
 }
