@@ -1,9 +1,9 @@
 import 'package:alpha_ride/Helper/AppLanguage.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
-import 'package:alpha_ride/Login.dart';
-import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
-import 'package:alpha_ride/UI/widgets/setupLanguage.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/PhoneVerification.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/setupLanguage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

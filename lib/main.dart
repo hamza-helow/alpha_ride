@@ -3,22 +3,16 @@ import 'dart:io';
 
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
-import 'package:alpha_ride/Login.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/user_location.dart';
-import 'package:alpha_ride/UI/Customers/CompleteCreateAccount.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/services/PushNotificationService.dart';
 import 'package:alpha_ride/services/location_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity/connectivity.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:location_permissions/location_permissions.dart';
 import 'package:provider/provider.dart';
 import 'Helper/AppLanguage.dart';
 import 'Helper/AppLocalizations.dart';
@@ -68,8 +62,8 @@ class _EntryPointState extends State<EntryPoint> {
   }
   @override
   Widget build(BuildContext context) {
-    // final pushNotificationService = PushNotificationService(_firebaseMessaging);
-    // pushNotificationService.initialise();
+    final pushNotificationService = PushNotificationService(_firebaseMessaging);
+    pushNotificationService.initialise();
 
     return StreamProvider<UserLocation>(
 
@@ -96,10 +90,10 @@ class _EntryPointState extends State<EntryPoint> {
 
                   //return CompleteCreateAccount(null);
                   if (auth.currentUser != null)
-                    if (snapshot.data == TypeAccount.customer)
-                      return Home();
-                    else
+                    if (snapshot.data == TypeAccount.driver)
                       return  HomeDriver();
+                    else
+                      return Home();
 
                   return Login();
                   SharedPreferencesHelper().getTypeAccount();

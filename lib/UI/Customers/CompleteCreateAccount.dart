@@ -5,7 +5,7 @@ import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
-import 'package:alpha_ride/Login.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -170,10 +170,10 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
       fullName: fullName.text,
       typeAccount: TypeAccount.customer,
       idUser: widget.credential.user.uid ,
-      stateAccount: StateAccount.active
+      stateAccount: StateAccount.active,
+      phoneNumber: widget.credential.user.phoneNumber
 
     )).then((value) => {
-
       Navigator.push(context, MaterialPageRoute(builder: (context) => Home(),))
     });
 

@@ -15,7 +15,6 @@ class PushNotificationService {
 
   Future initialise() async {
 
-
     if (Platform.isIOS) {
       _fcm.requestNotificationPermissions(IosNotificationSettings());
     }

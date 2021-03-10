@@ -8,15 +8,15 @@ import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/MapHelpers.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
-import 'package:alpha_ride/Login.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
 import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/Common/ContactUs.dart';
-import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
-import 'package:alpha_ride/UI/widgets/bottom_sheet.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Customers/PromoCodeBottomSheet.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Customers/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
@@ -1087,6 +1087,15 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
                   actions: [
                     MaterialButton(
                       onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text("${AppLocalizations.of(context).translate('cancel')}",
+                          style: TextStyle(
+                              color: DataProvider().baseColor,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
                         setState(() {
                           if (hours.text.isEmpty)
                             err = "${AppLocalizations.of(context).translate('enterCorrectNumber')}";
@@ -1109,15 +1118,7 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
                             fontWeight: FontWeight.bold),
                       ),
                     ),
-                    MaterialButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: Text("${AppLocalizations.of(context).translate('cancel')}",
-                          style: TextStyle(
-                              color: DataProvider().baseColor,
-                              fontWeight: FontWeight.bold)),
-                    ),
+
                   ]),
             ));
   }

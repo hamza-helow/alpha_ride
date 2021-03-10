@@ -2,6 +2,10 @@ import 'dart:async' as s;
 
 import 'package:flutter/material.dart';
 class Timer extends StatefulWidget {
+  final Function resendCode ;
+
+  Timer({@required this.resendCode});
+
   @override
   _TimerState createState() => _TimerState();
 }
@@ -40,10 +44,24 @@ class _TimerState extends State<Timer> {
 
   @override
   Widget build(BuildContext context) {
-    return   Text( _start == 0 || ( _timer != null &&!_timer.isActive) ?  "Click to resend"  :"Resend code after $_start sec" ,
-      style: TextStyle(
+    return   GestureDetector(
 
-          fontSize: 16.0
-      ),);
+      onTap: () {
+
+        if(_start == 0 || ( _timer != null &&!_timer.isActive) )
+          {
+            _start = 60 ;
+            startTimer();
+            widget.resendCode();
+
+          }
+      },
+
+      child: Text( _start == 0 || ( _timer != null &&!_timer.isActive) ?  "Click to resend"  :"Resend code after $_start sec" ,
+        style: TextStyle(
+
+            fontSize: 16.0
+        ),),
+    );
   }
 }

@@ -8,7 +8,7 @@ import 'package:alpha_ride/Models/User.dart' as m;
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/UI/Driver/joinDriver.dart';
-import 'package:alpha_ride/UI/widgets/PhoneVerification.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/PhoneVerification.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,7 +45,11 @@ class _LoginState extends State<Login> {
 
   @override
   void initState() {
-   DataProvider().checkLocationPermission();
+
+    DataProvider().checkLocationPermission();
+
+    super.initState();
+
   }
   @override
   Widget build(BuildContext context) {
@@ -111,35 +115,12 @@ class _LoginState extends State<Login> {
                     ),
                   ),
 
-                  if(exitAccount)
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(0, 2, 0, 20),
-                    child: Container(
-                      color: Colors.white,
-                      child: TextField(
-                        obscureText : true ,
-                        controller: passwordController,
-                        decoration: InputDecoration(
-                           labelText: "Enter password",
 
-                          suffixIcon: Icon(Icons.lock),
-
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(),
-                          )
-                        ),
-                      ),
-                    ),
-                  ),
 
                   Padding(
                     padding: EdgeInsets.only(top: 20),
                     child: MaterialButton(
-                      onPressed: () {
-
-
-                        login();
-                      },
+                      onPressed: () => phoneVerification(phoneNumber , typeAccount: TypeAccount.customer),
                       //since this is only a UI app
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -192,77 +173,8 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 30),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Icon(FontAwesomeIcons.facebook ,  size: 50, color: DataProvider().baseColor,),
-
-                        InkWell(
-
-                          child:  Image.asset(
-                            "Assets/facebook.png",
-                            width: 50,
-                            height: 50,
-                          ),
-                            onTap: () {
-                              loginFacebook();
-                            },
-                        ),
-                        SizedBox(
-                          width: 22.0,
-                        ),
-
-                        InkWell(
-                          onTap: () {
-
-                            _handleSignIn();
-                          },
-                          child: Image.asset(
-                            "Assets/gmail.png",
-                            width: 50,
-                            height: 50,
-                          ),
-                        )
-                      ],
-                    ),
-                  ) ,
-
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => JoinDriver(),
-                          ));
-                    },
-                    child: Container(
-                      color: Colors.white,
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: 20.0, top: 20.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.drive_eta,
-                              size: 40,
-                              color: DataProvider().baseColor,
-                            ),
-                            SizedBox(
-                              width: 10.0,
-                            ),
-                            Text(
-                              "Join as captain",
-                              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  )
+                  otherMethodWidget() ,
+                  joinDriverWidget(context)
                 ],
               ),
             ),
@@ -270,6 +182,81 @@ class _LoginState extends State<Login> {
         ],
       ),
     );
+  }
+
+  GestureDetector joinDriverWidget(BuildContext context) {
+    return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => JoinDriver(),
+                        ));
+                  },
+                  child: Container(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: 20.0, top: 20.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.drive_eta,
+                            size: 40,
+                            color: DataProvider().baseColor,
+                          ),
+                          SizedBox(
+                            width: 10.0,
+                          ),
+                          Text(
+                            "Join as captain",
+                            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+  }
+
+  Padding otherMethodWidget() {
+    return Padding(
+                  padding: EdgeInsets.only(top: 30),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+
+                      InkWell(
+
+                        child:  Image.asset(
+                          "Assets/facebook.png",
+                          width: 50,
+                          height: 50,
+                        ),
+                          onTap: () {
+                            loginFacebook();
+                          },
+                      ),
+                      SizedBox(
+                        width: 22.0,
+                      ),
+
+                      InkWell(
+                        onTap: () {
+
+                          _handleSignIn();
+                        },
+                        child: Image.asset(
+                          "Assets/gmail.png",
+                          width: 50,
+                          height: 50,
+                        ),
+                      )
+                    ],
+                  ),
+                );
   }
 
   Future<m.User> checkAccountExit()async{
@@ -320,47 +307,9 @@ class _LoginState extends State<Login> {
 
   }
 
-  void login() {
-
-    // this.setState(() {
-    //   onLogin = true ;
-    // });
-    // if(currentUser != null)
-    // auth
-    //     .signInWithEmailAndPassword(
-    //     email: currentUser.email, password: passwordController.text)
-    //     .then((result) {
-    //
-    //       this.setState(() {
-    //         onLogin = false ;
-    //       });
-    //
-    //   if (result.user != null) {
-    //     if (currentUser.typeAccount == TypeAccount.customer)
-    //
-    //       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => Home(),), (route) => false);
-    //     else
-    //       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
-    //
-    //
-    //     auth.currentUser.updateProfile(displayName: "${currentUser.fullName}" , photoURL: "");
-    //     SharedPreferencesHelper()
-    //         .setFullName(currentUser.fullName);
-    //     SharedPreferencesHelper().setEmail(currentUser.email);
-    //     SharedPreferencesHelper().setSetTypeAccount(currentUser.typeAccount);
-    //   }
-    // });
-    // else
-
-
-      phoneVerification(phoneNumber , typeAccount: TypeAccount.customer);
-
-
-  }
 
 
   Future<void> _handleSignIn() async {
-
     this.setState(() {
       onLogin = true ;
     });
@@ -376,7 +325,6 @@ class _LoginState extends State<Login> {
       accessToken: googleSignInAuthentication.accessToken,
       idToken: googleSignInAuthentication.idToken,
     );
-
 
     loginOtherMethod(   credential: credential ,  fullName: googleSignInAccount.displayName,imageProfile: googleSignInAccount.photoUrl, email: googleSignInAccount.email , flag: 0);
 
@@ -412,12 +360,13 @@ class _LoginState extends State<Login> {
 
         String phoneNumber = user.docs.first.get("phoneNumber");
 
+        print("$phoneNumber");
+
         if(user.docs.first.get("emailVerified"))
         {
           FirebaseAuth.instance.signInWithCredential(credential).then((value) {
 
             auth.currentUser.updateProfile(displayName: "${user.docs.first.get("fullName")}" , photoURL: "");
-
             SharedPreferencesHelper()
                 .setFullName(user.docs.first.get("fullName"));
             SharedPreferencesHelper().setEmail(user.docs.first.get("email"));
@@ -428,18 +377,22 @@ class _LoginState extends State<Login> {
             else
               Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
 
-
-
           });
 
         }
 
         else
-        if(phoneNumber != null){
-          phoneVerification(phoneNumber , credential: credential , fullName: fullName  , flag:flag );
-        }
-        else
-          phoneVerification(this.phoneNumber , credential: credential , fullName: fullName,flag:flag  );
+       {
+         if(phoneNumber != null){
+           phoneVerification(phoneNumber , credential: credential , fullName: fullName  , flag:flag );
+         }
+         else
+           {
+             phoneVerification(this.phoneNumber , credential: credential , fullName: fullName,flag:flag  );
+
+             print(this.phoneNumber);
+           }
+       }
       }
       else
       {
@@ -452,7 +405,6 @@ class _LoginState extends State<Login> {
 
   Future<void> loginFacebook() async {
     try {
-      // by default the login method has the next permissions ['email','public_profile']
       AccessToken accessToken = await FacebookAuth.instance.login();
       print(accessToken.toJson());
       // get the user data
@@ -460,7 +412,6 @@ class _LoginState extends State<Login> {
 
       loginOtherMethod(email: userData['email'] , fullName: userData['name'] ,
           credential: FacebookAuthProvider.credential(accessToken.token) , imageProfile: userData['picture']['data']['url'] , flag: 1);
-
 
       print(userData['picture']['data']['url']);
 

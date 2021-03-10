@@ -7,11 +7,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ContactUs extends StatelessWidget {
 
-
   String urlWhatsApp() {
     if (Platform.isAndroid) {
-      // add the [https]
-      return "https://wa.me/+9620798024797/"; // new line
+
+      return "https://wa.me/+9620798024797/"; //
     } else {
       // add the [https]
       return "https://api.whatsapp.com/send?phone=+9620798024797"; // new line

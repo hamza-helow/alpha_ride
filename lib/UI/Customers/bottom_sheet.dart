@@ -5,9 +5,9 @@ import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
-import 'package:alpha_ride/Login.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/User.dart';
-import 'package:alpha_ride/UI/widgets/PromoCodeBottomSheet.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Customers/PromoCodeBottomSheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -490,9 +490,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
              content: Text("${AppLocalizations.of(context).translate('blockMessage')}") ,
              actions: []));
    }
-
-
-
+   
    dialogPromoCode() async {
      await showDialog<String>(
          context: context,
@@ -514,8 +512,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
              ) ,
              actions: []));
    }
-
-
 
 }
 

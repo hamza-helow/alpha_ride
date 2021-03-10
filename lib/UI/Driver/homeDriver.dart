@@ -12,12 +12,12 @@ import 'package:alpha_ride/UI/Common/Notification.dart' as screen;
 import 'package:alpha_ride/UI/Driver/Earnings.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
-import 'package:alpha_ride/Login.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
 import 'package:alpha_ride/UI/Common/TripsScreen.dart';
-import 'package:alpha_ride/UI/widgets/bottom_sheetDriver.dart';
+import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Driver/bottom_sheetDriver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -645,7 +645,7 @@ class _MyHomePageState extends State<HomeDriver> {
                           size: 21,
                         ),
                         backgroundColor: Colors.grey[200],
-                        label: Text("${rating.toStringAsFixed(2)}"),
+                        label: Text("${rating ==null || rating == 0 ? 0: rating.toStringAsFixed(2)}"),
                       ),
                     ),
                   ),

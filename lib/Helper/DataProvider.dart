@@ -1,17 +1,15 @@
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
-import 'package:alpha_ride/Login.dart';
 import 'package:alpha_ride/Models/DriverRequest.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/Models/SettingApp.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location_permissions/location_permissions.dart';
+import 'package:alpha_ride/UI/Common/Login.dart';
 
 class DataProvider{
 
@@ -110,8 +108,6 @@ class DataProvider{
 
 
 double percentageDriver = (double.parse(totalPrice.toStringAsFixed(2)) * double.parse('0.${settingApp.percentageDriver}')) ;
-
-
         FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
       .update({
        'balance' : FieldValue.increment((percentageDriver *-1))
@@ -123,8 +119,8 @@ double percentageDriver = (double.parse(totalPrice.toStringAsFixed(2)) * double.
   }
 
 
-  void checkLocationPermission()async{
-    PermissionStatus permission = await LocationPermissions().requestPermissions();
+  Future<PermissionStatus> checkLocationPermission()async{
+   return await LocationPermissions().requestPermissions();
   }
 
 
