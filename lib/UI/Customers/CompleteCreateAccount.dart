@@ -5,7 +5,6 @@ import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
 import 'package:alpha_ride/UI/Customers/Home.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';

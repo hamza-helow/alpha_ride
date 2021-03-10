@@ -2,21 +2,17 @@ import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
-import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/User.dart' as m;
 import 'package:alpha_ride/UI/Customers/Home.dart';
 import 'package:alpha_ride/UI/Driver/homeDriver.dart';
 import 'package:alpha_ride/UI/Driver/joinDriver.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/PhoneVerification.dart';
-
+import 'package:alpha_ride/UI/Common/PhoneVerification.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
@@ -437,12 +433,12 @@ class _LoginState extends State<Login> {
     if(phoneNumber == null || phoneNumber.isEmpty)
       {
         showInSnackBar("Pleas enter phone number");
-        this.setState(() {
-          onLogin = false;
-        });
         return;
       }
 
+    this.setState(() {
+      onLogin = false;
+    });
 
     Navigator.push(
         context,

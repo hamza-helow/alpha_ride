@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -19,6 +20,9 @@ class PushNotificationService {
       _fcm.requestNotificationPermissions(IosNotificationSettings());
     }
     String token = await _fcm.getToken();
+
+    DataProvider().tokenDevice = token;
+
     print("FirebaseMessaging token: $token");
 
     _fcm.configure(
@@ -49,7 +53,7 @@ class PushNotificationService {
  static Future displayNotification(String title, String body) async {
     var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
         'channelid', 'flutterfcm', 'your channel description',
-        importance: Importance.Max, priority: Priority.High);
+        importance: Importance.Max, priority: Priority.High );
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);

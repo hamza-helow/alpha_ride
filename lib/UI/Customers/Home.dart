@@ -8,15 +8,15 @@ import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/MapHelpers.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
+import 'package:alpha_ride/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
 import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/Common/ContactUs.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Customers/PromoCodeBottomSheet.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Customers/bottom_sheet.dart';
+import 'package:alpha_ride/UI/Customers/PromoCodeBottomSheet.dart';
+import 'package:alpha_ride/UI/Customers/bottom_sheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
@@ -267,6 +267,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
 
+    FirebaseHelper().updateTokenDevice();
     getCurrentLocation();
 
     checkInternetExit();
@@ -405,6 +406,7 @@ class _HomeState extends State<Home> {
 
               buttonCurrentLocation(),
 
+               if(!exitTrip)
                pin(context),
               startTrip(),
 

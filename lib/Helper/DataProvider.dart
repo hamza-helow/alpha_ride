@@ -39,7 +39,9 @@ class DataProvider{
 
   String currentLanguage = "en" ;
 
-  String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
+final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
+
+   String tokenDevice ;
 
   String accessPointAddress ="";
 

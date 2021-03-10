@@ -12,12 +12,12 @@ import 'package:alpha_ride/UI/Common/Notification.dart' as screen;
 import 'package:alpha_ride/UI/Driver/Earnings.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
+import 'package:alpha_ride/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
 import 'package:alpha_ride/UI/Common/TripsScreen.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Driver/bottom_sheetDriver.dart';
+import 'package:alpha_ride/UI/Driver/bottom_sheetDriver.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -80,14 +80,14 @@ class _MyHomePageState extends State<HomeDriver> {
 
   @override
   void initState() {
-    print("intit");
 
-    super.initState();
-
+    FirebaseHelper().updateTokenDevice();
     getCurrentTrip();
     initImageCar();
     loadInfoUser();
     getAarningsDay();
+
+    super.initState();
   }
 
 
@@ -376,7 +376,7 @@ class _MyHomePageState extends State<HomeDriver> {
                 currentTrip.km,
                 currentTrip.minTrip),
             if (distanceBetweenTwoLocation(currentTrip.locationCustomer, currentTrip.locationDriver) <=
-                    20 &&
+                    100 &&
                 currentTrip.stateTrip == StateTrip.active)
               buttonStartTrip(currentTrip.idTrip),
             if (currentTrip.stateTrip == StateTrip.started) buttonFinishTrip(),

@@ -3,7 +3,7 @@ import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Models/DriverRequest.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/PhoneVerification.dart';
+import 'package:alpha_ride/UI/Common/PhoneVerification.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';

@@ -1,14 +1,10 @@
-import 'package:alpha_ride/Helper/AppLanguage.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/Login.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/PhoneVerification.dart';
-import 'file:///C:/Users/hamzi/AndroidStudioProjects/alpha_ride/lib/UI/Common/setupLanguage.dart';
+import 'package:alpha_ride/UI/Common/Login.dart';
+import 'package:alpha_ride/UI/Common/PhoneVerification.dart';
+import 'package:alpha_ride/UI/Common/setupLanguage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class Settings extends StatefulWidget {
   @override
