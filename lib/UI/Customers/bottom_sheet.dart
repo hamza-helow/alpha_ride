@@ -11,6 +11,7 @@ import 'package:alpha_ride/UI/Customers/PromoCodeBottomSheet.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CustomerBottomSheet extends StatefulWidget {
   final Function callBack , showPromoCodeWidget;
@@ -139,7 +140,8 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                               carType: snapshot.data.carType ,
                               colorCar: snapshot.data.carColor,
                               numberCar: snapshot.data.numberCar,
-                              name: snapshot.data.fullName
+                              name: snapshot.data.fullName,
+                            phoneNumber: snapshot.data.phoneNumber
                           ),
 
                         if(widget.findDriver)
@@ -337,7 +339,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   }
 
-  Widget driverInfo({String name , double rating, carType , carModel , colorCar , numberCar } ){
+  Widget driverInfo({String name , double rating, carType , carModel , colorCar , numberCar , phoneNumber } ){
 
     return Column(
 
@@ -360,11 +362,33 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
             ),
 
-            trailing: FutureBuilder<String>(
-              future: widget.stateTrip == StateTrip.active ?
-              DataProvider().getArriveTime(widget.locationCustomer , widget.locationDriver) : Future.value("--"),
+            trailing: Wrap(
+              spacing: 10.0,
+              children: [
 
-              builder: (context, snapshot) => Text("${ snapshot.data??"-"}"),
+
+                 GestureDetector(
+                   onTap: () {
+
+                     launch("tel://$phoneNumber");
+                   },
+
+                   child: CircleAvatar(
+                     backgroundColor: DataProvider().baseColor,
+                     child: Icon(Icons.call ,color: Colors.white,),
+                   ),
+                 ),
+
+
+                FutureBuilder<String>(
+                  future: widget.stateTrip == StateTrip.active ?
+                  DataProvider().getArriveTime(widget.locationCustomer , widget.locationDriver) : Future.value("--"),
+
+                  builder: (context, snapshot) => Text("${ snapshot.data??"-"}"),
+                ) ,
+
+
+              ],
             ),
 
           ),

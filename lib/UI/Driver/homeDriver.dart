@@ -5,6 +5,7 @@ import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
+import 'package:alpha_ride/Helper/MapUtils.dart';
 import 'package:alpha_ride/UI/Common/ContactUs.dart';
 import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart' as screen;
@@ -28,6 +29,8 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
+
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeDriver extends StatefulWidget {
   HomeDriver({Key key, this.title}) : super(key: key);
@@ -257,7 +260,7 @@ class _MyHomePageState extends State<HomeDriver> {
         width: 40,
         height: 40,
         child: IconButton(
-            icon: Icon(Icons.gps_fixed),
+            icon: Icon(Icons.navigation_rounded),
             onPressed: () {
               animateTo(position.latitude, position.longitude);
             }),
@@ -271,7 +274,7 @@ class _MyHomePageState extends State<HomeDriver> {
       child: Container(
         color: Color(0xFFFAFAFA),
         width: 40,
-        height: 110,
+        height: 200,
         child: Column(
           children: <Widget>[
             IconButton(
@@ -283,7 +286,24 @@ class _MyHomePageState extends State<HomeDriver> {
             IconButton(
               icon: Icon(Icons.remove),
               onPressed: () => changeZoom(typeZoom: 1),
-            )
+            ),
+
+            IconButton(
+                icon: Icon(Icons.gps_fixed),
+                onPressed: () {
+                  animateTo(position.latitude, position.longitude);
+                }),
+
+
+            // IconButton(
+            //   icon: Icon(Icons.assistant_navigation , color: DataProvider().baseColor,),
+            //   onPressed: () {
+            //
+            //
+            //
+            //   },
+            // ),
+
           ],
         ),
       ),
@@ -321,7 +341,7 @@ class _MyHomePageState extends State<HomeDriver> {
                 children: [
                   buttonMenu(),
                   buttonsZoom(),
-                  buttonCurrentLocation(),
+                //  buttonCurrentLocation(),
                 ],
               ),
               SizedBox(
@@ -373,8 +393,8 @@ class _MyHomePageState extends State<HomeDriver> {
           children: [
             infoCustomer(currentTrip.idCustomer),
             timeAndDistanceWidget(
-                currentTrip.km,
-                currentTrip.minTrip),
+                currentTrip.stateTrip == StateTrip.active ?   0 : currentTrip.km,
+                currentTrip.stateTrip == StateTrip.active  ?   0: currentTrip.minTrip),
             if (distanceBetweenTwoLocation(currentTrip.locationCustomer, currentTrip.locationDriver) <=
                     100 &&
                 currentTrip.stateTrip == StateTrip.active)
@@ -415,7 +435,12 @@ class _MyHomePageState extends State<HomeDriver> {
                     ),
                     title: Text(
                         "${snapshot.data == null ? "-" : snapshot.data.fullName}"),
-                    trailing: Wrap(
+                    trailing: currentTrip.stateTrip == StateTrip.active ? GestureDetector(
+                      onTap: () {
+                        launch("tel://${snapshot.data.phoneNumber}");
+                      },
+                      child: CircleAvatar(backgroundColor: DataProvider().baseColor ,child: Icon(Icons.call , color: Colors.white,),),
+                    )   : Wrap(
                       spacing: 5.0,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [

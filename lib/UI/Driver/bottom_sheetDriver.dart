@@ -338,8 +338,8 @@ class _StateDriverState extends State<StateDriver> {
         
         builder: (context, snapshot){
 
-          if(snapshot.hasData)
-           isOnline = snapshot.data.data()['available'];
+          if(snapshot.hasData && snapshot.data.data() != null )
+           isOnline = snapshot.data.data()['available'] ;
           else
             isOnline = false;
 

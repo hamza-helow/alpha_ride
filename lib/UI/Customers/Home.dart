@@ -42,6 +42,9 @@ class _HomeState extends State<Home> {
 
   StreamSubscription<DocumentSnapshot> subscriptionRequestDriver ;
   StreamSubscription<ConnectivityResult> subscriptionConnectivity;
+  StreamSubscription<List<DocumentSnapshot>> subscriptionStreamCloserDrivers;
+
+
 
   var locationReference;
   var _controller;
@@ -118,7 +121,9 @@ class _HomeState extends State<Home> {
           .within(center: geoFirePoint, radius: radius, field: field);
     }
 
-    streamCloserDrivers.listen((event) {
+
+
+    subscriptionStreamCloserDrivers =  streamCloserDrivers.listen((event) {
       DocumentSnapshot currentDriver = event.firstWhere(
         (element) => !rejected.contains(element.data()['idUser']),
         orElse: () => null,
@@ -132,7 +137,10 @@ class _HomeState extends State<Home> {
             .checkDriverHasActiveTrip(currentDriver.data()['idUser'])
             .then((exit) {
           if (!exit)
-            sendRequestToDriver(currentDriver.data());
+           {
+             subscriptionStreamCloserDrivers.cancel();
+             sendRequestToDriver(currentDriver.data());
+           }
           else {
             if (findDriver) {
               radius++;
@@ -382,7 +390,11 @@ class _HomeState extends State<Home> {
               snapshot.data.docs.first.get('locationDriver.lng'));
 
        if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.active.toString()){
-         showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
+         {
+
+           markers.clear() ;
+           showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
+         }
 
          if(polylineCoordinates.isEmpty)
          _getPolyline(

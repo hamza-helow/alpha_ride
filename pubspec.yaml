@@ -47,9 +47,9 @@ dependencies:
 
   cloud_firestore:
   firebase_auth:
-  firebase_core :
+  firebase_core:
   geolocator: ^6.2.1
-
+  flutter_geofire: ^2.0.0
   geoflutterfire: ^2.2.1
   geocoder: ^0.2.1
   geocoding: ^1.0.5
@@ -64,7 +64,7 @@ dependencies:
   firebase_database: ^4.0.0
   flutter_local_notifications: ^1.4.4+4
   flutter_facebook_auth: ^2.0.2
-  rxdart: ^0.25.0
+
   flutter_google_places: ^0.2.8
   connectivity: ^3.0.2
   location_permissions: ^3.0.0
@@ -72,8 +72,10 @@ dependencies:
 
 
 
+
 dependency_overrides:
   intl: ^0.17.0-nullsafety.2
+  rxdart: ^0.24.1
 
 
 dev_dependencies:
