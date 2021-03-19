@@ -5,6 +5,7 @@ import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Models/User.dart';
+import 'package:alpha_ride/UI/Common/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -161,6 +162,12 @@ class ResultTrip extends StatelessWidget {
                 child: MaterialButton(
                   color: DataProvider().baseColor,
                   onPressed: () {
+
+                    FirebaseHelper().insertLocationUser(auth.currentUser.uid, {
+                      'available': true,
+                      'idUser': '${auth.currentUser.uid}',
+                    });
+
                     FirebaseHelper()
                         .ratingUser(
                             idUser,

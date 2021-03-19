@@ -226,15 +226,22 @@ class _PhoneVerificationState extends State<PhoneVerification> {
                                         .setEmail(user.email),
                                     SharedPreferencesHelper()
                                         .setSetTypeAccount(user.typeAccount),
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              user.typeAccount ==
-                                                      TypeAccount.customer
-                                                  ? Home()
-                                                  : HomeDriver(),
-                                        )),
+
+                                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) =>  user.typeAccount ==
+                                        TypeAccount.customer
+                                        ? Home()
+                                        : HomeDriver() ,), (route) => false),
+
+
+                                    // Navigator.push(
+                                    //     context,
+                                    //     MaterialPageRoute(
+                                    //       builder: (context) =>
+                                    //           user.typeAccount ==
+                                    //                   TypeAccount.customer
+                                    //               ? Home()
+                                    //               : HomeDriver(),
+                                    //     )),
                                   })
                         }
                       else

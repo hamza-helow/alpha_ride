@@ -13,6 +13,7 @@ import 'package:alpha_ride/Models/Trip.dart';
 import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
+import 'package:alpha_ride/UI/Common/Notification.dart' as ui ;
 import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/Common/ContactUs.dart';
 import 'package:alpha_ride/UI/Customers/PromoCodeBottomSheet.dart';
@@ -247,14 +248,10 @@ class _HomeState extends State<Home> {
 
       streamCloserDrivers.listen((event) {
 
-
-
         print("position.geopoint${event.length}");
 
         event.forEach((element) {
-
           print("position.geopoint${element.get("position.geopoint").latitude}");
-
          this.setState(() {
            showMarkerDriver(
                element.get("position.geopoint").latitude ,
@@ -394,14 +391,15 @@ class _HomeState extends State<Home> {
 
            markers.clear() ;
            showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
+
+           _getPolyline(
+               LatLng(snapshot.data.docs.first.get('locationCustomer.lat'), snapshot.data.docs.first.get('locationCustomer.lng'))
+               ,  LatLng(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'))).then((value) {
+             _addPolyLine();
+           });
          }
 
-         if(polylineCoordinates.isEmpty)
-         _getPolyline(
-             LatLng(snapshot.data.docs.first.get('locationCustomer.lat'), snapshot.data.docs.first.get('locationCustomer.lng'))
-             ,  LatLng(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'))).then((value) {
-          _addPolyLine();
-         });
+
 
 
        }
@@ -497,6 +495,7 @@ class _HomeState extends State<Home> {
                   callBack: () {
                     this.setState(() {
                       confirmPickup = false;
+                      numberHours = 0.0 ;
                     });
                   },
                   onStateTripChanged: (stateTrip) {},
@@ -528,7 +527,7 @@ class _HomeState extends State<Home> {
 
               builder: (context, drivers) {
 
-                if(drivers.hasData)
+                if(drivers.hasData && !exitTrip)
                 drivers.data.forEach((element) {
                   showMarkerDriver(
                       element.get("position.geopoint").latitude ,
@@ -575,7 +574,7 @@ class _HomeState extends State<Home> {
 
   Positioned buttonsZoom() {
     return Positioned(
-      top: 90,
+      bottom: MediaQuery.of(context).size.height / 2,
       left: 10,
       child: Card(
         elevation: 2,
@@ -970,6 +969,19 @@ class _HomeState extends State<Home> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
+                      builder: (context) => ui.Notification(typeAccount: TypeAccount.customer,),
+                    ));
+              },
+              leading: Icon(Icons.notifications),
+              title: Text(
+                "${AppLocalizations.of(context).translate('notification')}",
+              ),
+            ),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
                       builder: (context) => w.Settings(),
                     ));
               },
@@ -988,6 +1000,7 @@ class _HomeState extends State<Home> {
             ),
             ListTile(
               onTap: () {
+                FirebaseHelper().deleteTokenDevice();
                 auth
                     .signOut()
                     .then((value) => Navigator.of(context).pushAndRemoveUntil(
@@ -1173,7 +1186,6 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
           });
     }
   }
-
 
   whenDriverComing(double lat, double lng, double latCustomer,
       double lngCustomer, double rotateDriver) {

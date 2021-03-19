@@ -297,6 +297,8 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
           .collection(FirebaseConstant().driverRequests)
           .doc(auth.currentUser.uid)
           .delete();
+      _firestore.collection(FirebaseConstant().locations).doc(auth.currentUser.uid).delete();
+
       FirebaseHelper().sendNotification(
         idSender: auth.currentUser.uid ,
         idReceiver: currentTrip.idCustomer ,
@@ -307,7 +309,6 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
   }
 
   void cancelTrip() {
-
     FirebaseHelper()
         .cancelTripFromDriver(auth.currentUser.uid)
         .then((value) {

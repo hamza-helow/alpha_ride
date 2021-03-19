@@ -118,8 +118,9 @@ class _EntryPointState extends State<EntryPoint> {
 }
 
 void setFirebase() async {
+
 final initializationSettingsAndroid =
-      new AndroidInitializationSettings('@mipmap/ic_launcher');
+      new AndroidInitializationSettings('@mipmap/ic_launcher' );
 
   final initializationSettingsIOS = IOSInitializationSettings();
 
@@ -184,9 +185,18 @@ Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
 }
 
 Future displayNotification(String title, String body) async {
+
+  // var androidPlatformChannel = new AndroidNotificationDetails(
+  //     "your_channel_id", "name", "desc_channel",
+  //     sound: RawResourceAndroidNotificationSound('lawgo_sound_notification'),
+  //     playSound: true,
+  //     importance: Importance.Max,
+  //     priority: Priority.High);
+
+
   var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
       'channelid', 'flutterfcm', 'your channel description',
-      importance: Importance.Max, priority: Priority.High);
+      importance: Importance.Max, priority: Priority.High , sound: RawResourceAndroidNotificationSound('call') );
   var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
   var platformChannelSpecifics = new NotificationDetails(
       androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);

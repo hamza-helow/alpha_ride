@@ -150,7 +150,10 @@
 
   "changeLanguage" : "Change Language",
 
-  "pleaseEnterName" : "Please enter full name"
+  "pleaseEnterName" : "Please enter full name",
+
+
+  "notification" : "notification"
 
 
 

@@ -1,5 +1,6 @@
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeNotification.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseConstant.dart';
@@ -216,7 +217,7 @@ class FirebaseHelper {
 
 
   void sendNotification(
-      {String idSender, String idReceiver, String title, String body}) {
+      {String idSender, String idReceiver, String title, String body , TypeNotification typeNotification = TypeNotification.arriveDriver}) {
     String idNotification = FirebaseDatabase
         .instance
         .reference()
@@ -234,7 +235,8 @@ class FirebaseHelper {
       "idReceiver": idReceiver,
       "title": title,
       "body": body,
-      "createdAt": DateTime.now().toString()
+      "createdAt": DateTime.now().toString() ,
+      "type" :typeNotification.toString()
     });
 
     FirebaseDatabase
@@ -432,6 +434,13 @@ class FirebaseHelper {
         .set({
          DataProvider().tokenDevice : 'true'
          });
+  }
+
+
+  void deleteTokenDevice() {
+    FirebaseDatabase.instance.reference()
+        .child("TokensDevices")
+        .child(auth.currentUser.uid).remove();
   }
 
 }

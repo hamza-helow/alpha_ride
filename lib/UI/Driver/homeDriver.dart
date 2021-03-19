@@ -29,6 +29,8 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui' as ui;
+import 'package:alpha_ride/UI/Common/Notification.dart' as ui ;
+
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -482,6 +484,11 @@ class _MyHomePageState extends State<HomeDriver> {
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () {
+                    FirebaseHelper().insertLocationUser(auth.currentUser.uid, {
+                      'available': true,
+                      'idUser': '${auth.currentUser.uid}',
+                    });
+
                     FirebaseFirestore.instance
                         .collection("Trips")
                         .doc(currentTrip.idTrip)
@@ -704,6 +711,21 @@ class _MyHomePageState extends State<HomeDriver> {
               ),
 
             ),
+
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ui.Notification(typeAccount: TypeAccount.driver,),
+                    ));
+              },
+              leading: Icon(Icons.notifications),
+              title: Text(
+                "${AppLocalizations.of(context).translate('notification')}",
+              ),
+            ),
+
             ListTile(
               onTap: () =>Navigator.push(context, MaterialPageRoute(builder: (context) => screen.Settings(),)),
               leading: Icon(Icons.settings),
@@ -721,6 +743,7 @@ class _MyHomePageState extends State<HomeDriver> {
             ),
             ListTile(
               onTap: () {
+                FirebaseHelper().deleteTokenDevice();
                 auth
                     .signOut()
                     .then((value) => Navigator.of(context).pushAndRemoveUntil(
