@@ -188,7 +188,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                   shape: RoundedRectangleBorder(
 
                       borderRadius: BorderRadius.circular(25.0),
-                      side: BorderSide(color: Colors.red)
+                      side: BorderSide(color: DataProvider().baseColor)
                   ),
 
                   onPressed: () {
@@ -271,7 +271,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                     shape: RoundedRectangleBorder(
 
                         borderRadius: BorderRadius.circular(25.0),
-                        side: BorderSide(color: Colors.red)
+                        side: BorderSide(color: DataProvider().baseColor)
                     ),
 
                     onPressed: () {
@@ -302,7 +302,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                     shape: RoundedRectangleBorder(
 
                         borderRadius: BorderRadius.circular(25.0),
-                        side: BorderSide(color: Colors.red)
+                        side: BorderSide(color: DataProvider().baseColor)
                     ),
 
                     onPressed: () {

@@ -58,14 +58,14 @@ class _LoginState extends State<Login> {
           Container(
             decoration: BoxDecoration(
                 image: DecorationImage(
-              image: AssetImage('Assets/logo.jpg'),
+              image: AssetImage('Assets/logo3.jpg' ),
               fit: BoxFit.fitWidth,
               alignment: Alignment.topCenter,
             )),
           ),
           Container(
             width: MediaQuery.of(context).size.width,
-            margin: EdgeInsets.only(top: 200),
+            margin: EdgeInsets.only(top: 300),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: Colors.white,

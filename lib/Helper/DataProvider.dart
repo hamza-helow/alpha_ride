@@ -18,7 +18,7 @@ class DataProvider{
 
   DataProvider._privateConstructor();
 
-   Color baseColor = Colors.red;
+   Color baseColor = Colors.black;
 
   static final DataProvider _instance = DataProvider._privateConstructor();
 

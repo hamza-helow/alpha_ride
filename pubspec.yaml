@@ -69,6 +69,7 @@ dependencies:
   connectivity: ^3.0.2
   location_permissions: ^3.0.0
   url_launcher: ^5.4.11
+  splashy: ^3.0.0
 
 
 
@@ -100,6 +101,8 @@ flutter:
    - Assets/image1.png
    - Assets/image2.png
    - Assets/logo.jpg
+   - Assets/logo2.jpg
+   - Assets/logo3.jpg
    -  lang/en.json
    -  lang/ar.json
    - Assets/gmail.png
@@ -138,6 +141,6 @@ flutter_native_splash:
   color: 42a5f5
 
 flutter_icons:
-  image_path: "Assets/spalsh.jpg"
+  image_path: "Assets/logo3.jpg"
   android: true
   ios: true

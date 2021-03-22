@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:splashy/splashy.dart';
 import 'Helper/AppLanguage.dart';
 import 'Helper/AppLocalizations.dart';
 
@@ -90,19 +91,26 @@ class _EntryPointState extends State<EntryPoint> {
                   GlobalWidgetsLocalizations.delegate,
                 ],
                 debugShowCheckedModeBanner: false,
-                home:  () {
-
-                  //return CompleteCreateAccount(null);
-                  if (auth.currentUser != null)
-                    if (snapshot.data == TypeAccount.driver)
-                      return  HomeDriver();
-                    else
-                      return Home();
-
-                  return Login();
-                  SharedPreferencesHelper().getTypeAccount();
-                  return Login();
-                }(),
+                 home:Splashy(
+                   imagePath: "Assets/logo3.jpg",
+                   curve : Curves.easeInOut,
+                   backgroundColor : Colors.black,
+                   customFunction: mainPage(),
+                 )
+                //
+                // () {
+                //
+                //   //return CompleteCreateAccount(null);
+                //   if (auth.currentUser != null)
+                //     if (snapshot.data == TypeAccount.driver)
+                //       return  HomeDriver();
+                //     else
+                //       return Home();
+                //
+                //   return Login();
+                //   SharedPreferencesHelper().getTypeAccount();
+                //   return Login();
+                // }(),
               )),
         ),),
     );
@@ -114,6 +122,26 @@ class _EntryPointState extends State<EntryPoint> {
         builder: (context) => new AlertDialog(
             content: Text("لا يوجد اتصال بالانترنت") ,
             actions: []));
+  }
+
+   Future<Widget> mainPage() async{
+
+          TypeAccount typeAccount =  await  SharedPreferencesHelper().getTypeAccount();
+
+
+       if (auth.currentUser != null)
+         if (typeAccount == TypeAccount.driver)
+           return Future.value( HomeDriver());
+         else
+           return Future.value( Home());
+
+           return Future.value( Login());
+
+
+       SharedPreferencesHelper().getTypeAccount();
+       return Login();
+
+   //  return Future.value(HomPage());
   }
 }
 

@@ -203,12 +203,18 @@ class _MyHomePageState extends State<HomeDriver> {
 
           if ( currentTrip !=null  && currentTrip.stateTrip == StateTrip.needRatingByDriver)
             ResultTrip(
+
               idTrip: currentTrip.idTrip,
               typeUser: TypeAccount.driver,
               totalTrip: currentTrip.totalPrice,
               name: "",
               idUser: currentTrip.idCustomer,
               typeTrip:currentTrip.typeTrip,
+              onFinish: () {
+
+              //  geo.point(latitude: position.latitude, longitude: position.longitude)
+
+              },
             ),
         ],
       ),

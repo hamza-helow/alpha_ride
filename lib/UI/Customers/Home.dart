@@ -104,6 +104,9 @@ class _HomeState extends State<Home> {
   BitmapDescriptor carIcon;
 
   void getDriver() {
+
+    print("Call  getDriver");
+
     this.setState(() {
       findDriver = true;
     });
@@ -121,8 +124,6 @@ class _HomeState extends State<Home> {
           .collection(collectionRef: locationReference)
           .within(center: geoFirePoint, radius: radius, field: field);
     }
-
-
 
     subscriptionStreamCloserDrivers =  streamCloserDrivers.listen((event) {
       DocumentSnapshot currentDriver = event.firstWhere(
@@ -205,12 +206,23 @@ class _HomeState extends State<Home> {
         .snapshots()
         .listen((event) {
       print("listenRequestDriver");
-      if (event.exists)
-        if (event.data()['stateRequest'] == "rejected") {
+      if (!event.exists){
+
+        // not thing
+      }
+        else if (event.data()['stateRequest'] == "rejected") {
         radius = 1;
         rejected.add(idDriver);
         getDriver();
-      } else {
+      }
+        else if (event.data()['stateRequest'] == "pending")
+          {
+
+            // not thing
+          }
+
+        else {
+          rejected.clear();
         subscriptionRequestDriver.cancel();
         return;
       }
@@ -653,7 +665,7 @@ class _HomeState extends State<Home> {
           color: DataProvider().baseColor,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(25.0),
-              side: BorderSide(color: Colors.red)),
+              side: BorderSide(color: DataProvider().baseColor)),
           onPressed: () {
             setState(() {
               confirmPickup = true;

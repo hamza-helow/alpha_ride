@@ -9,6 +9,8 @@ import 'package:alpha_ride/UI/Common/Login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:geolocator/geolocator.dart';
 
 class ResultTrip extends StatelessWidget {
    double rating = 3.0;
@@ -21,14 +23,18 @@ class ResultTrip extends StatelessWidget {
 
   final totalTrip ;
 
+  final  Function() onFinish;
+
   ResultTrip(
       {this.typeUser = TypeAccount.driver,
       this.typeTrip,
       this.idUser, this.idTrip,
 
-      this.name,this.totalTrip});
+      this.name,this.totalTrip , this.onFinish});
 
-  @override
+   GeoFirePoint geoMyLocation;
+
+   @override
   Widget build(BuildContext context) {
     return Positioned(
       bottom: 15,
@@ -163,10 +169,22 @@ class ResultTrip extends StatelessWidget {
                   color: DataProvider().baseColor,
                   onPressed: () {
 
-                    FirebaseHelper().insertLocationUser(auth.currentUser.uid, {
-                      'available': true,
-                      'idUser': '${auth.currentUser.uid}',
+
+
+                    Geolocator.getLastKnownPosition().then((value)  {
+
+
+
+                      FirebaseHelper().insertLocationUser(auth.currentUser.uid, {
+                        'available': true,
+                        'idUser': '${auth.currentUser.uid}',
+                        'position': Geoflutterfire().point(latitude: value.latitude, longitude: value.longitude).data
+                      });
+
                     });
+
+
+
 
                     FirebaseHelper()
                         .ratingUser(
