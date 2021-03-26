@@ -149,7 +149,20 @@
 
   "pleaseEnterName" : "الرجاء ادخال الاسم",
 
-  "notification" : "الاشعارات"
+  "notification" : "الاشعارات",
+
+  "canReserveSpecific" : "يمكنك حجز سيارة محددة بسعر محدد داخل المدينة",
+
+  "confirmExit" : "تاكيد الخروج",
+
+  "wantToExit" : "هل انت متاكد من الخروج ؟",
+
+  "yes" : "نعم" ,
+  "no" : "لا"
+
+
+
+
 
 
 

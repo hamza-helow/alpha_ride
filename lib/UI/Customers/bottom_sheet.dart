@@ -20,6 +20,8 @@ class CustomerBottomSheet extends StatefulWidget {
 
   final Function getDriver , deleteRequest;
 
+  final Function() onCancelTrip;
+
   final numberHours ;
  // final Trip currentTrip ;
 
@@ -40,7 +42,9 @@ class CustomerBottomSheet extends StatefulWidget {
       this.showPromoCodeWidget ,
     this.onStateTripChanged , this.numberHours ,
       this.tripActive = false , this.getDriver ,
-    this.findDriver = false , this.idDriver , this.deleteRequest , this.stateTrip , this.locationDriver , this.locationCustomer});
+    this.findDriver = false , this.idDriver , this.deleteRequest , this.stateTrip , this.locationDriver ,
+
+    this.locationCustomer , this.onCancelTrip});
 
   @override
   _CustomerBottomSheetState createState() => _CustomerBottomSheetState();
@@ -141,7 +145,8 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                               colorCar: snapshot.data.carColor,
                               numberCar: snapshot.data.numberCar,
                               name: snapshot.data.fullName,
-                            phoneNumber: snapshot.data.phoneNumber
+                            phoneNumber: snapshot.data.phoneNumber ,
+                            imageProfile: snapshot.data.imageProfile
                           ),
 
                         if(widget.findDriver)
@@ -339,7 +344,7 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   }
 
-  Widget driverInfo({String name , double rating, carType , carModel , colorCar , numberCar , phoneNumber } ){
+  Widget driverInfo({String name , double rating, carType , carModel , colorCar , numberCar , phoneNumber , String imageProfile } ){
 
     return Column(
 
@@ -350,12 +355,12 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
           child:  ListTile(
 
             leading: CircleAvatar(
+              backgroundImage: imageProfile.isEmpty ? null : NetworkImage(imageProfile),
               backgroundColor: DataProvider().baseColor,
-              child: Icon(Icons.person  , color: Colors.white,),
+              child: imageProfile.isEmpty ? Icon(Icons.person  , color: Colors.white,) : null,
             ),
             title: Text(name??""),
             subtitle: Row(
-
               children: [
                 Icon(Icons.star  ,color: DataProvider().baseColor,) , Text("${rating.toStringAsFixed(2)??"-"}"),
               ],
@@ -466,6 +471,8 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
   void cancelTrip() async {
 
+    widget.onCancelTrip();
+
     FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid).update({
       'countCancelTrip' : FieldValue.increment(1)
     });
@@ -477,6 +484,16 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
         'idUser' :auth.currentUser.uid,
         'date' : FieldValue.serverTimestamp()
       });
+
+    print("idDriver ${widget.idDriver}");
+
+    FirebaseFirestore.instance
+        .collection("LastRejected")
+        .doc(widget.idDriver)
+        .set({
+      'idCustomer' : auth.currentUser.uid
+    });
+
 
 
     FirebaseFirestore.instance
@@ -494,6 +511,8 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
          //     .update({
          //      'balance' : FieldValue.increment(-1.15)
          //     });
+
+
 
          FirebaseHelper().sendNotification(
            idSender: auth.currentUser.uid,

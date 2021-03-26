@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
@@ -8,8 +9,11 @@ import 'package:alpha_ride/Helper/FirebaseConstant.dart';
 import 'package:alpha_ride/Helper/MapHelpers.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
+import 'package:alpha_ride/Models/User.dart';
 import 'package:alpha_ride/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
+import 'package:google_maps_webservice/places.dart' as loc;
+
 import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/user_location.dart';
 import 'package:alpha_ride/UI/Common/ResultTrip.dart';
@@ -18,9 +22,13 @@ import 'package:alpha_ride/UI/Common/TripsScreen.dart';
 import 'package:alpha_ride/UI/Common/ContactUs.dart';
 import 'package:alpha_ride/UI/Customers/PromoCodeBottomSheet.dart';
 import 'package:alpha_ride/UI/Customers/bottom_sheet.dart';
+import 'package:alpha_ride/UI/Driver/homeDriver.dart';
+import 'package:alpha_ride/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart' as poly;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -29,6 +37,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart' as w;
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 //key0
@@ -42,9 +51,31 @@ class _HomeState extends State<Home> {
   GeoFirePoint geoFirePoint;
 
   StreamSubscription<DocumentSnapshot> subscriptionRequestDriver ;
-  StreamSubscription<ConnectivityResult> subscriptionConnectivity;
-  StreamSubscription<List<DocumentSnapshot>> subscriptionStreamCloserDrivers;
 
+  StreamSubscription<DocumentSnapshot> subscriptionChangeAccount ;
+  StreamSubscription<ConnectivityResult> subscriptionConnectivity;
+  StreamSubscription<List<DocumentSnapshot>> subscriptionStreamCloserDriver;
+
+  StreamSubscription<List<DocumentSnapshot>> subscriptionStreamCloserAllDrivers;
+
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    if(subscriptionRequestDriver != null)
+    subscriptionRequestDriver.cancel();
+
+    if(subscriptionConnectivity != null )
+    subscriptionConnectivity.cancel();
+
+    if(subscriptionStreamCloserAllDrivers != null)
+      subscriptionStreamCloserAllDrivers.cancel();
+
+    if(subscriptionChangeAccount != null )
+      subscriptionChangeAccount.cancel();
+
+  }
 
 
   var locationReference;
@@ -93,15 +124,39 @@ class _HomeState extends State<Home> {
   );
 
   void _onCameraMove(CameraPosition position) async {
-      DataProvider().userLocation = UserLocation(
-          latitude: position.target.latitude,
-          longitude: position.target.longitude);
+
+    DataProvider().userLocation = UserLocation(
+        latitude: position.target.latitude,
+        longitude: position.target.longitude);
+
 
   }
 
   String _fullName = "", _email = "", selectedDriver = "";
 
   BitmapDescriptor carIcon;
+
+
+
+  Timer timer  ;
+  void timerCancelTrip(){
+    timer = Timer.periodic(Duration(seconds: 7), (timer) {
+
+      print("Time : ${timer.tick}");
+
+      if(timer.tick == 7){
+        timer.cancel();
+        FirebaseFirestore.instance.collection("driverRequests").doc(idDriver).delete();
+        subscriptionStreamCloserDriver.cancel();
+        rejected.add(idDriver);
+        radius = 0 ;
+        getDriver();
+
+      }
+
+    });
+
+  }
 
   void getDriver() {
 
@@ -125,7 +180,11 @@ class _HomeState extends State<Home> {
           .within(center: geoFirePoint, radius: radius, field: field);
     }
 
-    subscriptionStreamCloserDrivers =  streamCloserDrivers.listen((event) {
+    if(radius >150)
+      return;
+
+
+    subscriptionStreamCloserDriver =  streamCloserDrivers.listen((event) {
       DocumentSnapshot currentDriver = event.firstWhere(
         (element) => !rejected.contains(element.data()['idUser']),
         orElse: () => null,
@@ -140,11 +199,13 @@ class _HomeState extends State<Home> {
             .then((exit) {
           if (!exit)
            {
-             subscriptionStreamCloserDrivers.cancel();
+             timerCancelTrip();
+             subscriptionStreamCloserDriver.cancel();
              sendRequestToDriver(currentDriver.data());
            }
           else {
             if (findDriver) {
+              radius = 0 ;
               radius++;
               getDriver();
             }
@@ -189,6 +250,10 @@ class _HomeState extends State<Home> {
   }
 
   void deleteRequest() {
+
+    if(timer != null)
+      timer.cancel();
+
     this.setState(() {
       findDriver = false;
       if (idDriver.isNotEmpty)
@@ -222,6 +287,7 @@ class _HomeState extends State<Home> {
           }
 
         else {
+          timer.cancel();
           rejected.clear();
         subscriptionRequestDriver.cancel();
         return;
@@ -258,7 +324,7 @@ class _HomeState extends State<Home> {
           .collection(collectionRef: locationReference)
           .within(center: geoFirePoint, radius: 100, field: field);
 
-      streamCloserDrivers.listen((event) {
+      subscriptionStreamCloserAllDrivers =  streamCloserDrivers.listen((event) {
 
         print("position.geopoint${event.length}");
 
@@ -276,14 +342,9 @@ class _HomeState extends State<Home> {
   }
 
   @override
-  dispose() {
-    super.dispose();
-    subscriptionConnectivity.cancel();
-  }
-
-  @override
   void initState() {
 
+    whenCustomerHasBecomeDriver();
     FirebaseHelper().updateTokenDevice();
     getCurrentLocation();
 
@@ -369,164 +430,212 @@ class _HomeState extends State<Home> {
           )
         : null;
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection("Trips")
-          .where("state", whereIn: [
-            StateTrip.active.toString(),
-            StateTrip.started.toString(),
-            StateTrip.needRatingByCustomer.toString()
-          ])
-          .where("idCustomer", isEqualTo: auth.currentUser.uid)
-          .snapshots(),
-      builder: (context, snapshot) {
+    return  WillPopScope(
 
-       final exitTrip =snapshot.hasData && snapshot.data.docs.length > 0 ;
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection("Trips")
+            .where("state", whereIn: [
+          StateTrip.active.toString(),
+          StateTrip.started.toString(),
+          StateTrip.needRatingByCustomer.toString()
+        ])
+            .where("idCustomer", isEqualTo: auth.currentUser.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
 
-       if(!exitTrip){
+          final exitTrip =snapshot.hasData && snapshot.data.docs.length > 0 ;
 
-         markers.clear();
-         polylines.clear();
-         polylineCoordinates.clear();
-       }
+          if(exitTrip)
+            if(timer != null)
+              timer.cancel();
 
-       findDriver = findDriver?!exitTrip : false ;
+          // if(!exitTrip){
+          //
+          //   markers.clear();
+          //   polylines.clear();
+          //   polylineCoordinates.clear();
+          // }
 
-        if (exitTrip &&
-            snapshot.data.docs.first.get("state") ==
-                StateTrip.started.toString())
-          animateTo(snapshot.data.docs.first.get('locationDriver.lat'),
-              snapshot.data.docs.first.get('locationDriver.lng'));
+          findDriver = findDriver?!exitTrip : false ;
 
-       if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.active.toString()){
-         {
+          if (exitTrip &&
+              snapshot.data.docs.first.get("state") ==
+                  StateTrip.started.toString())
+            animateTo(snapshot.data.docs.first.get('locationDriver.lat'),
+                snapshot.data.docs.first.get('locationDriver.lng'));
 
-           markers.clear() ;
-           showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
+          if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.active.toString()){
+            {
 
-           _getPolyline(
-               LatLng(snapshot.data.docs.first.get('locationCustomer.lat'), snapshot.data.docs.first.get('locationCustomer.lng'))
-               ,  LatLng(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'))).then((value) {
-             _addPolyLine();
-           });
-         }
+              markers.clear() ;
+              showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
 
+              _getPolyline(
+                  LatLng(snapshot.data.docs.first.get('locationCustomer.lat'), snapshot.data.docs.first.get('locationCustomer.lng'))
+                  ,  LatLng(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'))).then((value) {
+                _addPolyLine();
+              });
+            }
+          }
+          else if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.started.toString())
+          {
+            polylines.clear();
+            polylineCoordinates.clear();
+          }
 
+          if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.needRatingByCustomer.toString())
+            rejected.clear();
 
+          return Scaffold(
+            key: _scaffoldKey,
+            drawer: buildDrawer(),
+            body: Stack(
+              children: [
 
-       }
+                googleMapBuilder(exitTrip, snapshot, cameraPosition),
 
-        return Scaffold(
-          key: _scaffoldKey,
-          drawer: buildDrawer(),
-          body: Stack(
-            children: [
+                buttonsZoom(),
 
-              googleMapBuilder(exitTrip, snapshot, cameraPosition),
+                buttonCurrentLocation(),
 
-              buttonsZoom(),
+                if(!exitTrip)
+                  pin(context),
+                startTrip(),
 
-              buttonCurrentLocation(),
+                buildAppBar(),
 
-               if(!exitTrip)
-               pin(context),
-              startTrip(),
+                if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.needRatingByCustomer.toString())
+                  ResultTrip(
+                    typeUser: TypeAccount.customer,
+                    idUser: snapshot.data.docs.first.get("idDriver"),
+                    name: "",
+                    totalTrip: snapshot.data.docs.first.get("totalPrice"),
+                    typeTrip: snapshot.data.docs.first.get('typeTrip') ==
+                        TypeTrip.distance.toString() ? TypeTrip.distance : TypeTrip.hours,
+                    idTrip: snapshot.data.docs.first.id
+                    ,
+                  ),
 
-              buildAppBar(),
+                if ((snapshot.hasData && snapshot.data.docs.length > 0) && snapshot.data.docs.first.get("state") != StateTrip.needRatingByCustomer.toString())
+                  CustomerBottomSheet(
+                    onCancelTrip: () {
+                      if(timer != null)
+                      timer.cancel();
 
-              if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.needRatingByCustomer.toString())
-                ResultTrip(
-                  typeUser: TypeAccount.customer,
-                  idUser: snapshot.data.docs.first.get("idDriver"),
-                  name: "",
-                  totalTrip: snapshot.data.docs.first.get("totalPrice"),
-                  typeTrip: snapshot.data.docs.first.get('typeTrip') ==
-                      TypeTrip.distance.toString() ? TypeTrip.distance : TypeTrip.hours,
-                  idTrip: snapshot.data.docs.first.id
-                  ,
-                ),
+                    },
+                    dateAccept: DateTime.parse(snapshot.data.docs.first
+                        .get("dateAcceptRequest")
+                        .toDate()
+                        .toString()),
+                    idTrip: snapshot.data.docs.first.id,
+                    locationCustomer: LatLng(
+                        snapshot.data.docs.first.get("locationCustomer.lat"),
+                        snapshot.data.docs.first.get("locationCustomer.lng")),
+                    locationDriver: LatLng(
+                        snapshot.data.docs.first.get("locationDriver.lat"),
+                        snapshot.data.docs.first.get("locationDriver.lng")),
+                    stateTrip: () {
+                      var state = snapshot.data.docs.first.get("state");
+                      if (state == StateTrip.active.toString())
+                        return StateTrip.active;
+                      else if (state == StateTrip.rejected.toString())
+                        return StateTrip.rejected;
+                      else
+                        return StateTrip.started;
+                    }(),
+                    findDriver: exitTrip ?  false : findDriver,
+                    getDriver: () {
+                      getDriver();
+                    },
+                    deleteRequest: () => deleteRequest(),
+                    tripActive: snapshot.data.docs.first.get("state") ==
+                        StateTrip.active ||
+                        snapshot.data.docs.first.get("state") ==
+                            StateTrip.started,
+                    numberHours: numberHours,
+                    idDriver: snapshot.data.docs.first.get("idDriver"),
+                    callBack: () {
+                      this.setState(() {
+                        confirmPickup = false;
+                      });
+                    },
+                    onStateTripChanged: (stateTrip) {},
+                    showPromoCodeWidget: () {
+                      this.setState(() {
+                        showPromoCode = true;
+                      });
+                    },
+                  ),
 
-              if ((snapshot.hasData && snapshot.data.docs.length > 0) && snapshot.data.docs.first.get("state") != StateTrip.needRatingByCustomer.toString())
-                CustomerBottomSheet(
-                  dateAccept: DateTime.parse(snapshot.data.docs.first
-                      .get("dateAcceptRequest")
-                      .toDate()
-                      .toString()),
-                  idTrip: snapshot.data.docs.first.id,
-                  locationCustomer: LatLng(
-                      snapshot.data.docs.first.get("locationCustomer.lat"),
-                      snapshot.data.docs.first.get("locationCustomer.lng")),
-                  locationDriver: LatLng(
-                      snapshot.data.docs.first.get("locationDriver.lat"),
-                      snapshot.data.docs.first.get("locationDriver.lng")),
-                  stateTrip: () {
-                    var state = snapshot.data.docs.first.get("state");
-                    if (state == StateTrip.active.toString())
-                      return StateTrip.active;
-                    else if (state == StateTrip.rejected.toString())
-                      return StateTrip.rejected;
-                    else
-                      return StateTrip.started;
-                  }(),
-                  findDriver: exitTrip ?  false : findDriver,
-                  getDriver: () {
-                    getDriver();
-                  },
-                  deleteRequest: () => deleteRequest(),
-                  tripActive: snapshot.data.docs.first.get("state") ==
-                          StateTrip.active ||
-                      snapshot.data.docs.first.get("state") ==
-                          StateTrip.started,
-                  numberHours: numberHours,
-                  idDriver: snapshot.data.docs.first.get("idDriver"),
-                  callBack: () {
+                if (confirmPickup &&
+                    !(snapshot.hasData && snapshot.data.docs.length > 0))
+                  CustomerBottomSheet(
+                    onCancelTrip: () {
+                      if(timer != null)
+                        timer.cancel();
+                    },
+                    stateTrip: StateTrip.none,
+                    findDriver: exitTrip ?  false : findDriver,
+                    getDriver: () {
+                      getDriver();
+                    },
+                    deleteRequest: () => deleteRequest(),
+                    tripActive: false,
+                    numberHours: numberHours,
+                    idDriver: null,
+                    callBack: () {
+                      this.setState(() {
+                        confirmPickup = false;
+                        numberHours = 0.0 ;
+                      });
+                    },
+                    onStateTripChanged: (stateTrip) {},
+                    showPromoCodeWidget: () {
+                      this.setState(() {
+                        showPromoCode = true;
+                      });
+                    },
+                  ),
+
+                if (showPromoCode)
+                  PromoCodeBottomSheet(() {
                     this.setState(() {
-                      confirmPickup = false;
+                      showPromoCode = false;
                     });
-                  },
-                  onStateTripChanged: (stateTrip) {},
-                  showPromoCodeWidget: () {
-                    this.setState(() {
-                      showPromoCode = true;
-                    });
-                  },
-                ),
+                  }),
+              ],
+            ),
+          );
+        },
+      ),
 
-              if (confirmPickup &&
-                  !(snapshot.hasData && snapshot.data.docs.length > 0))
-                CustomerBottomSheet(
-                  stateTrip: StateTrip.none,
-                  findDriver: exitTrip ?  false : findDriver,
-                  getDriver: () {
-                    getDriver();
-                  },
-                  deleteRequest: () => deleteRequest(),
-                  tripActive: false,
-                  numberHours: numberHours,
-                  idDriver: null,
-                  callBack: () {
-                    this.setState(() {
-                      confirmPickup = false;
-                      numberHours = 0.0 ;
-                    });
-                  },
-                  onStateTripChanged: (stateTrip) {},
-                  showPromoCodeWidget: () {
-                    this.setState(() {
-                      showPromoCode = true;
-                    });
-                  },
-                ),
-
-              if (showPromoCode)
-                PromoCodeBottomSheet(() {
-                  this.setState(() {
-                    showPromoCode = false;
-                  });
-                }),
-            ],
-          ),
+      onWillPop: () {
+        return showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text("${AppLocalizations.of(context).translate('confirmExit')}"),
+                content: Text("${AppLocalizations.of(context).translate('wantToExit')}"),
+                actions: <Widget>[
+                  MaterialButton(
+                    child: Text("${AppLocalizations.of(context).translate('yes')}" , style: TextStyle(color: DataProvider().baseColor)),
+                    onPressed: () {
+                      SystemNavigator.pop();
+                    },
+                  ),
+                  MaterialButton(
+                    child: Text("${AppLocalizations.of(context).translate('no')}" , style: TextStyle(color: DataProvider().baseColor),),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  )
+                ],
+              );
+            }
         );
+      //  return Future.value(true);
       },
     );
   }
@@ -586,8 +695,8 @@ class _HomeState extends State<Home> {
 
   Positioned buttonsZoom() {
     return Positioned(
-      bottom: MediaQuery.of(context).size.height / 2,
-      left: 10,
+      bottom: 100,
+      right: 15,
       child: Card(
         elevation: 2,
         child: Container(
@@ -616,8 +725,8 @@ class _HomeState extends State<Home> {
   Positioned buttonCurrentLocation() {
 
     return Positioned(
-      top: 200,
-      left: 10,
+      bottom: 200,
+      right: 15,
       child: Card(
         elevation: 2,
         child: Container(
@@ -632,6 +741,38 @@ class _HomeState extends State<Home> {
         ),
       ),
     );
+  }
+
+
+  void whenCustomerHasBecomeDriver(){
+
+    subscriptionChangeAccount= FirebaseFirestore
+        .instance
+        .collection("Users")
+        .doc(auth.currentUser.uid)
+        .snapshots().listen((event) {
+
+         if(event.data()['typeUser'] == TypeAccount.driver.toString())
+           {
+
+             print("TypeChange ${ event.data()['typeAccount']}");
+
+             SharedPreferencesHelper().setSetTypeAccount(TypeAccount.driver);
+             Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeDriver(),), (route) => false);
+
+
+             // FirebaseHelper().deleteTokenDevice().then((value) {
+             //
+             // //  auth.signOut();
+             //   Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Login(),), (route) => false);
+             // });
+
+
+           }
+
+         });
+
+
   }
 
   Positioned pin(BuildContext context) {
@@ -740,7 +881,10 @@ class _HomeState extends State<Home> {
                                     // show input autocomplete with selected mode
                                     // then get the Prediction selected
                                     Prediction p = await PlacesAutocomplete.show(
-
+                                      components: [new Component(Component.country , "jo")],
+                                      radius: 1000,
+                                      language: AppLocalizations.of(context).locale.languageCode == "en" ?"en" : "ar",
+                                       location: loc.Location(DataProvider().userLocation.latitude , DataProvider().userLocation.longitude) ,
                                         mode: Mode.overlay,
                                         context: context,
                                         apiKey: DataProvider().mapKey,
@@ -835,6 +979,10 @@ class _HomeState extends State<Home> {
                                     this.setState(() {
                                       addressTo = "";
                                       DataProvider().priceByDistance = 0.0 ;
+
+                                        markers.clear();
+                                        polylines.clear();
+                                        polylineCoordinates.clear();
                                     });
                                   },
                                   child: Icon(Icons.clear),
@@ -856,177 +1004,244 @@ class _HomeState extends State<Home> {
     );
   }
 
+
+  final picker = ImagePicker();
+
+  void updateImageProfile() async {
+
+    List<ImageSource> l ;
+
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+
+    final ref =     FirebaseStorage
+        .instance.ref()
+        .child("UsersImage")
+        .child(auth.currentUser.uid).
+        child("imgProfile");
+
+
+    ref.putFile(File(pickedFile.path)).then((result) {
+
+      ref.getDownloadURL().then((value) => {
+
+        FirebaseFirestore
+            .instance.collection("Users")
+            .doc(auth.currentUser.uid)
+             .update({
+               'imageProfile' : value
+              })
+      });
+
+    });
+
+
+
+  }
+
   Drawer buildDrawer() {
     return Drawer(
-      child: Container(
-        color: Colors.white,
-        child: ListView(
-          children: <Widget>[
-            GestureDetector(
-              onTap: () => {},
-              child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                ),
-                accountName: Text("$_fullName",
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold)),
-                accountEmail:
-                    Text("$_email", style: TextStyle(color: Colors.black54)),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: DataProvider().baseColor,
-                  child: Icon(
-                    FontAwesomeIcons.user,
+      child: FutureBuilder<User>(
+        future: FirebaseHelper().loadUserInfo(auth.currentUser.uid , typeAccount: TypeAccount.customer),
+        builder: (context, user) => Container(
+          color: Colors.white,
+          child: ListView(
+            children: <Widget>[
+              GestureDetector(
+
+                child: UserAccountsDrawerHeader(
+                  decoration: BoxDecoration(
                     color: Colors.white,
                   ),
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                Container(
-                  height: 50.5,
-                  color: Colors.white,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 14.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Chip(
-                        avatar: Icon(
-                          FontAwesomeIcons.gift,
-                          color: DataProvider().baseColor,
-                          size: 21,
-                        ),
-                        backgroundColor: Colors.grey[200],
-                        label: Text("$points ${AppLocalizations.of(context).translate('point')}"),
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 50.5,
-                  color: Colors.white,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 14.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Chip(
-                        avatar: Icon(
-                          Icons.star,
-                          color: DataProvider().baseColor,
-                          size: 21,
-                        ),
-                        backgroundColor: Colors.grey[200],
-                        label: Text("${ rating ==null || rating == 0 ? 0: rating.toStringAsFixed(2)}"),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Container(
-                  height: 50.5,
-                  color: Colors.white,
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 14.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Chip(
-                        avatar: Icon(
-                          Icons.monetization_on_rounded,
-                          color: DataProvider().baseColor,
-                          size: 21,
-                        ),
-                        backgroundColor: Colors.grey[200],
-                        label: Text(
-                          "${balance.toStringAsFixed(2)} ${AppLocalizations.of(context).translate('jd')}",
-                          style: TextStyle(
-                              color: balance < 0 ? Colors.red : Colors.green),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            ListTile(
-              onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TripsScreen(),
-                  )),
-              leading: Icon(Icons.time_to_leave_sharp),
-              title: Text(
-                "${AppLocalizations.of(context).translate('yourTrips')}",
-              ),
+                  accountName: Text("${ !user.hasData || user.data == null ?  "" : user.data.fullName}",
+                      style: TextStyle(
+                          color: Colors.black, fontWeight: FontWeight.bold)),
+                  accountEmail:
+                  Text((){
+                    if(!user.hasData || user.data == null)
+                      return "";
 
-            ),
-            ListTile(
-              onTap: () {
-                _scaffoldKey.currentState.openEndDrawer();
-                dialogReserveHours();
-              },
-              leading: Icon(Icons.access_time),
-              title: Text(
-                "${AppLocalizations.of(context).translate('reserveHours')}",
+                    if(user.data.email.isEmpty)
+                      return  user.data.phoneNumber ;
+                    else
+                      return  user.data.email ;
+                  }(), style: TextStyle(color: Colors.black54)),
+                  currentAccountPicture: GestureDetector(
+                    onTap: () => {
+                      updateImageProfile()
+                    },
+                    child: CircleAvatar(
+                      backgroundImage: () {
+                        if (!user.hasData || user.data == null)
+                          return null;
+
+                        else if (user.data.imageProfile.isEmpty)
+                          return null ;
+                        else
+                          return !user.hasData && user.data.imageProfile.isEmpty
+                              ? null
+                              : NetworkImage(user.data.imageProfile);
+                      }(),
+                      backgroundColor: DataProvider().baseColor,
+                      child:!user.hasData ||
+                          user.data == null ||
+                          user.data.imageProfile == null ||
+                          user.data.imageProfile.isEmpty
+                          ? Icon(
+                        FontAwesomeIcons.user,
+                        color: Colors.white,
+                      )
+                          : null,
+                    ),
+                  ),
+                ),
               ),
-              trailing: Padding(
-                padding: EdgeInsets.only(right: 10),
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ui.Notification(typeAccount: TypeAccount.customer,),
-                    ));
-              },
-              leading: Icon(Icons.notifications),
-              title: Text(
-                "${AppLocalizations.of(context).translate('notification')}",
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => w.Settings(),
-                    ));
-              },
-              leading: Icon(Icons.settings),
-              title: Text(
-                "${AppLocalizations.of(context).translate('setting')}",
-              ),
-            ),
-            Divider(),
-            ListTile(
-              onTap: () =>Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUs(),)),
-              leading: Icon(Icons.contact_support),
-              title: Text(
-                "${AppLocalizations.of(context).translate('contactUs')}",
-              ),
-            ),
-            ListTile(
-              onTap: () {
-                FirebaseHelper().deleteTokenDevice();
-                auth
-                    .signOut()
-                    .then((value) => Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => Login(),
+              Row(
+                children: [
+                  Container(
+                    height: 50.5,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 14.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Chip(
+                          avatar: Icon(
+                            FontAwesomeIcons.gift,
+                            color: DataProvider().baseColor,
+                            size: 21,
+                          ),
+                          backgroundColor: Colors.grey[200],
+                          label: Text("$points ${AppLocalizations.of(context).translate('point')}"),
                         ),
-                        (route) => false));
-              },
-              leading: Icon(Icons.logout),
-              title: Text(
-                "${AppLocalizations.of(context).translate('logout')}",
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 50.5,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 14.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Chip(
+                          avatar: Icon(
+                            Icons.star,
+                            color: DataProvider().baseColor,
+                            size: 21,
+                          ),
+                          backgroundColor: Colors.grey[200],
+                          label: Text("${ rating ==null || rating == 0 ? 0: rating.toStringAsFixed(2)}"),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              Row(
+                children: [
+                  Container(
+                    height: 50.5,
+                    color: Colors.white,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 14.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Chip(
+                          avatar: Icon(
+                            Icons.monetization_on_rounded,
+                            color: DataProvider().baseColor,
+                            size: 21,
+                          ),
+                          backgroundColor: Colors.grey[200],
+                          label: Text(
+                            "${balance.toStringAsFixed(2)} ${AppLocalizations.of(context).translate('jd')}",
+                            style: TextStyle(
+                                color: balance < 0 ? Colors.red : Colors.green),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              ListTile(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TripsScreen(),
+                    )),
+                leading: Icon(Icons.time_to_leave_sharp),
+                title: Text(
+                  "${AppLocalizations.of(context).translate('yourTrips')}",
+                ),
+
+              ),
+              ListTile(
+                onTap: () {
+                  _scaffoldKey.currentState.openEndDrawer();
+                  dialogReserveHours();
+                },
+                leading: Icon(Icons.access_time),
+                title: Text(
+                  "${AppLocalizations.of(context).translate('reserveHours')}",
+                ),
+                trailing: Padding(
+                  padding: EdgeInsets.only(right: 10),
+                ),
+              ),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ui.Notification(typeAccount: TypeAccount.customer,),
+                      ));
+                },
+                leading: Icon(Icons.notifications),
+                title: Text(
+                  "${AppLocalizations.of(context).translate('notification')}",
+                ),
+              ),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => w.Settings(),
+                      ));
+                },
+                leading: Icon(Icons.settings),
+                title: Text(
+                  "${AppLocalizations.of(context).translate('setting')}",
+                ),
+              ),
+              Divider(),
+              ListTile(
+                onTap: () =>Navigator.push(context, MaterialPageRoute(builder: (context) => ContactUs(),)),
+                leading: Icon(Icons.contact_support),
+                title: Text(
+                  "${AppLocalizations.of(context).translate('contactUs')}",
+                ),
+              ),
+              ListTile(
+                onTap: () {
+                  FirebaseHelper().deleteTokenDevice();
+                  auth
+                      .signOut()
+                      .then((value) => Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => Login(),
+                      ),
+                          (route) => false));
+                },
+                leading: Icon(Icons.logout),
+                title: Text(
+                  "${AppLocalizations.of(context).translate('logout')}",
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1108,6 +1323,11 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
                   contentPadding: EdgeInsets.all(20.0),
                   title: Text("${AppLocalizations.of(context).translate('reserveHours')}"),
                   content: TextField(
+                    maxLength: 2,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                    ],
                     controller: hours,
                     onChanged: (value) {
                       setState(() {
@@ -1118,6 +1338,7 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
                       });
                     },
                     decoration: InputDecoration(
+                      helperText: "${AppLocalizations.of(context).translate('canReserveSpecific')}",
                       errorText: err,
                       labelText: "${AppLocalizations.of(context).translate('selectNumberHours')}",
                       border: new OutlineInputBorder(),
@@ -1183,7 +1404,23 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
               accessPointLat = lat;
               accessPointLng = lng;
 
+                markers.clear();
+                polylines.clear();
+                polylineCoordinates.clear();
+
               DataProvider().accessPointAddress = value ;
+
+
+          //    zoomBetweenTwoPoints(LatLng( DataProvider().userLocation.latitude,  DataProvider().userLocation.longitude), LatLng(accessPointLat, accessPointLng));
+
+
+              _getPolyline(LatLng( DataProvider().userLocation.latitude,  DataProvider().userLocation.longitude), LatLng(accessPointLat, accessPointLng))
+
+                  .then((value) {
+                _addPolyLine();
+
+              });
+
 
 
               DataProvider().calcApproximatePrice(LatLng(lat, lng), LatLng(userLocation.latitude, userLocation.longitude)).then((value) {
@@ -1230,6 +1467,35 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
     ]);
 
     print("marker : ${markers.length}");
+  }
+
+
+  void zoomBetweenTwoPoints(LatLng customerLocation , LatLng driverLocation){
+
+    final LatLng offerLatLng =  driverLocation ;
+
+    LatLngBounds bound;
+    if (offerLatLng.latitude > customerLocation.latitude &&
+        offerLatLng.longitude > customerLocation.longitude) {
+      bound = LatLngBounds(southwest: customerLocation, northeast: offerLatLng);
+    } else if (offerLatLng.longitude > customerLocation.longitude) {
+      bound = LatLngBounds(
+          southwest: LatLng(offerLatLng.latitude, customerLocation.longitude),
+          northeast: LatLng(customerLocation.latitude, offerLatLng.longitude));
+    } else if (offerLatLng.latitude > customerLocation.latitude) {
+      bound = LatLngBounds(
+          southwest: LatLng(customerLocation.latitude, offerLatLng.longitude),
+          northeast: LatLng(offerLatLng.latitude, customerLocation.longitude));
+    } else {
+      bound = LatLngBounds(southwest: offerLatLng, northeast: customerLocation);
+    }
+
+    CameraUpdate u2 = CameraUpdate.newLatLngBounds(bound, 50);
+
+
+    this._controller.animateCamera(u2).then((void v){
+    });
+
   }
 
 

@@ -153,7 +153,17 @@
   "pleaseEnterName" : "Please enter full name",
 
 
-  "notification" : "notification"
+  "notification" : "notification",
+
+  "canReserveSpecific" : "You can reserve a specific car at a specific price within the city",
+
+
+  "confirmExit" : "Confirm Exit",
+
+  "wantToExit" : "Are you sure you want to exit?",
+
+  "yes" : "Yes" ,
+  "no" : "No"
 
 
 

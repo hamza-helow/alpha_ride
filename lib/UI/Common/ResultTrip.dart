@@ -169,12 +169,9 @@ class ResultTrip extends StatelessWidget {
                   color: DataProvider().baseColor,
                   onPressed: () {
 
-
-
                     Geolocator.getLastKnownPosition().then((value)  {
 
-
-
+                      if(typeUser == TypeAccount.driver)
                       FirebaseHelper().insertLocationUser(auth.currentUser.uid, {
                         'available': true,
                         'idUser': '${auth.currentUser.uid}',
@@ -182,9 +179,6 @@ class ResultTrip extends StatelessWidget {
                       });
 
                     });
-
-
-
 
                     FirebaseHelper()
                         .ratingUser(

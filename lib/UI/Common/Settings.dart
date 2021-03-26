@@ -91,17 +91,17 @@ class _SettingsState extends State<Settings> {
 
             SizedBox(height: 10.0,),
 
-            ListTile(
-              onTap: () {
-                updateInfo(flag: 3 , controller: TextEditingController() , title: "${AppLocalizations.of(context).translate('changePassword')}");
-              },
-
-              leading: Icon(Icons.lock  ),
-              title: Text("${AppLocalizations.of(context).translate('changePassword')}" ),
-
-            ),
-
-            SizedBox(height: 10.0,),
+            // ListTile(
+            //   onTap: () {
+            //     updateInfo(flag: 3 , controller: TextEditingController() , title: "${AppLocalizations.of(context).translate('changePassword')}");
+            //   },
+            //
+            //   leading: Icon(Icons.lock  ),
+            //   title: Text("${AppLocalizations.of(context).translate('changePassword')}" ),
+            //
+            // ),
+            //
+            // SizedBox(height: 10.0,),
 
 
             Divider(

@@ -24,6 +24,8 @@ class TripsScreen extends StatefulWidget {
 class _TripsScreenState extends State<TripsScreen> {
   List<Trip> trips;
 
+  bool inProgress = false ;
+
   @override
   void initState() {
     trips = List();
@@ -34,6 +36,8 @@ class _TripsScreenState extends State<TripsScreen> {
   String fromDate = "", toDate = "";
 
   void getTrips(String from, String to) {
+
+    inProgress = true ;
     () {
       if (from.isEmpty && to.isNotEmpty)
         return FirebaseFirestore.instance
@@ -81,6 +85,9 @@ class _TripsScreenState extends State<TripsScreen> {
             .get();
     }()
         .then((list) {
+
+      inProgress  = false;
+
       if (this.mounted)
         this.setState(() {
           trips.clear();
@@ -93,7 +100,10 @@ class _TripsScreenState extends State<TripsScreen> {
                 .then((value) {
                 // item.addressEnd = value;
 
-              trips.add(item);
+              if(this.mounted)
+             this.setState(() {
+               trips.add(item);
+             });
 
             });
 
@@ -160,6 +170,11 @@ class _TripsScreenState extends State<TripsScreen> {
                 onSaved: (val) => print(val),
               ),
             ),
+
+            if(inProgress)
+              CircularProgressIndicator(),
+
+            if(!inProgress)
             ListView.builder(
                 physics: NeverScrollableScrollPhysics(),
 

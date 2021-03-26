@@ -71,7 +71,7 @@ final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
 
   }
 
-  Future<double> calcPriceTotal({TypeTrip typeTrip , discountTrip = 0 , minTrip =0, kmTrip=0 ,DateTime startDate})async{
+  Future<double> calcPriceTotal({TypeTrip typeTrip , discountTrip = 0 , minTrip =0, kmTrip=0 ,DateTime startDate , bool readOnly=false})async{
 
   final SettingApp settingApp  =   await FirebaseHelper().getSettingApp();
 
@@ -107,13 +107,13 @@ final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
 
     }
 
-
-
-double percentageDriver = (double.parse(totalPrice.toStringAsFixed(2)) * double.parse('0.${settingApp.percentageDriver}')) ;
+      if(!readOnly){
+        double percentageDriver = (double.parse(totalPrice.toStringAsFixed(2)) * double.parse('0.${settingApp.percentageDriver}')) ;
         FirebaseFirestore.instance.collection("Users").doc(auth.currentUser.uid)
-      .update({
-       'balance' : FieldValue.increment((percentageDriver *-1))
-          });
+            .update({
+          'balance' : FieldValue.increment((percentageDriver *-1))
+        });
+      }
 
 
     return double.parse(totalPrice.toStringAsFixed(2));
@@ -140,7 +140,8 @@ double percentageDriver = (double.parse(totalPrice.toStringAsFixed(2)) * double.
 
       return DataProvider().calcPriceTotal(
           minTrip: min ,typeTrip: TypeTrip.distance ,
-          kmTrip: km , discountTrip: DataProvider().promoCodePercentage
+          kmTrip: km , discountTrip: DataProvider().promoCodePercentage,
+          readOnly: true
       ).then((value)async {
 
         return value;

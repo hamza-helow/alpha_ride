@@ -10,6 +10,8 @@ import 'package:alpha_ride/Models/TripCustomer.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,6 +27,7 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
 
   @override
   void initState() {
+    onCustomerRejectTrip();
     checkExitRequest();
     super.initState();
   }
@@ -43,8 +46,6 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
         minChildSize: minChildSize,
         maxChildSize: maxChildSize,
         builder: (context, scrollController) {
-
-
 
           return NotificationListener<OverscrollIndicatorNotification>(
             onNotification: (overscroll) {
@@ -227,6 +228,32 @@ class _DriverBottomSheetState extends State<DriverBottomSheet> {
 
       ],
     ),);
+  }
+  
+  
+  void onCustomerRejectTrip(){
+    
+    FirebaseFirestore.instance
+        .collection("LastRejected").doc(auth.currentUser.uid)
+        .snapshots().listen((event) {
+
+          if(event.exists){
+            Geolocator.getLastKnownPosition().then((value)  {
+              FirebaseHelper().insertLocationUser(auth.currentUser.uid, {
+                'available': true,
+                'idUser': '${auth.currentUser.uid}',
+                'position': Geoflutterfire().point(latitude: value.latitude, longitude: value.longitude).data
+              });
+
+            });
+
+            FirebaseFirestore.instance
+                .collection("LastRejected").doc(auth.currentUser.uid).delete();
+
+          }
+
+    });
+    
   }
 
   checkExitRequest() {

@@ -9,7 +9,7 @@
    <application
        android:name=".Application"
        android:usesCleartextTraffic="true"
-        android:label="alpha_ride"
+        android:label="Royal ride"
         android:icon="@mipmap/ic_launcher"
        tools:targetApi="m">
         <activity

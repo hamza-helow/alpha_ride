@@ -370,6 +370,7 @@ class FirebaseHelper {
               TypeAccount.customer.toString()
               ? TypeAccount.customer
               : TypeAccount.driver,
+          imageProfile: value.data()['imageProfile'],
           fullName: value.data()['fullName'],
           email: value.data()['email'],
           countRating: value.data()['countRating'] == 0 ? 1 : value
@@ -437,8 +438,9 @@ class FirebaseHelper {
   }
 
 
-  void deleteTokenDevice() {
-    FirebaseDatabase.instance.reference()
+  Future<void> deleteTokenDevice() async{
+
+  await  FirebaseDatabase.instance.reference()
         .child("TokensDevices")
         .child(auth.currentUser.uid).remove();
   }
