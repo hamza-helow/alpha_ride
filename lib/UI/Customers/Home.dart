@@ -38,6 +38,7 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:alpha_ride/UI/Common/Settings.dart' as w;
 import 'package:image_picker/image_picker.dart';
+import 'package:numberpicker/numberpicker.dart';
 import 'package:provider/provider.dart';
 
 //key0
@@ -187,8 +188,15 @@ class _HomeState extends State<Home> {
     subscriptionStreamCloserDriver =  streamCloserDrivers.listen((event) {
       DocumentSnapshot currentDriver = event.firstWhere(
         (element) => !rejected.contains(element.data()['idUser']),
-        orElse: () => null,
-      );
+        orElse: () => null,);
+
+      subscriptionStreamCloserDriver.cancel();
+
+      print("subscriptionStreamCloserDriver->>>>>>>>>>>");
+
+
+
+
       if (findDriver) if (currentDriver == null) {
         print("$radius");
         radius++;
@@ -350,7 +358,50 @@ class _HomeState extends State<Home> {
 
     checkInternetExit();
 
+    listenLocationTrip();
+
     super.initState();
+  }
+
+  void listenLocationTrip(){
+
+
+    FirebaseFirestore.instance
+        .collection("Trips")
+        .where("state", whereIn: [
+      StateTrip.active.toString(),
+      StateTrip.started.toString(),
+      StateTrip.needRatingByCustomer.toString()
+    ])
+        .where("idCustomer", isEqualTo: auth.currentUser.uid)
+        .snapshots().listen((snapshot) {
+
+      final exitTrip = snapshot.docs.length > 0 ;
+
+      print("exitTrip ${markers.length}");
+
+      if (exitTrip && snapshot.docs.first.get("state") == StateTrip.active.toString()){
+        {
+          print("getPolyline ${markers.length}");
+
+          // if(markers.isNotEmpty)
+
+          markers.clear() ;
+
+          showMarkerDriver(snapshot.docs.first.get('locationDriver.lat'), snapshot.docs.first.get('locationDriver.lng'), 0);
+
+          _getPolyline(
+              LatLng(snapshot.docs.first.get('locationCustomer.lat'), snapshot.docs.first.get('locationCustomer.lng'))
+              ,  LatLng(snapshot.docs.first.get('locationDriver.lat'), snapshot.docs.first.get('locationDriver.lng'))).then((value) {
+            _addPolyLine();
+          });
+
+
+        }
+      }
+
+        });
+
   }
 
 
@@ -450,12 +501,12 @@ class _HomeState extends State<Home> {
             if(timer != null)
               timer.cancel();
 
-          // if(!exitTrip){
-          //
-          //   markers.clear();
-          //   polylines.clear();
-          //   polylineCoordinates.clear();
-          // }
+          if(!exitTrip  && addressTo.isEmpty){
+
+            markers.clear();
+            polylines.clear();
+            polylineCoordinates.clear();
+          }
 
           findDriver = findDriver?!exitTrip : false ;
 
@@ -465,19 +516,23 @@ class _HomeState extends State<Home> {
             animateTo(snapshot.data.docs.first.get('locationDriver.lat'),
                 snapshot.data.docs.first.get('locationDriver.lng'));
 
-          if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.active.toString()){
-            {
-
-              markers.clear() ;
-              showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
-
-              _getPolyline(
-                  LatLng(snapshot.data.docs.first.get('locationCustomer.lat'), snapshot.data.docs.first.get('locationCustomer.lng'))
-                  ,  LatLng(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'))).then((value) {
-                _addPolyLine();
-              });
-            }
-          }
+          // if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.active.toString()){
+          //   {
+          //     print("getPolyline ${markers.length}");
+          //
+          //    // if(markers.isNotEmpty)
+          //
+          //     markers.clear() ;
+          //
+          //     showMarkerDriver(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'), 0);
+          //
+          //     _getPolyline(
+          //         LatLng(snapshot.data.docs.first.get('locationCustomer.lat'), snapshot.data.docs.first.get('locationCustomer.lng'))
+          //         ,  LatLng(snapshot.data.docs.first.get('locationDriver.lat'), snapshot.data.docs.first.get('locationDriver.lng'))).then((value) {
+          //       _addPolyLine();
+          //     });
+          //   }
+          // }
           else if (exitTrip && snapshot.data.docs.first.get("state") == StateTrip.started.toString())
           {
             polylines.clear();
@@ -882,7 +937,6 @@ class _HomeState extends State<Home> {
                                     // then get the Prediction selected
                                     Prediction p = await PlacesAutocomplete.show(
                                       components: [new Component(Component.country , "jo")],
-                                      radius: 1000,
                                       language: AppLocalizations.of(context).locale.languageCode == "en" ?"en" : "ar",
                                        location: loc.Location(DataProvider().userLocation.latitude , DataProvider().userLocation.longitude) ,
                                         mode: Mode.overlay,
@@ -979,7 +1033,6 @@ class _HomeState extends State<Home> {
                                     this.setState(() {
                                       addressTo = "";
                                       DataProvider().priceByDistance = 0.0 ;
-
                                         markers.clear();
                                         polylines.clear();
                                         polylineCoordinates.clear();
@@ -1276,6 +1329,8 @@ class _HomeState extends State<Home> {
                     });
           })
         });
+
+
   }
 
   PolylineId id = PolylineId("poly");
@@ -1287,12 +1342,16 @@ class _HomeState extends State<Home> {
         points: polylineCoordinates);
        polylines[id] = polyline;
 
-
-
-   // setState(() {});
+    setState(() {});
   }
 
 Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
+
+      polylines.clear();
+
+      polylineCoordinates.clear();
+
+
     poly.PolylineResult result =
         await polylinePoints.getRouteBetweenCoordinates(
       DataProvider().mapKey,
@@ -1311,38 +1370,127 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
 
   double numberHours = 0;
 
+
+  List<double> hoursList = [
+
+    0.5 ,
+    1.0,
+    1.5,
+    2.0,
+    2.5,
+    3.0,
+    3.5,
+    4.0,
+    4.5,
+    5.0 ,
+    5.5,
+    6.0,
+    6.5,
+    7.0,
+    7.5,
+    8.0,
+    8.5,
+    9.0,
+    9.5,
+    10.0,
+    10.5,
+    11.0,
+    11.5,
+    12.0,
+    12.5,
+    13.0,
+    13.5,
+    14.0,
+    14.5,
+    15.0,
+    15.5,
+    16.0,
+    16.5,
+    17.0,
+    17.5,
+    18.0,
+    18.5,
+    19.0,
+    19.5,
+    20.0,
+    20.5,
+    21.0,
+    21.5,
+    22.0,
+    22.5,
+    23.0,
+    23.5,
+    24.0
+
+  ];
+
+  int indexSelected = 0 ;
+
   dialogReserveHours() async {
+
+
     String err;
 
-    final hours = TextEditingController();
+    //final hours = TextEditingController();
+
+    double hours = 0.0 ;
+
+
+    // TextField(
+    //   maxLength: 2,
+    //   keyboardType: TextInputType.number,
+    //   inputFormatters: <TextInputFormatter>[
+    //     FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+    //   ],
+    //   controller: hours,
+    //   onChanged: (value) {
+    //     setState(() {
+    //       if (value.isEmpty || double.parse(value) > 24)
+    //         err = "please enter correct number";
+    //       else
+    //         err = null;
+    //     });
+    //   },
+    //   decoration: InputDecoration(
+    //     helperText: "${AppLocalizations.of(context).translate('canReserveSpecific')}",
+    //     errorText: err,
+    //     labelText: "${AppLocalizations.of(context).translate('selectNumberHours')}",
+    //     border: new OutlineInputBorder(),
+    //   ),
+    // )
 
     await showDialog<String>(
         context: context,
         builder: (context) => StatefulBuilder(
               builder: (context, setState) => new AlertDialog(
                   contentPadding: EdgeInsets.all(20.0),
-                  title: Text("${AppLocalizations.of(context).translate('reserveHours')}"),
-                  content: TextField(
-                    maxLength: 2,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                    ],
-                    controller: hours,
-                    onChanged: (value) {
-                      setState(() {
-                        if (value.isEmpty || double.parse(value) > 24)
-                          err = "please enter correct number";
-                        else
-                          err = null;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      helperText: "${AppLocalizations.of(context).translate('canReserveSpecific')}",
-                      errorText: err,
-                      labelText: "${AppLocalizations.of(context).translate('selectNumberHours')}",
-                      border: new OutlineInputBorder(),
-                    ),
+                  title: Text("${AppLocalizations.of(context).translate('canReserveSpecific')}" , style: TextStyle(fontSize: 15.0),),
+                  content: Container(
+                    width: 300,
+                    height: 300,
+
+                    child: ListView.builder(
+                      itemCount: hoursList.length,
+                      itemBuilder: (context, index) =>
+                          Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: InkWell(
+
+                              onTap: () {
+                                setState(() {
+                                  indexSelected = index;
+                                });
+
+                                hours = hoursList[index];
+
+                              },
+
+                              child: Text('${hoursList[index]}' , textAlign: TextAlign.center
+                                ,style: TextStyle( fontSize: index==indexSelected ? 24.0 : 17,   fontWeight: index==indexSelected? FontWeight.bold : FontWeight.normal),),
+                            ),
+                          ),
+
+                    )
                   ),
                   actions: [
                     MaterialButton(
@@ -1356,18 +1504,20 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
                     ),
                     MaterialButton(
                       onPressed: () {
-                        setState(() {
-                          if (hours.text.isEmpty)
-                            err = "${AppLocalizations.of(context).translate('enterCorrectNumber')}";
-                          return;
-                        });
+                        // setState(() {
+                        //
+                        //
+                        //   if (hours.text.isEmpty)
+                        //     err = "${AppLocalizations.of(context).translate('enterCorrectNumber')}";
+                        //   return;
+                        // });
 
-                        if (hours.text.isEmpty) return;
+                    //    if (hours.text.isEmpty) return;
 
                         if (err == null)
                           this.setState(() {
                             confirmPickup = true;
-                            numberHours = double.parse(hours.text);
+                            numberHours = hours;
                           });
                         Navigator.pop(context);
                       },
@@ -1410,6 +1560,8 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
 
               DataProvider().accessPointAddress = value ;
 
+
+              animateTo(accessPointLat, accessPointLng);
 
           //    zoomBetweenTwoPoints(LatLng( DataProvider().userLocation.latitude,  DataProvider().userLocation.longitude), LatLng(accessPointLat, accessPointLng));
 

@@ -17,9 +17,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:splashy/splashy.dart';
 import 'Helper/AppLanguage.dart';
 import 'Helper/AppLocalizations.dart';
+import 'UI/Splash.dart';
 
 var flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
 
@@ -92,6 +92,9 @@ class _EntryPointState extends State<EntryPoint> {
                 ],
                 debugShowCheckedModeBanner: false,
                  home:Splashy(
+                   duration: 3000,
+                   logoHeight: 100,
+                   logoWidth: 100,
                    imagePath: "Assets/logo3.jpg",
                    curve : Curves.easeInOut,
                    backgroundColor : Colors.black,

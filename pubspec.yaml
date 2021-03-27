@@ -70,6 +70,8 @@ dependencies:
   location_permissions: ^3.0.0
   url_launcher: ^5.4.11
   splashy: ^3.0.0
+  numberpicker: ^2.0.1
+  video_player: ^2.1.0
 
 
 
@@ -110,6 +112,7 @@ flutter:
    - Assets/spalsh.jpg
    - Assets/car.png
    - Assets/enconomy.png
+   - Assets/videoSplash.mp4
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

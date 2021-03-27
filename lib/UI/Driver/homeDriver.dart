@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeNotification.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
@@ -536,6 +537,13 @@ class _MyHomePageState extends State<HomeDriver> {
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () {
+
+
+                    FirebaseHelper()
+                        .sendNotification(title: "قام الكابتن بالغاء الرحلة",
+                        idReceiver: currentTrip.idCustomer ,
+                        typeNotification: TypeNotification.arriveDriver   , idSender: auth.currentUser.uid , body: '');
+
                     Geolocator.getLastKnownPosition().then((value) {
                       FirebaseHelper()
                           .insertLocationUser(auth.currentUser.uid, {
@@ -659,6 +667,10 @@ class _MyHomePageState extends State<HomeDriver> {
                           .update({
                         'totalPrice': price,
                         'state': StateTrip.needRatingByDriver.toString()
+                      }).then((value) {
+
+                        getAarningsDay();
+
                       });
                     });
                   },

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeNotification.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
@@ -487,13 +488,22 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
     print("idDriver ${widget.idDriver}");
 
+    final idDriver = widget.idDriver;
+
     FirebaseFirestore.instance
         .collection("LastRejected")
-        .doc(widget.idDriver)
+        .doc(idDriver)
         .set({
       'idCustomer' : auth.currentUser.uid
     });
 
+    FirebaseHelper().sendNotification(
+        idSender: auth.currentUser.uid,
+        idReceiver: idDriver,
+        title: "قام" + '${auth.currentUser.displayName}' +"بالغاء الرحلة" ,
+        body: "",
+      typeNotification: TypeNotification.arriveDriver
+    );
 
 
     FirebaseFirestore.instance
@@ -514,11 +524,6 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
 
 
 
-         FirebaseHelper().sendNotification(
-           idSender: auth.currentUser.uid,
-           idReceiver: widget.idDriver,
-           title: "قام" + '${auth.currentUser.displayName}' +"بالغاء الرحلة"
-         );
 
          });
 
