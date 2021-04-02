@@ -47,8 +47,9 @@ class _TripsScreenState extends State<TripsScreen> {
                     ? "idDriver"
                     : "idCustomer",
                 isEqualTo: auth.currentUser.uid)
-            .where('state', isNotEqualTo: StateTrip.active.toString())
+          //  .where('state', isNotEqualTo: StateTrip.active.toString())
             .where('date', isEqualTo: to)
+             .orderBy('dateStart' , descending: true)
             .get();
       else if (to.isEmpty && from.isNotEmpty)
         return FirebaseFirestore.instance
@@ -58,8 +59,9 @@ class _TripsScreenState extends State<TripsScreen> {
                     ? "idDriver"
                     : "idCustomer",
                 isEqualTo: auth.currentUser.uid)
-            .where('state', isNotEqualTo: StateTrip.active.toString())
+           // .where('state', isNotEqualTo: StateTrip.active.toString())
             .where('date', isEqualTo: from)
+            .orderBy('dateStart' , descending: true)
             .get();
       else if (to.isNotEmpty && from.isNotEmpty)
         return FirebaseFirestore.instance
@@ -69,19 +71,21 @@ class _TripsScreenState extends State<TripsScreen> {
                     ? "idDriver"
                     : "idCustomer",
                 isEqualTo: auth.currentUser.uid)
-            .where('state', isNotEqualTo: StateTrip.active.toString())
+            //.where('state', isNotEqualTo: StateTrip.active.toString())
             .where('date', isGreaterThanOrEqualTo: from)
             .where('date', isLessThanOrEqualTo: to)
+            .orderBy('dateStart', descending: true)
             .get();
       else
         return FirebaseFirestore.instance
             .collection("Trips")
-            .where('state', isNotEqualTo: StateTrip.active.toString())
+            //.where('state', isNotEqualTo: StateTrip.active.toString())
             .where(
                 widget.typeAccount == TypeAccount.driver
                     ? "idDriver"
                     : "idCustomer",
                 isEqualTo: auth.currentUser.uid)
+            .orderBy('dateStart' ,descending: true )
             .get();
     }()
         .then((list) {

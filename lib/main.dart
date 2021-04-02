@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeNotification.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/UI/Common/Login.dart';
@@ -47,75 +48,71 @@ class EntryPoint extends StatefulWidget {
 }
 
 class _EntryPointState extends State<EntryPoint> {
-
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   //StreamSubscription<ConnectivityResult> subscriptionConnectivity;
 
   @override
   void initState() {
-
     super.initState();
   }
-
-
 
   @override
   dispose() {
     super.dispose();
-  //  subscriptionConnectivity.cancel();
+    //  subscriptionConnectivity.cancel();
   }
+
   @override
   Widget build(BuildContext context) {
     // final pushNotificationService = PushNotificationService(_firebaseMessaging);
     // pushNotificationService.initialise();
 
     return StreamProvider<UserLocation>(
-
       create: (context) => LocationService().locationStream,
       child: FutureBuilder<TypeAccount>(
-        future: SharedPreferencesHelper().getTypeAccount() ,
-
+        future: SharedPreferencesHelper().getTypeAccount(),
         builder: (context, snapshot) => ChangeNotifierProvider<AppLanguage>(
           create: (context) => widget.appLanguage,
           builder: (context, child) => Consumer<AppLanguage>(
               builder: (context, value, child) => MaterialApp(
-                locale: value.appLocal,
-                supportedLocales: [
-                  Locale('en', 'US'),
-                  Locale('ar', ''),
-                ],
-                localizationsDelegates: [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                ],
-                debugShowCheckedModeBanner: false,
-                 home:Splashy(
-                   duration: 3000,
-                   logoHeight: 100,
-                   logoWidth: 100,
-                   imagePath: "Assets/logo3.jpg",
-                   curve : Curves.easeInOut,
-                   backgroundColor : Colors.black,
-                   customFunction: mainPage(),
-                 )
-                //
-                // () {
-                //
-                //   //return CompleteCreateAccount(null);
-                //   if (auth.currentUser != null)
-                //     if (snapshot.data == TypeAccount.driver)
-                //       return  HomeDriver();
-                //     else
-                //       return Home();
-                //
-                //   return Login();
-                //   SharedPreferencesHelper().getTypeAccount();
-                //   return Login();
-                // }(),
-              )),
-        ),),
+                  locale: value.appLocal,
+                  supportedLocales: [
+                    Locale('en', 'US'),
+                    Locale('ar', ''),
+                  ],
+                  localizationsDelegates: [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                  ],
+                  debugShowCheckedModeBanner: false,
+                  home: Splashy(
+                    duration: 3000,
+                    logoHeight: 100,
+                    logoWidth: 100,
+                    imagePath: "Assets/logo3.jpg",
+                    curve: Curves.easeInOut,
+                    backgroundColor: Colors.black,
+                    customFunction: mainPage(),
+                  )
+                  //
+                  // () {
+                  //
+                  //   //return CompleteCreateAccount(null);
+                  //   if (auth.currentUser != null)
+                  //     if (snapshot.data == TypeAccount.driver)
+                  //       return  HomeDriver();
+                  //     else
+                  //       return Home();
+                  //
+                  //   return Login();
+                  //   SharedPreferencesHelper().getTypeAccount();
+                  //   return Login();
+                  // }(),
+                  )),
+        ),
+      ),
     );
   }
 
@@ -123,42 +120,36 @@ class _EntryPointState extends State<EntryPoint> {
     await showDialog<String>(
         context: context,
         builder: (context) => new AlertDialog(
-            content: Text("لا يوجد اتصال بالانترنت") ,
-            actions: []));
+            content: Text("لا يوجد اتصال بالانترنت"), actions: []));
   }
 
-   Future<Widget> mainPage() async{
+  Future<Widget> mainPage() async {
+    TypeAccount typeAccount = await SharedPreferencesHelper().getTypeAccount();
 
-          TypeAccount typeAccount =  await  SharedPreferencesHelper().getTypeAccount();
+    if (auth.currentUser != null) if (typeAccount == TypeAccount.driver)
+      return Future.value(HomeDriver());
+    else
+      return Future.value(Home());
 
+    return Future.value(Login());
 
-       if (auth.currentUser != null)
-         if (typeAccount == TypeAccount.driver)
-           return Future.value( HomeDriver());
-         else
-           return Future.value( Home());
+    SharedPreferencesHelper().getTypeAccount();
+    return Login();
 
-           return Future.value( Login());
-
-
-       SharedPreferencesHelper().getTypeAccount();
-       return Login();
-
-   //  return Future.value(HomPage());
+    //  return Future.value(HomPage());
   }
 }
 
 void setFirebase() async {
-
-final initializationSettingsAndroid =
-      new AndroidInitializationSettings('@mipmap/ic_launcher' );
+  final initializationSettingsAndroid =
+      new AndroidInitializationSettings('@mipmap/ic_launcher');
 
   final initializationSettingsIOS = IOSInitializationSettings();
 
   final initializationSettings = InitializationSettings(
       initializationSettingsAndroid, initializationSettingsIOS);
 
-    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+  flutterLocalNotificationsPlugin.initialize(initializationSettings,
       onSelectNotification: onSelect);
 
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
@@ -179,7 +170,11 @@ final initializationSettingsAndroid =
 
       print("onMessage...: $title  $body");
 
-      displayNotification(title, body);
+      print("onMessage...: ${message["data"]["type"].toString()}");
+
+
+      displayNotification(title, body,
+          type: message["data"]["type"].toString());
     },
     onLaunch: (message) async {
       print("onLaunch: $message");
@@ -193,7 +188,6 @@ final initializationSettingsAndroid =
     print("Push Messaging token: $token");
 
     DataProvider().tokenDevice = token;
-
   });
 }
 
@@ -210,13 +204,17 @@ Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
 
   print("onMessage...: $title  $body");
 
-  displayNotification(title, body);
+  print("onMessage...: ${message["data"]["type"].toString()}");
+
+  print("myBackgroundMessageHandler");
+
+  displayNotification(title, body,  type: message["data"]["type"].toString() , flag: 1);
 
   return Future<void>.value();
 }
 
-Future displayNotification(String title, String body) async {
-
+Future displayNotification(String title, String body,
+    {String type = "TypeNotification.defaultNotification" , int flag = 0 }) async {
   // var androidPlatformChannel = new AndroidNotificationDetails(
   //     "your_channel_id", "name", "desc_channel",
   //     sound: RawResourceAndroidNotificationSound('lawgo_sound_notification'),
@@ -224,10 +222,20 @@ Future displayNotification(String title, String body) async {
   //     importance: Importance.Max,
   //     priority: Priority.High);
 
-
   var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      'channelid', 'flutterfcm', 'your channel description',
-      importance: Importance.Max, priority: Priority.High , sound: RawResourceAndroidNotificationSound('call') );
+      'com.app.alpha_ride', '$type', '$type',
+      importance: Importance.Max,
+      priority: Priority.High, sound: RawResourceAndroidNotificationSound(() {
+    if (type == TypeNotification.arriveDriver.toString())
+      return 'defaultnotification';
+    else if (type == TypeNotification.newRequestDriver.toString())
+     {
+       print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+       return "requestdriver";
+     }
+    else
+      return 'defaultnotification';
+  }())  );
   var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
   var platformChannelSpecifics = new NotificationDetails(
       androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
@@ -239,5 +247,3 @@ Future displayNotification(String title, String body) async {
     payload: 'hello',
   );
 }
-
-

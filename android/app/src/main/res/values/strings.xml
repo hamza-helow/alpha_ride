@@ -3,4 +3,7 @@
     <string name="app_name">Flutter Facebook Auth Example</string>
     <string name="facebook_app_id">431859231361623</string>
     <string name="fb_login_protocol_scheme">fb431859231361623</string>
+    <string name="notification_channel_id">com.app.alpha_ride</string>
+    <string name="default_notification_channel_id">com.app.alpha_ride</string>
+    <string name="default_notification_channel_id_2">com.app.alpha_ride_driver</string>
 </resources>

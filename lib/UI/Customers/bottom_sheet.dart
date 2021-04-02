@@ -547,10 +547,18 @@ class _CustomerBottomSheetState extends State<CustomerBottomSheet> {
                height: 180,
 
                child: PromoCodeBottomSheet((){
-
-
                  this.setState(() {
                    promoCode =DataProvider().promoCode;
+
+
+                   DataProvider().priceByDistance =
+                       DataProvider().priceByDistance - ( DataProvider().priceByDistance * double.parse('0.${DataProvider().promoCodePercentage}'));
+
+                   if(DataProvider().priceByDistance < 0)
+                     DataProvider().priceByDistance = 0.0;
+
+                //   DataProvider().promoCodePercentage
+
                  });
 
                  Navigator.pop(context);

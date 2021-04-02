@@ -1,3 +1,4 @@
+import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
 import 'package:alpha_ride/Helper/FirebaseHelper.dart';
@@ -23,7 +24,7 @@ class _EarningsState extends State<Earnings> {
   @override
   void initState() {
 
-   // getEarnings('2021/03/01' ,'2021/03/07');
+   getEarnings('' ,'');
     super.initState();
   }
 
@@ -35,19 +36,34 @@ class _EarningsState extends State<Earnings> {
 
    (){
      if(to.isEmpty && from.isEmpty)
-       return reference.where('idDriver' , isEqualTo: auth.currentUser.uid);
+       {
+         print("----> 1 ");
+         return reference.where('idDriver' , isEqualTo: auth.currentUser.uid).where("state" , isEqualTo: StateTrip.done.toString());
+
+       }
     else if(to.isEmpty)
-       return reference.where('idDriver' , isEqualTo: auth.currentUser.uid).where('date'  , isEqualTo: from);
+       {
+         print("----> 2 ");
+         return reference.where('idDriver' , isEqualTo: auth.currentUser.uid).where('date'  , isEqualTo: from).where("state" , isEqualTo: StateTrip.done.toString());
+       }
      else if (from.isEmpty)
-       return reference.where('idDriver' , isEqualTo: auth.currentUser.uid).where('date'  , isEqualTo: to);
+      {
+        print("----> 3 ");
+        return reference.where('idDriver' , isEqualTo: auth.currentUser.uid).where('date'  , isEqualTo: to).where("state" , isEqualTo: StateTrip.done.toString());
+      }
      else
-       return reference.where('idDriver' , isEqualTo: auth.currentUser.uid).where('date'  , isEqualTo: from);
+     {
+       print("----> 4 ");
+       return reference.where('idDriver' , isEqualTo: auth.currentUser.uid).where('date'  , isEqualTo: from).where("state" , isEqualTo: StateTrip.done.toString());
+     }
    }()  .get().then((value) {
 
       totalTrips = 0 ;
       numberOfTrips = 0 ;
       earningsTotal = 0 ;
       setState(() {});
+
+      print(value.docs.length );
 
       if(value.docs.length == 0)
         return;
@@ -107,6 +123,8 @@ class _EarningsState extends State<Earnings> {
                     dateLabelText: 'Date',
                     onChanged: (val) {
                       print(val);
+                      fromDate = val.replaceAll("-", "/");
+                      getEarnings(toDate, fromDate);
                     },
                     validator: (val) {
                       print(val);
@@ -141,7 +159,7 @@ class _EarningsState extends State<Earnings> {
                     onChanged: (val) {
                       print(val);
                       toDate = val.replaceAll("-", "/");
-                      getEarnings(fromDate, toDate);
+                      getEarnings(toDate, fromDate);
                     },
                     validator: (val) {
                       print(val);

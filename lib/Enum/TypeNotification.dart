@@ -1,5 +1,9 @@
 enum TypeNotification{
 
-  arriveDriver
+  arriveDriver ,
+
+  newRequestDriver ,
+
+  defaultNotification
 
 }

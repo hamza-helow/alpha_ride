@@ -110,6 +110,7 @@ class _MyHomePageState extends State<HomeDriver> {
         .where("idDriver", isEqualTo: auth.currentUser.uid)
         .snapshots()
         .listen((event) {
+          if(this.mounted)
           this.setState(() {
             polylineCoordinates.clear();
             polylines.clear();

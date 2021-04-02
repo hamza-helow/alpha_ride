@@ -8,9 +8,6 @@ class PromoCodeBottomSheet extends StatefulWidget {
 
   Function()  hide;
 
-
-
-
   PromoCodeBottomSheet(this.hide  );
 
   @override
@@ -85,7 +82,7 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                    height: 50.0,
                    shape: RoundedRectangleBorder(
                        borderRadius: BorderRadius.circular(25.0),
-                       side: BorderSide(color: Colors.red)
+                       side: BorderSide(color: DataProvider().baseColor)
                    ),
                    onPressed: () {
 
@@ -106,7 +103,7 @@ class _PromoCodeBottomSheetState extends State<PromoCodeBottomSheet> {
                    height: 50.0,
                    shape: RoundedRectangleBorder(
                        borderRadius: BorderRadius.circular(25.0),
-                       side: BorderSide(color: Colors.red)
+                       side: BorderSide(color:DataProvider().baseColor)
                    ),
                    onPressed: () {
 

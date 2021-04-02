@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:alpha_ride/Enum/StateTrip.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
+import 'package:alpha_ride/Enum/TypeNotification.dart';
 import 'package:alpha_ride/Enum/TypeTrip.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
 import 'package:alpha_ride/Helper/DataProvider.dart';
@@ -12,6 +13,7 @@ import 'package:alpha_ride/Helper/SharedPreferencesHelper.dart';
 import 'package:alpha_ride/Models/User.dart';
 import 'package:alpha_ride/UI/Common/Login.dart';
 import 'package:alpha_ride/Models/Trip.dart';
+import 'package:alpha_ride/UI/Customers/MapAccessPoint.dart';
 import 'package:google_maps_webservice/places.dart' as loc;
 
 import 'package:alpha_ride/Models/TripCustomer.dart';
@@ -249,11 +251,20 @@ class _HomeState extends State<Home> {
               idDriver)
           .then((_) {
         listenRequestDriver(idDriver);
-        FirebaseHelper().sendNotification(
-            title: "لديك طلب جديد من :",
-            body: '${auth.currentUser.displayName}',
-            idReceiver: idDriver,
-            idSender: auth.currentUser.uid);
+
+        FirebaseHelper().loadUserInfo(auth.currentUser.uid , typeAccount: TypeAccount.customer).then((user) {
+
+          FirebaseHelper().sendNotification(
+              title: "لديك طلب جديد من :",
+              body: '${user.fullName}',
+              idReceiver: idDriver,
+              idSender: auth.currentUser.uid ,
+              typeNotification: TypeNotification.newRequestDriver
+          );
+
+        });
+
+
       });
   }
 
@@ -711,6 +722,9 @@ class _HomeState extends State<Home> {
                 });
 
                return GoogleMap(
+
+
+
                   initialCameraPosition: () {
                     if (exitTrip &&
                         snapshot.data.docs.first.get("state") ==
@@ -719,7 +733,7 @@ class _HomeState extends State<Home> {
                         target: LatLng(
                             snapshot.data.docs.first.get('locationDriver.lat'),
                             snapshot.data.docs.first.get('locationDriver.lng')),
-                        zoom: 16.4,
+                        zoom: 16.8,
                       );
                     else {
                       if (cameraPosition != null)
@@ -964,56 +978,7 @@ class _HomeState extends State<Home> {
 
                                 ),
                               ),
-                              Expanded(
-                                child: Container(
-                                  height: 60.5,
-                                  color: Colors.white,
-                                  child: Padding(
-                                    padding: EdgeInsets.only(right: 14.0),
-                                    child: Align(
-                                      alignment: Alignment.centerRight,
-                                      child:GestureDetector(
-                                        onTap: () => dialogReserveHours(),
-                                        child:  Chip(
-                                          avatar: Icon(
-                                            Icons.watch_later,
-                                            color: DataProvider().baseColor,
-                                            size: 21,
-                                          ),
-                                          backgroundColor: Colors.grey[200],
-                                          label: RichText(
-                                            text: TextSpan(
-                                              children: <InlineSpan>[
-                                                TextSpan(
-                                                  text: numberHours == 0.0
-                                                      ? '${AppLocalizations.of(context).translate('now')}'
-                                                      : '$numberHours',
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    color: Colors.black,
-                                                  ),
-                                                ),
-                                                WidgetSpan(
-                                                  child: SizedBox(
-                                                    width: 2.5,
-                                                  ),
-                                                ),
-                                                WidgetSpan(
-                                                  alignment:
-                                                  PlaceholderAlignment
-                                                      .middle,
-                                                  child: Icon(Icons
-                                                      .keyboard_arrow_down),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
+
                             ],
                           ),
                           if (_currentAddress.isNotEmpty)
@@ -1536,7 +1501,7 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
   Future<void> animateTo(double lat, double lng) async {
     final c = await _completer.future;
     final p = CameraPosition(
-        target: LatLng(lat, lng), zoom: 17);
+        target: LatLng(lat, lng), zoom: 16.95);
     c.animateCamera(CameraUpdate.newCameraPosition(p));
   }
 
@@ -1561,19 +1526,25 @@ Future<void>  _getPolyline(LatLng origin, LatLng dest) async {
               DataProvider().accessPointAddress = value ;
 
 
-              animateTo(accessPointLat, accessPointLng);
+              Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                  MapAccessPoint(CameraPosition( zoom: 17 , target: LatLng(accessPointLat ,accessPointLng )) ,
 
-          //    zoomBetweenTwoPoints(LatLng( DataProvider().userLocation.latitude,  DataProvider().userLocation.longitude), LatLng(accessPointLat, accessPointLng));
+                          (location){
+
+                          accessPointLat = location.latitude;
+                            accessPointLng = location.longitude;
+
+                            _getPolyline(LatLng( DataProvider().userLocation.latitude,  DataProvider().userLocation.longitude), LatLng(accessPointLat, accessPointLng))
+
+                                .then((value) {
+                              _addPolyLine();
+
+                            });
 
 
-              _getPolyline(LatLng( DataProvider().userLocation.latitude,  DataProvider().userLocation.longitude), LatLng(accessPointLat, accessPointLng))
+                         }),));
 
-                  .then((value) {
-                _addPolyLine();
-
-              });
-
-
+             // animateTo(accessPointLat, accessPointLng);
 
               DataProvider().calcApproximatePrice(LatLng(lat, lng), LatLng(userLocation.latitude, userLocation.longitude)).then((value) {
 
