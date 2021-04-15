@@ -66,7 +66,7 @@ final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
     Response response=await dio.get("https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${from.latitude},${from.longitude}&destinations=${to.latitude},${to.longitude}&key=${DataProvider().mapKey}");
     print("RESULT :  ${response.data}");
 
-
+ //
     return  flag == 0 ? response.data['rows'][0]['elements'][0]['duration']['text'] : '${response.data['rows'][0]['elements'][0]['duration']['value'] }' ;
 
   }
