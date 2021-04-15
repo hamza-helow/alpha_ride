@@ -29,7 +29,7 @@ apply plugin: 'com.google.gms.google-services'
 android {
     signingConfigs {
         releas {
-            storeFile file('C:\\Users\\hamzi\\AndroidStudioProjects\\alpha_ride\\alpha_ride.jks')
+            storeFile file('C:\\Users\\Admin\\AndroidStudioProjects\\alpha_ride\\alpha_ride.jks')
             storePassword 'hh0788051422**@@'
             keyAlias 'key0'
             keyPassword 'hh0788051422**@@'

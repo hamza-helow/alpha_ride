@@ -79,7 +79,9 @@ class FirebaseHelper {
         km: doc.get('km'),
         min: doc.get('min'),
         percentageDriver: doc.get('percentageDriver'),
-        startPrice: doc.get('startPrice'));
+        startPrice: doc.get('startPrice') , 
+        kmAfter5: doc.get('kmAfter5')
+    );
   }
 
 

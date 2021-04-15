@@ -73,10 +73,16 @@ final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
 
   Future<double> calcPriceTotal({TypeTrip typeTrip , discountTrip = 0 , minTrip =0, kmTrip=0 ,DateTime startDate , bool readOnly=false})async{
 
+
   final SettingApp settingApp  =   await FirebaseHelper().getSettingApp();
 
     double totalPrice ;
     if(typeTrip == TypeTrip.distance){
+
+
+
+
+
       double startPrice = settingApp.startPrice ;
 
       double totalPriceMin = minTrip * settingApp.min;
@@ -84,6 +90,12 @@ final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
       double totalKmPrice = kmTrip * settingApp.km;
 
       totalPrice =  startPrice + totalKmPrice + totalPriceMin ;
+
+      if(kmTrip > 5.0)
+      {
+        totalPrice = totalPrice + (((kmTrip - 5.0) * settingApp.kmAfter5)) ;
+      }
+
 
       if(totalPrice < 1.15)
         totalPrice = 1.15 ;
@@ -94,6 +106,9 @@ final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
 
       if(totalPrice < 0)
         totalPrice = 0.0 ;
+
+
+
     }
 
     else {
