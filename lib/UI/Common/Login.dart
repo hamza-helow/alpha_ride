@@ -155,6 +155,7 @@ class _LoginState extends State<Login> {
                           borderRadius: BorderRadius.circular(10)),
                     ),
                   ),
+                  if(Platform.isAndroid)
                   Padding(
                     padding: EdgeInsets.only(top: 30),
                     child: Center(
