@@ -80,6 +80,9 @@ final String mapKey ="AIzaSyAhZEFLG0WG4T8kW7lo8S_fjbSV8UXca7A";
     if(typeTrip == TypeTrip.distance){
 
 
+
+
+
       double startPrice = settingApp.startPrice ;
 
       double totalPriceMin = minTrip * settingApp.min;
