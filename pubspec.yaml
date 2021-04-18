@@ -139,9 +139,6 @@ flutter:
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
 
-flutter_native_splash:
-  image: "Assets/spalsh.jpg"
-  color: 42a5f5
 
 flutter_icons:
   image_path: "Assets/logo3.jpg"
