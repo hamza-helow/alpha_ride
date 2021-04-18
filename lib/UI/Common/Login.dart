@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -249,7 +250,36 @@ class _LoginState extends State<Login> {
                           width: 50,
                           height: 50,
                         ),
-                      )
+                      ),
+                      SizedBox(
+                        width: 22.0,
+                      ),
+                      InkWell(
+                        onTap: () {
+
+                          SignInWithAppleButton(
+                            onPressed: () async {
+                              final credential = await SignInWithApple.getAppleIDCredential(
+                                scopes: [
+                                  AppleIDAuthorizationScopes.email,
+                                  AppleIDAuthorizationScopes.fullName,
+                                ],
+                              );
+
+                              print(credential);
+
+                              // Now send the credential (especially `credential.authorizationCode`) to your server to create a session
+                              // after they have been validated with Apple (see `Integration` section for more information on how to do this)
+                            },
+                          );
+
+                        },
+                        child: Image.asset(
+                          "Assets/apple.png",
+                          width: 50,
+                          height: 50,
+                        ),
+                      ),
                     ],
                   ),
                 );
@@ -302,6 +332,7 @@ class _LoginState extends State<Login> {
     });
 
   }
+
 
 
 
