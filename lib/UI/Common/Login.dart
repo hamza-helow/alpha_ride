@@ -172,6 +172,7 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
+                  if(Platform.isAndroid)
                   otherMethodWidget() ,
                   joinDriverWidget(context)
                 ],
