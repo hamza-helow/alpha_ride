@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:alpha_ride/Enum/StateAccount.dart';
 import 'package:alpha_ride/Enum/TypeAccount.dart';
 import 'package:alpha_ride/Helper/AppLocalizations.dart';
@@ -251,9 +253,12 @@ class _LoginState extends State<Login> {
                           height: 50,
                         ),
                       ),
+
+                      if(Platform.isIOS)
                       SizedBox(
                         width: 22.0,
                       ),
+                      if(Platform.isIOS)
                       InkWell(
                         onTap: () {
 
