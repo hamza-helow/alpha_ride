@@ -228,6 +228,19 @@ PODS:
     - Firebase/Firestore (~> 6.33.0)
     - firebase_core
     - Flutter
+  - connectivity (0.0.1):
+    - Flutter
+    - Reachability
+  - FBSDKCoreKit (9.0.1):
+    - FBSDKCoreKit/Basics (= 9.0.1)
+    - FBSDKCoreKit/Core (= 9.0.1)
+  - FBSDKCoreKit/Basics (9.0.1)
+  - FBSDKCoreKit/Core (9.0.1):
+    - FBSDKCoreKit/Basics
+  - FBSDKLoginKit (9.0.1):
+    - FBSDKLoginKit/Login (= 9.0.1)
+  - FBSDKLoginKit/Login (9.0.1):
+    - FBSDKCoreKit (~> 9.0.1)
   - Firebase/Auth (6.33.0):
     - Firebase/CoreOnly
     - FirebaseAuth (~> 6.9.2)
@@ -333,14 +346,26 @@ PODS:
     - FirebaseCore (~> 6.10)
     - GTMSessionFetcher/Core (~> 1.1)
   - Flutter (1.0.0)
-  - flutter_compass (0.0.1):
+  - flutter_facebook_auth (1.0.0):
+    - FBSDKCoreKit (~> 9.0.0)
+    - FBSDKLoginKit (~> 9.0.0)
     - Flutter
+  - flutter_geofire (0.0.1):
+    - Flutter
+    - GeoFire (~> 4.0)
   - flutter_local_notifications (0.0.1):
+    - Flutter
+  - flutter_webview_plugin (0.0.1):
     - Flutter
   - geocoder (0.0.1):
     - Flutter
   - geocoding (1.0.5):
     - Flutter
+  - GeoFire (4.1.0):
+    - Firebase/Database (~> 6.0)
+    - GeoFire/Utils (= 4.1.0)
+  - GeoFire/Utils (4.1.0):
+    - Firebase/Database (~> 6.0)
   - geoflutterfire (0.0.1):
     - Flutter
   - geolocator (6.2.0):
@@ -416,22 +441,30 @@ PODS:
   - leveldb-library (1.22)
   - location (0.0.1):
     - Flutter
+  - "location_permissions (3.0.0+1)":
+    - Flutter
   - nanopb (1.30906.0):
     - nanopb/decode (= 1.30906.0)
     - nanopb/encode (= 1.30906.0)
   - nanopb/decode (1.30906.0)
   - nanopb/encode (1.30906.0)
+  - package_info (0.0.1):
+    - Flutter
   - PromisesObjC (1.2.12)
   - Protobuf (3.14.0)
+  - Reachability (3.2)
   - shared_preferences (0.0.1):
     - Flutter
   - sms_autofill (0.0.1):
     - Flutter
   - url_launcher (0.0.1):
     - Flutter
+  - video_player (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
+  - connectivity (from `.symlinks/plugins/connectivity/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_database (from `.symlinks/plugins/firebase_database/ios`)
@@ -439,8 +472,10 @@ DEPENDENCIES:
   - firebase_remote_config (from `.symlinks/plugins/firebase_remote_config/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
-  - flutter_compass (from `.symlinks/plugins/flutter_compass/ios`)
+  - flutter_facebook_auth (from `.symlinks/plugins/flutter_facebook_auth/ios`)
+  - flutter_geofire (from `.symlinks/plugins/flutter_geofire/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
+  - flutter_webview_plugin (from `.symlinks/plugins/flutter_webview_plugin/ios`)
   - geocoder (from `.symlinks/plugins/geocoder/ios`)
   - geocoding (from `.symlinks/plugins/geocoding/ios`)
   - geoflutterfire (from `.symlinks/plugins/geoflutterfire/ios`)
@@ -449,15 +484,20 @@ DEPENDENCIES:
   - google_sign_in (from `.symlinks/plugins/google_sign_in/ios`)
   - image_picker (from `.symlinks/plugins/image_picker/ios`)
   - location (from `.symlinks/plugins/location/ios`)
+  - location_permissions (from `.symlinks/plugins/location_permissions/ios`)
+  - package_info (from `.symlinks/plugins/package_info/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
   - sms_autofill (from `.symlinks/plugins/sms_autofill/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
+  - video_player (from `.symlinks/plugins/video_player/ios`)
 
 SPEC REPOS:
   trunk:
     - abseil
     - AppAuth
     - BoringSSL-GRPC
+    - FBSDKCoreKit
+    - FBSDKLoginKit
     - Firebase
     - FirebaseABTesting
     - FirebaseAuth
@@ -470,6 +510,7 @@ SPEC REPOS:
     - FirebaseMessaging
     - FirebaseRemoteConfig
     - FirebaseStorage
+    - GeoFire
     - GoogleDataTransport
     - GoogleMaps
     - GoogleSignIn
@@ -482,10 +523,13 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - Protobuf
+    - Reachability
 
 EXTERNAL SOURCES:
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
+  connectivity:
+    :path: ".symlinks/plugins/connectivity/ios"
   firebase_auth:
     :path: ".symlinks/plugins/firebase_auth/ios"
   firebase_core:
@@ -500,10 +544,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_storage/ios"
   Flutter:
     :path: Flutter
-  flutter_compass:
-    :path: ".symlinks/plugins/flutter_compass/ios"
+  flutter_facebook_auth:
+    :path: ".symlinks/plugins/flutter_facebook_auth/ios"
+  flutter_geofire:
+    :path: ".symlinks/plugins/flutter_geofire/ios"
   flutter_local_notifications:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
+  flutter_webview_plugin:
+    :path: ".symlinks/plugins/flutter_webview_plugin/ios"
   geocoder:
     :path: ".symlinks/plugins/geocoder/ios"
   geocoding:
@@ -520,24 +568,33 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker/ios"
   location:
     :path: ".symlinks/plugins/location/ios"
+  location_permissions:
+    :path: ".symlinks/plugins/location_permissions/ios"
+  package_info:
+    :path: ".symlinks/plugins/package_info/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
   sms_autofill:
     :path: ".symlinks/plugins/sms_autofill/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
+  video_player:
+    :path: ".symlinks/plugins/video_player/ios"
 
 SPEC CHECKSUMS:
   abseil: 6c8eb7892aefa08d929b39f9bb108e5367e3228f
   AppAuth: 31bcec809a638d7bd2f86ea8a52bd45f6e81e7c7
   BoringSSL-GRPC: 8edf627ee524575e2f8d19d56f068b448eea3879
   cloud_firestore: b8c0e15fa49dfff87c2817d288b577e5dca2df13
+  connectivity: c4130b2985d4ef6fd26f9702e886bd5260681467
+  FBSDKCoreKit: fada1a6a0076724678993ff05a633848765ff18c
+  FBSDKLoginKit: d5ffe6d808897019ccf16feb6f0a7ab260bc5cd6
   Firebase: 8db6f2d1b2c5e2984efba4949a145875a8f65fe5
   firebase_auth: d5159db3873478d1ac839af7b10d2f831516136a
   firebase_core: 5d6a02f3d85acd5f8321c2d6d62877626a670659
   firebase_database: a3737781469b5275f899e04fcb0aa556f37e400a
   firebase_messaging: 0aea2cd5885b65e19ede58ee3507f485c992cc75
-  firebase_remote_config: d153cf3ee4ab117a776e5145f9a5805b864276d0
+  firebase_remote_config: 7297b33f88ca82beacff00cc60cc1230bd9fc4c5
   firebase_storage: a023e199edb807d8481c8aa722c8516f462ffab2
   FirebaseABTesting: 8a9d8df3acc2b43f4a22014ddf9f601bca6af699
   FirebaseAuth: c92d49ada7948d1a23466e3db17bc4c2039dddc3
@@ -551,10 +608,13 @@ SPEC CHECKSUMS:
   FirebaseRemoteConfig: 35a729305f254fb15a2e541d4b36f3a379da7fdc
   FirebaseStorage: 15e0f15ef3c7fec3d1899d68623e47d4447066b4
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
-  flutter_compass: cbbd285cea1584c7ac9c4e0c3e1f17cbea55e855
+  flutter_facebook_auth: d952ca599c6a76439c54472b0b225004e1b880c4
+  flutter_geofire: 1fcdd7f26157b6fbc99bdf4bb41b957bef9e33d5
   flutter_local_notifications: 9e4738ce2471c5af910d961a6b7eadcf57c50186
+  flutter_webview_plugin: ed9e8a6a96baf0c867e90e1bce2673913eeac694
   geocoder: 3cfab70531a0b367e917bafe82df4c30f6d4c45a
   geocoding: 32cfcdb16d38d907caaba65e2e42ad10d38bee58
+  GeoFire: 8372fdf980b5ef1df6767dba7ff79288fad34612
   geoflutterfire: 2a6493e01fb6eef1a6c9046b1baf9a943d0c5ffe
   geolocator: f5e3de65e241caba7ce3e8a618803387bda73384
   google_maps_flutter: c7f9c73576de1fbe152a227bfd6e6c4ae8088619
@@ -570,13 +630,17 @@ SPEC CHECKSUMS:
   image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
   leveldb-library: 55d93ee664b4007aac644a782d11da33fba316f7
   location: 3a2eed4dd2fab25e7b7baf2a9efefe82b512d740
+  location_permissions: 7e0f9aa0f60deb8ff93ddf0e2a164c7e8197bc94
   nanopb: 59317e09cf1f1a0af72f12af412d54edf52603fc
+  package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
   Protobuf: 0cde852566359049847168e51bd1c690e0f70056
+  Reachability: 33e18b67625424e47b6cde6d202dce689ad7af96
   shared_preferences: af6bfa751691cdc24be3045c43ec037377ada40d
   sms_autofill: c461043483362c3f1709ee76eaae6eb570b31686
   url_launcher: 6fef411d543ceb26efce54b05a0a40bfd74cbbef
+  video_player: 9cc823b1d9da7e8427ee591e8438bfbcde500e6e
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.10.1
