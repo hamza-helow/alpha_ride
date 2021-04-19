@@ -146,3 +146,10 @@ flutter_icons:
   image_path: "Assets/logo3.jpg"
   android: true
   ios: true
+
+
+flutter_native_splash:
+  color: “000000”
+  android_disable_fullscreen: true
+  image: Assets/car.png
+
