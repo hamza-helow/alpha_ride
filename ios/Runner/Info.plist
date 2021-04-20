@@ -50,9 +50,9 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Upload image from camera to profile user</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Location is used for compliance and is stored with record data.</string>
+	<string>Royal Ride collects your location data from the time of trip request to finish trip , The driver can access your location correctly . You can turn off location data any time from settings dvice</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Location is used for compliance and is stored with record data.</string>
+	<string>Royal Ride collects your location data from the time of trip request to finish trip , The driver can access your location correctly . You can turn off location data any time from settings dvice</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Upload image user to profile</string>
 	<key>UILaunchStoryboardName</key>
