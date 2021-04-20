@@ -125,14 +125,14 @@ class _SettingsState extends State<Settings> {
             SizedBox(height: 10.0,),
 
 
-            ListTile(
-
-              leading: Icon(Icons.star  ),
-              title: Text("${AppLocalizations.of(context).translate('ratingApplication')}" ),
-
-            ),
-
-            SizedBox(height: 10.0,),
+            // ListTile(
+            //
+            //   leading: Icon(Icons.star  ),
+            //   title: Text("${AppLocalizations.of(context).translate('ratingApplication')}" ),
+            //
+            // ),
+            //
+            // SizedBox(height: 10.0,),
 
           ],
 
