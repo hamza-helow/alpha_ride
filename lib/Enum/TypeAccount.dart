@@ -3,5 +3,7 @@
 enum TypeAccount {
 
   customer ,
-  driver
+  driver ,
+
+  none
 }

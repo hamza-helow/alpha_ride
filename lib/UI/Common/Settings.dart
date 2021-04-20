@@ -86,7 +86,7 @@ class _SettingsState extends State<Settings> {
 
               leading: Icon(Icons.email ),
               title: Text("${AppLocalizations.of(context).translate('email')}" ,),
-              subtitle: Text("${auth.currentUser.email}" ,style: TextStyle(fontSize: 17.0 ),),
+              subtitle: Text("${auth.currentUser.email??""}" ,style: TextStyle(fontSize: 17.0 ),),
             ),
 
             SizedBox(height: 10.0,),
@@ -191,7 +191,7 @@ dialog(Widget child,context,
 
                 MaterialButton(onPressed: () {
 
-                  if(controller.text.isEmpty)
+                  if(controller.text.isEmpty )
                     return;
 
                   FirebaseFirestore.instance
@@ -214,7 +214,8 @@ dialog(Widget child,context,
                   if(flag == 3)
                     auth.currentUser.updatePassword(controller.text);
 
-                  Navigator.pop(context);
+                    if(flag != 1)
+                      Navigator.pop(context);
 
                 },
                 child: Text("${AppLocalizations.of(context).translate('save')}"),

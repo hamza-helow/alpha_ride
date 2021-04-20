@@ -256,24 +256,24 @@ class _LoginState extends State<Login> {
                         ),
                       ),
 
-                     // if(Platform.isIOS)
-                      SizedBox(
-                        width: 22.0,
-                      ),
-                     // if(Platform.isIOS)
-                      InkWell(
-                        onTap: () {
-
-
-                          withApple();
-
-                        },
-                        child: Image.asset(
-                          "Assets/apple.png",
-                          width: 50,
-                          height: 50,
-                        ),
-                      ),
+                     // // if(Platform.isIOS)
+                     //  SizedBox(
+                     //    width: 22.0,
+                     //  ),
+                     // // if(Platform.isIOS)
+                     //  InkWell(
+                     //    onTap: () {
+                     //
+                     //
+                     //      withApple();
+                     //
+                     //    },
+                     //    child: Image.asset(
+                     //      "Assets/apple.png",
+                     //      width: 50,
+                     //      height: 50,
+                     //    ),
+                     //  ),
                     ],
                   ),
                 );

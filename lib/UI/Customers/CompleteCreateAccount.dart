@@ -33,6 +33,13 @@ class _CompleteCreateAccountState extends State<CompleteCreateAccount> {
 
 
   @override
+  void initState() {
+
+    SharedPreferencesHelper()
+        .setSetTypeAccount(TypeAccount.none);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
     return SafeArea(child: Scaffold(

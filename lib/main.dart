@@ -126,10 +126,18 @@ class _EntryPointState extends State<EntryPoint> {
   Future<Widget> mainPage() async {
     TypeAccount typeAccount = await SharedPreferencesHelper().getTypeAccount();
 
-    if (auth.currentUser != null) if (typeAccount == TypeAccount.driver)
-      return Future.value(HomeDriver());
-    else
-      return Future.value(Home());
+    if (auth.currentUser != null)
+    {
+      if (typeAccount == TypeAccount.driver)
+        return Future.value(HomeDriver());
+      else if (typeAccount == TypeAccount.customer)
+        return Future.value(Home());
+      else
+       {
+         auth.signOut();
+         return Future.value(Login());
+       }
+    }
 
     return Future.value(Login());
 

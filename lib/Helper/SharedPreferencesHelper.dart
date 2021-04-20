@@ -83,8 +83,10 @@ class SharedPreferencesHelper {
     return  await () async{
       if(prefs.get(_TypeAccount) == TypeAccount.customer.toString())
         return TypeAccount.customer;
-      else
+      else if (prefs.get(_TypeAccount) == TypeAccount.driver.toString())
         return TypeAccount.driver;
+      else
+        return TypeAccount.none;
     }();
 
   }
